@@ -11,14 +11,13 @@ import Reveal from "@/components/ui/Reveal";
  */
 export default function SilkTransition({ line }: { line: string }) {
   return (
-    <section
-      className="relative flex min-h-[110vh] items-center justify-center overflow-hidden"
-      aria-hidden="true"
-    >
-      <div data-scene="silk" className="absolute inset-0" />
+    <section className="relative flex min-h-[110vh] items-center justify-center overflow-hidden">
+      {/* Anchor only — the WebGL cloth binds here. Decorative. */}
+      <div data-scene="silk" aria-hidden="true" className="absolute inset-0" />
 
       {/* 2D understudy — visible only where the canvas isn't drawing */}
       <div
+        aria-hidden="true"
         className="absolute inset-0 -z-10 opacity-70"
         style={{
           backgroundImage: [
