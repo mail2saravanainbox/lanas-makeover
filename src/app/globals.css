@@ -1,26 +1,409 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANA'S MAKEOVER — DESIGN SYSTEM
+   Restrained luxury editorial. Warm black, ivory, champagne, bronze.
+   No bright pink, no purple, no neon, no gradient soup.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-ink: #0a0806;
+  --color-ink-2: #13100c;
+  --color-ink-3: #1d1813;
+  --color-ivory: #f2ede4;
+  --color-ivory-2: #e6dfd3;
+  --color-ivory-dim: #cdc4b6;
+  --color-champagne: #e0cdb2;
+  --color-bronze: #a07a4e;
+  --color-gold: #c9a96a;
+  --color-muted: #8b8177;
+  --color-rose: #b98d84;
+  --color-olive: #7d7f63;
+  --color-indigo: #4a4d63;
+
+  --font-display: var(--font-cormorant), "Cormorant Garamond", "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-veil: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --page: var(--color-ink);
+  --on-page: var(--color-ivory);
+  --rule: rgba(242, 237, 228, 0.13);
+  --nav-h: 4.5rem;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Ivory (light) surfaces — used by editorial pages, not by the cinematic home */
+.surface-ivory {
+  --page: var(--color-ivory);
+  --on-page: var(--color-ink);
+  --rule: rgba(10, 8, 6, 0.14);
+  background: var(--page);
+  color: var(--on-page);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    min-width: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: auto; /* Lenis owns scrolling */
+    /* The ink lives on <html> so the fixed WebGL canvas can sit behind <body>. */
+    background: var(--color-ink);
+  }
+
+  body {
+    background: transparent;
+    color: var(--color-ivory);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-champagne);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-champagne);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Never let a focus ring be invisible on an ivory surface */
+  .surface-ivory :focus-visible {
+    outline-color: var(--color-bronze);
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Typography ─────────────────────────────────────────────────────────── */
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.015em;
+}
+
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.9rem, 10.5vw, 11rem);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+}
+
+.display-lg {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.3rem, 7vw, 6.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+}
+
+.display-md {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.9rem, 4.4vw, 3.8rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+
+.display-sm {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.45rem, 2.6vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.6rem, 0.72vw, 0.7rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.body-lg {
+  font-size: clamp(1rem, 1.15vw, 1.18rem);
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--on-page) 78%, transparent);
+}
+
+.body-base {
+  font-size: 0.95rem;
+  line-height: 1.72;
+  color: color-mix(in srgb, var(--on-page) 70%, transparent);
+}
+
+.italic-serif {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ── Film grain ─────────────────────────────────────────────────────────── */
+
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-drift 7s steps(6) infinite;
+  will-change: transform;
+}
+
+@keyframes grain-drift {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -2%); }
+  80% { transform: translate(3%, 1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Rules & layout helpers ─────────────────────────────────────────────── */
+
+.hairline {
+  height: 1px;
+  background: var(--rule);
+  border: 0;
+}
+
+.shell {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 5rem);
+}
+
+.shell-narrow {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 2rem);
+}
+
+/* ── Reveal primitives (driven by IntersectionObserver, not by scroll libs) ─ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 1.75rem, 0);
+  transition:
+    opacity 1.15s var(--ease-silk),
+    transform 1.15s var(--ease-silk);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+[data-reveal-blur] {
+  opacity: 0;
+  filter: blur(14px);
+  transform: scale(1.04);
+  transition:
+    opacity 1.5s var(--ease-silk),
+    filter 1.5s var(--ease-silk),
+    transform 1.8s var(--ease-silk);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal-blur="in"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+/* Line-by-line masked headline reveal */
+.line-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.line-mask > span {
+  display: block;
+  transform: translate3d(0, 105%, 0);
+  transition: transform 1.25s var(--ease-silk);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: transform;
+}
+
+[data-reveal="in"] .line-mask > span,
+.line-mask[data-reveal="in"] > span {
+  transform: none;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+.btn {
+  --btn-fg: var(--color-ink);
+  --btn-bg: var(--color-ivory);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 1.05rem 2.1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--btn-fg);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color 0.7s var(--ease-silk),
+    border-color 0.7s var(--ease-silk),
+    background-color 0.7s var(--ease-silk);
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-champagne);
+  transform: translate3d(0, 101%, 0);
+  transition: transform 0.75s var(--ease-silk);
+}
+
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: none;
+}
+
+.btn-ghost {
+  --btn-fg: var(--on-page);
+  --btn-bg: transparent;
+  border-color: color-mix(in srgb, var(--on-page) 32%, transparent);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--color-ink);
+  border-color: var(--color-champagne);
+}
+
+/* Understated text link with a wiping underline */
+.link-wipe {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.2em;
+}
+
+.link-wipe::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.65s var(--ease-silk);
+}
+
+.link-wipe:hover::after,
+.link-wipe:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── Custom cursor (desktop, fine pointer only) ─────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: #2c251d;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-bronze);
+}
+
+/* ── Reduced motion: strip every transform, keep every meaning ──────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal],
+  [data-reveal-blur] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .line-mask > span {
+    transform: none !important;
+  }
+
+  .grain::after {
+    animation: none;
+  }
+}
+
+/* ── Document layering ──────────────────────────────────────────────────────
+   The StoryCanvas is a fixed surface at z-0. Page content sits above it at
+   z-10. Sections that want the WebGL layer to show through simply stay
+   transparent; every other section paints its own opaque background.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.page-content {
+  position: relative;
+  z-index: 10;
+}
+
+.section-dark {
+  background-color: var(--color-ink);
+}
+
+.section-veil {
+  /* Lets the canvas glow through while keeping text contrast safe. */
+  background-color: color-mix(in srgb, var(--color-ink) 72%, transparent);
 }
