@@ -1,0 +1,90 @@
+import type { SiteSettings } from "@/lib/types";
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  CLIENT-EDITABLE CONFIGURATION
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  Everything Lana may want to change lives here. No component reads hardcoded
+ *  brand copy — they all read this file through the ContentProvider.
+ *
+ *  VERIFIED FACTS (from the public Instagram profile @lanasmakeover):
+ *    · Brand name .......... Lana's Makeover
+ *    · Discipline .......... Bridal & Party Transformation Makeup Artist
+ *    · Base ................ Trichy (Tiruchirappalli), Tamil Nadu
+ *    · Specialities ........ Natural, HD & South Indian Bridal looks
+ *    · Availability ........ Travel available
+ *
+ *  ⚠ FIELDS MARKED `TODO(client)` ARE PLACEHOLDERS.
+ *    They have NOT been invented from thin air — they are empty or generic on
+ *    purpose. Fill them in with real details before going to production.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export const siteSettings: SiteSettings = {
+  brandName: "Lana's Makeover",
+  artistName: "Lana",
+  tagline: "Makeup · Hair · Bridal Artistry",
+
+  // Verified from the Instagram bio.
+  location: "Trichy, Tamil Nadu",
+  serviceAreas: [
+    "Trichy",
+    "Tiruchirappalli",
+    "Thanjavur",
+    "Madurai",
+    "Tamil Nadu",
+    "Travel available",
+  ],
+
+  instagram: "https://www.instagram.com/lanasmakeover/",
+  instagramHandle: "@lanasmakeover",
+
+  // TODO(client): replace with the real business number in E.164 format.
+  phone: "",
+  whatsapp: "",
+  // TODO(client): replace with the real business enquiry inbox.
+  email: "",
+
+  /**
+   * TODO(client): Lana's own words belong here. The copy below is written
+   * strictly from what the public profile states — discipline, base city,
+   * speciality and travel availability — and makes no claim about years of
+   * experience, awards, training or clientele.
+   */
+  biography: [
+    "Lana is a bridal and party transformation makeup artist based in Trichy, Tamil Nadu.",
+    "Her work moves between natural, HD and South Indian bridal looks — the register changes, the intention does not. Skin is treated as skin. Features are drawn out rather than drawn on. The bride is still recognisably herself at the end of the chair.",
+    "She travels for weddings.",
+  ],
+
+  philosophy:
+    "A bride should not meet a stranger in the mirror. Everything here is built around the face that is already there.",
+
+  // Deliberately not a number of years — that has not been verified.
+  experience: "Bridal & party transformation makeup · Natural, HD & South Indian bridal",
+
+  bookingCta: "Check Your Date",
+  secondaryCta: "Start Your Story",
+
+  /**
+   * Master honesty switches.
+   *  contentIsPlaceholder → shows the demo-content notice in /admin + footer.
+   *  showPlaceholderBadges → tags placeholder imagery in the UI so nothing
+   *  is ever mistaken for a real client photograph.
+   */
+  contentIsPlaceholder: true,
+  showPlaceholderBadges: true,
+};
+
+/** Convenience: WhatsApp deep link, or null when no number is configured. */
+export function whatsappLink(message?: string): string | null {
+  const digits = siteSettings.whatsapp.replace(/[^\d]/g, "");
+  if (!digits) return null;
+  const text = message ?? `Hello ${siteSettings.brandName}, I'd like to check your availability.`;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
+/** Convenience: tel: link, or null when no number is configured. */
+export function telLink(): string | null {
+  const digits = siteSettings.phone.replace(/[^\d+]/g, "");
+  return digits ? `tel:${digits}` : null;
+}
