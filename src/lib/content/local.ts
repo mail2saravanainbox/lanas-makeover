@@ -38,12 +38,31 @@ const imported = (importedPortfolio.items ?? []) as unknown as PortfolioItem[];
 
 export const hasRealPhotography = imported.some((i) => i.published && i.imageUrl);
 
+/**
+ * A portfolio row without a photograph is not publishable.
+ *
+ * The demo rows in content/portfolio/local.ts document the intended curation —
+ * which categories, which weights, which frames are featured — and they stay.
+ * But each one used to mint a public URL (/portfolio/muhurtham-gold and 23
+ * siblings) showing a placeholder plate under an invented title. Those pages
+ * had nothing to say and were indexable.
+ *
+ * Gating here rather than deleting rows keeps the curation and removes the
+ * pages: the moment a row gains an `imageUrl` it publishes itself.
+ *
+ * The image slots in slots.ts already required `imageUrl`, so plates are
+ * unaffected — the story sections look exactly as they did.
+ */
+function requirePhotograph(items: PortfolioItem[]): PortfolioItem[] {
+  return items.map((i) => (i.imageUrl ? i : { ...i, published: false }));
+}
+
 /** The live portfolio: Lana's photographs when they exist, plates until then. */
-export const activePortfolio: PortfolioItem[] = hasRealPhotography
-  ? imported
-      .slice()
-      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-  : localPortfolio;
+export const activePortfolio: PortfolioItem[] = requirePhotograph(
+  hasRealPhotography
+    ? imported.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    : localPortfolio,
+);
 
 /** Shared query logic so every provider filters identically. */
 export function applyPortfolioQuery(

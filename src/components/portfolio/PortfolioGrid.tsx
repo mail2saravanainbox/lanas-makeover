@@ -8,6 +8,7 @@ import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import PortfolioLightbox from "./PortfolioLightbox";
 import { cx } from "@/lib/utils";
 import { track } from "@/lib/analytics";
+import { siteSettings } from "@/content/site";
 
 /**
  * EDITORIAL PORTFOLIO (§15)
@@ -102,6 +103,15 @@ export default function PortfolioGrid({
           New work is added as each wedding season closes. In the meantime, the most recent
           looks are on Instagram.
         </p>
+        <a
+          href={siteSettings.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => track("instagram_click", { placement: "portfolio-empty" })}
+          className="btn mt-8"
+        >
+          {siteSettings.instagramHandle}
+        </a>
       </div>
     );
   }

@@ -17,6 +17,9 @@ import BeforeAfterSlider from "@/components/portfolio/BeforeAfterSlider";
 import { formatDate } from "@/lib/utils";
 
 export const revalidate = 3600;
+// Matches brides/[slug], journal/[slug] and services/[slug]: the set is
+// enumerable, so anything outside it is a static 404 rather than a soft one.
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const items = await content().getPortfolio();
