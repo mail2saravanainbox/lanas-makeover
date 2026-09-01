@@ -83,7 +83,7 @@ export default async function AboutPage() {
                       An artist portrait has not been supplied yet.
                     </p>
                   </div>
-                  <p className="text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                  <p className="text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                     {settings.location}
                   </p>
                 </div>

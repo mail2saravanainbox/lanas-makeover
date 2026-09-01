@@ -139,7 +139,7 @@ export default function MobileNav({
           >
             {cta}
           </Link>
-          <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+          <div className="flex items-center justify-between text-[0.75rem] uppercase tracking-[0.24em] text-muted">
             <a
               href={siteSettings.instagram}
               target="_blank"

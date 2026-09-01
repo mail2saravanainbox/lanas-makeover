@@ -17,7 +17,7 @@ export default function ClosingCTA({ settings }: { settings: SiteSettings }) {
       <div className="shell relative grid gap-14 lg:grid-cols-[1.2fr_1fr] lg:items-end">
         <div>
           <Reveal>
-            <p className="eyebrow mb-8 !text-bronze">15 — Check your date</p>
+            <p className="eyebrow mb-8 !text-muted-ivory">15 — Check your date</p>
           </Reveal>
           <SplitLines
             as="h2"
@@ -53,17 +53,17 @@ export default function ClosingCTA({ settings }: { settings: SiteSettings }) {
         <Reveal delay={220}>
           <dl className="space-y-8 border-t border-ink/15 pt-10 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
             <div>
-              <dt className="eyebrow !text-bronze mb-3">Based in</dt>
+              <dt className="eyebrow !text-muted-ivory mb-3">Based in</dt>
               <dd className="font-display text-2xl">{settings.location}</dd>
             </div>
             <div>
-              <dt className="eyebrow !text-bronze mb-3">Travel</dt>
+              <dt className="eyebrow !text-muted-ivory mb-3">Travel</dt>
               <dd className="text-sm text-ink/70">
                 Available — share your venue and city in the enquiry.
               </dd>
             </div>
             <div>
-              <dt className="eyebrow !text-bronze mb-3">Instagram</dt>
+              <dt className="eyebrow !text-muted-ivory mb-3">Instagram</dt>
               <dd>
                 <a
                   href={settings.instagram}

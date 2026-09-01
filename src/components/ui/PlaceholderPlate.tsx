@@ -119,7 +119,7 @@ export default function PlaceholderPlate({
 
       {badge && (
         <span
-          className="absolute bottom-3 left-3 z-10 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[0.55rem] font-medium uppercase tracking-[0.22em] text-ivory/70 backdrop-blur-sm"
+          className="absolute bottom-3 left-3 z-10 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[0.75rem] font-medium uppercase tracking-[0.22em] text-ivory/70 backdrop-blur-sm"
           style={{ fontFeatureSettings: "'tnum'" }}
         >
           {badgeLabel}

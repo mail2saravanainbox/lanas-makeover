@@ -81,10 +81,10 @@ export default function BeforeAfterSlider({
           <EditorialImage image={before} className="absolute inset-0 h-full w-full" sizes="92vw" />
         </div>
 
-        <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-ivory/25 bg-ink/50 px-3 py-1.5 text-[0.55rem] uppercase tracking-[0.24em] text-ivory/85 backdrop-blur-sm">
+        <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-ivory/25 bg-ink/50 px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.24em] text-ivory/85 backdrop-blur-sm">
           Before
         </span>
-        <span className="pointer-events-none absolute right-4 top-4 rounded-full border border-ivory/25 bg-ink/50 px-3 py-1.5 text-[0.55rem] uppercase tracking-[0.24em] text-ivory/85 backdrop-blur-sm">
+        <span className="pointer-events-none absolute right-4 top-4 rounded-full border border-ivory/25 bg-ink/50 px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.24em] text-ivory/85 backdrop-blur-sm">
           After
         </span>
 

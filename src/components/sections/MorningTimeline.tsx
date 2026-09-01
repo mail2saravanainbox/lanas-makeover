@@ -50,7 +50,7 @@ export default function MorningTimeline({ entries }: { entries: TimelineEntry[] 
                     aria-hidden="true"
                     className="absolute -left-[calc(2rem+3.5px)] top-2 block h-[7px] w-[7px] rounded-full bg-champagne sm:-left-[calc(3rem+3.5px)]"
                   />
-                  <p className="text-[0.62rem] uppercase tracking-[0.28em] text-champagne/80">
+                  <p className="text-[0.75rem] uppercase tracking-[0.28em] text-champagne/80">
                     {e.time}
                   </p>
                   <h3 className="display-sm mt-3 text-ivory">{e.title}</h3>

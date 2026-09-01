@@ -167,8 +167,8 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                   <li key={s.index} className="flex items-baseline gap-3">
                     <span
                       className={cx(
-                        "font-mono text-[0.6rem] tracking-[0.2em] transition-colors duration-500",
-                        on ? "text-champagne" : "text-muted/60",
+                        "font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-500",
+                        on ? "text-champagne" : "text-inactive",
                       )}
                     >
                       {s.index}
@@ -176,7 +176,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                     <span
                       className={cx(
                         "font-display text-lg uppercase tracking-[0.22em] transition-all duration-700 sm:text-xl",
-                        on ? "text-ivory opacity-100" : "text-ivory/35 opacity-70",
+                        on ? "text-ivory opacity-100" : "text-inactive opacity-70",
                       )}
                     >
                       {s.name}

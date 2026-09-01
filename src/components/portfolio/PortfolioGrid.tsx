@@ -121,8 +121,8 @@ export default function PortfolioGrid({
                   }}
                   aria-pressed={filter === f.key}
                   className={cx(
-                    "link-wipe text-[0.66rem] uppercase tracking-[0.26em] transition-colors duration-500",
-                    filter === f.key ? "text-champagne" : "text-ivory/45 hover:text-ivory",
+                    "link-wipe text-[0.75rem] uppercase tracking-[0.26em] transition-colors duration-500",
+                    filter === f.key ? "text-champagne" : "text-ivory/55 hover:text-ivory",
                   )}
                 >
                   {f.label}

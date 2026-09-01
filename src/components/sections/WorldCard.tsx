@@ -84,7 +84,7 @@ export default function WorldCard({
             }}
           />
 
-          <span className="absolute right-5 top-5 font-mono text-[0.6rem] tracking-[0.24em] text-ivory/45">
+          <span className="absolute right-5 top-5 font-mono text-[0.75rem] tracking-[0.24em] text-ivory/55">
             {String(index).padStart(2, "0")}
           </span>
 

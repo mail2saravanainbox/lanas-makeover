@@ -82,8 +82,8 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
                   <li key={l.name}>
                     <span
                       className={cx(
-                        "text-[0.68rem] uppercase tracking-[0.24em] transition-colors duration-500",
-                        i === active ? "text-champagne" : "text-ivory/30",
+                        "text-[0.8rem] uppercase tracking-[0.24em] transition-colors duration-500",
+                        i === active ? "text-champagne" : "text-inactive",
                       )}
                     >
                       {l.name}

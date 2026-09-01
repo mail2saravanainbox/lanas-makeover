@@ -68,7 +68,7 @@ export default async function JournalPage() {
                     {lead.title}
                   </h2>
                   <p className="body-lg mt-6 max-w-xl">{lead.excerpt}</p>
-                  <span className="mt-8 inline-block text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                  <span className="mt-8 inline-block text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                     Read the article
                   </span>
                 </div>

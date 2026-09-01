@@ -51,7 +51,7 @@ export default async function FaqPage() {
                       settings.showPlaceholderBadges ? (
                         <span
                           key={j}
-                          className="ml-2 rounded-full border border-champagne/25 px-2 py-0.5 text-[0.55rem] uppercase tracking-[0.18em] text-champagne/70"
+                          className="ml-2 rounded-full border border-champagne/25 px-2 py-0.5 text-[0.75rem] uppercase tracking-[0.18em] text-champagne/70"
                         >
                           To confirm
                         </span>

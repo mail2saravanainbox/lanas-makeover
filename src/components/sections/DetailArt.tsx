@@ -65,7 +65,7 @@ export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) 
                       "font-display text-[clamp(1.8rem,4vw,3rem)] uppercase leading-none tracking-[0.04em] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
                       active === i
                         ? "translate-x-2 text-ivory"
-                        : "translate-x-0 text-ivory/35 group-hover:text-ivory/70",
+                        : "translate-x-0 text-inactive group-hover:text-ivory/70",
                     )}
                   >
                     {d.label}

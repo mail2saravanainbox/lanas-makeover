@@ -30,7 +30,7 @@ export default function PageHeader({
       {breadcrumb && breadcrumb.length > 0 && (
         <Reveal>
           <nav aria-label="Breadcrumb" className="mb-8">
-            <ol className={`flex flex-wrap items-center gap-2 text-[0.6rem] uppercase tracking-[0.24em] text-muted ${centered ? "justify-center" : ""}`}>
+            <ol className={`flex flex-wrap items-center gap-2 text-[0.75rem] uppercase tracking-[0.24em] text-muted ${centered ? "justify-center" : ""}`}>
               {breadcrumb.map((b, i) => (
                 <li key={b.href} className="flex items-center gap-2">
                   {i > 0 && <span aria-hidden="true">·</span>}

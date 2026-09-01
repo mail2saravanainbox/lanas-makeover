@@ -204,8 +204,8 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
                         key={other.name}
                         className={
                           j === activeIndex
-                            ? "text-[0.62rem] uppercase tracking-[0.26em] text-champagne"
-                            : "text-[0.62rem] uppercase tracking-[0.26em] text-ivory/30"
+                            ? "text-[0.75rem] uppercase tracking-[0.26em] text-champagne"
+                            : "text-[0.75rem] uppercase tracking-[0.26em] text-inactive"
                         }
                       >
                         {other.name}

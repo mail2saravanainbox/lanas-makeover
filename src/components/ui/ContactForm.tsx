@@ -32,7 +32,7 @@ const WEDDING_TYPES = ["Muhurtham", "Reception", "Engagement", "Multiple events"
 type Status = "idle" | "sending" | "sent" | "recorded" | "error";
 
 const field =
-  "w-full border-0 border-b border-ivory/20 bg-transparent px-0 py-3 text-ivory placeholder:text-muted/60 focus:border-champagne focus:outline-none focus:ring-0 transition-colors duration-500";
+  "w-full border-0 border-b border-ivory/20 bg-transparent px-0 py-3 text-ivory placeholder:text-inactive focus:border-champagne focus:outline-none focus:ring-0 transition-colors duration-500";
 
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");

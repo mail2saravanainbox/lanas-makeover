@@ -90,7 +90,7 @@ export default async function BridalWorldPage({
         <div className="shell absolute inset-x-0 bottom-0 pb-16">
           <Reveal>
             <nav aria-label="Breadcrumb" className="mb-6">
-              <ol className="flex flex-wrap gap-2 text-[0.6rem] uppercase tracking-[0.24em] text-muted">
+              <ol className="flex flex-wrap gap-2 text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                 <li>
                   <Link href="/" className="link-wipe hover:text-ivory">
                     Home

@@ -184,7 +184,7 @@ export default function HeroCinematic({
             )}
             style={{ opacity: reduced ? 0 : clamp(1 - P * 4) }}
           >
-            <span className="text-[0.55rem] uppercase tracking-[0.34em] text-muted">
+            <span className="text-[0.75rem] uppercase tracking-[0.34em] text-muted">
               Scroll to begin
             </span>
             <span className="relative block h-12 w-px overflow-hidden bg-ivory/15">

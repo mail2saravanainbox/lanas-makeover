@@ -17,6 +17,12 @@
   --color-bronze: #a07a4e;
   --color-gold: #c9a96a;
   --color-muted: #8b8177;
+  /* Muted text on ivory surfaces. --color-muted and --color-bronze both fail
+     4.5:1 against ivory; this is the darkened equivalent that passes. */
+  --color-muted-ivory: #6b6157;
+  /* The single "not currently active" ink-surface value. Replaces the ad-hoc
+     ivory/30, ivory/35 and muted/60 that were all illegible. */
+  --color-inactive: rgba(242, 237, 228, 0.55);
   --color-rose: #b98d84;
   --color-olive: #7d7f63;
   --color-indigo: #4a4d63;
@@ -53,6 +59,13 @@
   --rule: rgba(10, 8, 6, 0.14);
   background: var(--page);
   color: var(--on-page);
+}
+
+/* On an ivory surface the ink-surface muted values invert into failure.
+   Both selectors are deliberately specific enough to beat the base rules. */
+.surface-ivory .eyebrow,
+.surface-ivory .text-muted {
+  color: var(--color-muted-ivory);
 }
 
 @layer base {
@@ -143,9 +156,12 @@
 
 .eyebrow {
   font-family: var(--font-sans);
-  font-size: clamp(0.6rem, 0.72vw, 0.7rem);
+  /* Fixed at 12px. The old clamp bottomed out at 9.6px, and the 0.34em
+     tracking was compensating for a size that should never have been that
+     small in the first place. */
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.34em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
@@ -276,7 +292,8 @@
   justify-content: center;
   gap: 0.7rem;
   padding: 1.05rem 2.1rem;
-  font-size: 0.7rem;
+  min-height: 44px;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -393,8 +410,26 @@
     transform: none !important;
   }
 
+  /* The grain is an animated overlay across the whole viewport. Under
+     reduced motion it should not merely stop — it should not be there. */
   .grain::after {
-    animation: none;
+    display: none;
+  }
+}
+
+/* ── Small screens: drop the expensive full-viewport effects ────────────────
+   A fixed 200%-of-viewport animated noise layer and per-element blur filters
+   are the two most expensive things on the page, and the least visible on a
+   phone. ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .grain::after {
+    display: none;
+  }
+
+  [data-reveal-blur] {
+    filter: none;
+    transform: none;
   }
 }
 
@@ -434,7 +469,7 @@
   z-index: 2;
   padding: 0.4rem 0.75rem;
   font-family: var(--font-sans);
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;

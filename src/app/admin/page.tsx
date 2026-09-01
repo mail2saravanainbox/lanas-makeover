@@ -145,7 +145,7 @@ export default async function AdminPage() {
                 </div>
                 <Link
                   href={p.href}
-                  className="link-wipe shrink-0 text-[0.6rem] uppercase tracking-[0.2em] text-muted"
+                  className="link-wipe shrink-0 text-[0.75rem] uppercase tracking-[0.2em] text-muted"
                 >
                   View live
                 </Link>

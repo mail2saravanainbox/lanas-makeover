@@ -85,7 +85,7 @@ export default async function JournalArticlePage({
         <header className="shell pb-14 pt-[calc(var(--nav-h)+5rem)] sm:pt-[calc(var(--nav-h)+7rem)]">
           <Reveal>
             <nav aria-label="Breadcrumb" className="mb-8">
-              <ol className="flex flex-wrap gap-2 text-[0.6rem] uppercase tracking-[0.24em] text-muted">
+              <ol className="flex flex-wrap gap-2 text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                 <li>
                   <Link href="/" className="link-wipe hover:text-ivory">
                     Home
@@ -143,7 +143,7 @@ export default async function JournalArticlePage({
               {post.tags.map((t) => (
                 <li
                   key={t}
-                  className="rounded-full border border-ivory/15 px-4 py-1.5 text-[0.6rem] uppercase tracking-[0.2em] text-muted"
+                  className="rounded-full border border-ivory/15 px-4 py-1.5 text-[0.75rem] uppercase tracking-[0.2em] text-muted"
                 >
                   {t}
                 </li>

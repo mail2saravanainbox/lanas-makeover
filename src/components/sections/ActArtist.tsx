@@ -42,7 +42,7 @@ export default function ActArtist({
                   <p className="font-display text-[clamp(2rem,4vw,3.4rem)] uppercase leading-[0.95] tracking-[0.06em] text-ivory/90">
                     {settings.artistName}
                   </p>
-                  <p className="text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                  <p className="text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                     {settings.location}
                   </p>
                 </div>

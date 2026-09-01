@@ -112,7 +112,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           </ul>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 text-[0.62rem] uppercase tracking-[0.22em] text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-3 text-[0.75rem] uppercase tracking-[0.22em] text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {settings.brandName}
           </p>
@@ -120,7 +120,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         {settings.contentIsPlaceholder && (
-          <p className="mt-8 rounded-lg border border-ivory/10 bg-ink-2 px-5 py-4 text-[0.65rem] leading-relaxed tracking-wide text-muted">
+          <p className="mt-8 rounded-lg border border-ivory/10 bg-ink-2 px-5 py-4 text-[0.75rem] leading-relaxed tracking-wide text-muted">
             <strong className="font-medium text-ivory/70">Preview build.</strong> Imagery on this
             site is procedurally-generated placeholder artwork, not client photography, and copy
             marked in the content files is awaiting Lana&apos;s confirmation. No testimonial,

@@ -84,7 +84,7 @@ export default async function BridesPage() {
                       {b.name}
                     </h2>
                     <p className="body-base mt-3 line-clamp-3">{b.excerpt}</p>
-                    <span className="mt-5 inline-block text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                    <span className="mt-5 inline-block text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                       Read her story
                     </span>
                   </Link>

@@ -97,7 +97,7 @@ export default function Cursor() {
         }}
       >
         {label && (
-          <span className="text-[0.55rem] font-medium uppercase tracking-[0.22em] text-ink">
+          <span className="text-[0.75rem] font-medium uppercase tracking-[0.22em] text-ink">
             {label}
           </span>
         )}

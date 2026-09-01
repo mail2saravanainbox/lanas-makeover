@@ -139,7 +139,7 @@ export default function PortfolioLightbox({
                 href={item.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="link-wipe mt-2 inline-block text-[0.62rem] uppercase tracking-[0.24em] text-muted hover:text-ivory"
+                className="link-wipe mt-2 inline-block text-[0.75rem] uppercase tracking-[0.24em] text-muted hover:text-ivory"
               >
                 View on Instagram
               </a>
@@ -147,7 +147,7 @@ export default function PortfolioLightbox({
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
-            <span className="font-mono text-[0.6rem] tracking-[0.2em] text-muted">
+            <span className="font-mono text-[0.75rem] tracking-[0.2em] text-muted">
               {String(index + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
             </span>
             <button

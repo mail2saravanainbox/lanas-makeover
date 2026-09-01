@@ -44,7 +44,7 @@ export default function Error({
         </div>
 
         {error.digest && (
-          <p className="mt-10 font-mono text-[0.6rem] tracking-widest text-muted">
+          <p className="mt-10 font-mono text-[0.75rem] tracking-widest text-muted">
             Reference {error.digest}
           </p>
         )}
