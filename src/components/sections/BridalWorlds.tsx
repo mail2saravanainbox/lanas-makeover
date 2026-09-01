@@ -35,7 +35,7 @@ export default function BridalWorlds({ services }: { services: Service[] }) {
           {services.map((s, i) => (
             <Reveal key={s.slug} delay={(i % 3) * 130}>
               <WorldCard
-                href={`/services#${s.slug}`}
+                href={`/services/${s.slug}`}
                 eyebrow={s.eyebrow}
                 name={s.name}
                 summary={s.summary}

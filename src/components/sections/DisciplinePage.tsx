@@ -103,7 +103,7 @@ export default function DisciplinePage({
               {related.map((s) => (
                 <li key={s.slug}>
                   <Link
-                    href={`/services#${s.slug}`}
+                    href={`/services/${s.slug}`}
                     className="link-wipe font-display text-2xl text-ivory hover:text-champagne"
                   >
                     {s.name}

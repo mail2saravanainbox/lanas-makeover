@@ -10,10 +10,11 @@ import { absoluteUrl } from "@/lib/seo";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provider = content();
 
-  const [portfolio, brides, posts] = await Promise.all([
+  const [portfolio, brides, posts, services] = await Promise.all([
     provider.getPortfolio(),
     provider.getBrides(),
     provider.getPosts(),
+    provider.getServices(),
   ]);
 
   const now = new Date();
@@ -36,6 +37,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    ...services.map((s) => ({
+      url: absoluteUrl(`/services/${s.slug}`),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
     ...portfolio.map((i) => ({
       url: absoluteUrl(`/portfolio/${i.slug}`),
       lastModified: i.timestamp ? new Date(i.timestamp) : now,

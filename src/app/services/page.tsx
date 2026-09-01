@@ -72,7 +72,11 @@ export default async function ServicesPage() {
                     <p className="eyebrow mb-5">
                       {String(i + 1).padStart(2, "0")} — {s.eyebrow}
                     </p>
-                    <h2 className="display-md text-ivory">{s.name}</h2>
+                    <h2 className="display-md text-ivory">
+                      <Link href={`/services/${s.slug}`} className="link-wipe">
+                        {s.name}
+                      </Link>
+                    </h2>
                     <p className="body-lg mt-7 max-w-lg">{s.summary}</p>
                   </Reveal>
 
@@ -104,8 +108,8 @@ export default async function ServicesPage() {
                       <Link href="/contact" className="btn">
                         {settings.bookingCta}
                       </Link>
-                      <Link href="/portfolio" className="btn btn-ghost">
-                        See the work
+                      <Link href={`/services/${s.slug}`} className="btn btn-ghost">
+                        Enter this world
                       </Link>
                     </div>
                   </Reveal>
