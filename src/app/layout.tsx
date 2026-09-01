@@ -18,9 +18,21 @@ import AnalyticsScripts from "@/components/ui/Analytics";
 import JsonLd from "@/components/ui/JsonLd";
 import StoryCanvas from "@/components/3d/StoryCanvas";
 
+/**
+ * FONT SUBSET
+ *
+ * Audited against actual usage rather than kept "just in case":
+ *   · Cormorant 500 — no display class declares it. Dropped.
+ *   · Inter 300     — every sans class declares 400 or 500. Dropped.
+ * next/font takes weight × style as a cartesian product, so 300/400 × normal/
+ * italic is four files; every display class currently declares 300, and 400 is
+ * held only for a non-synthesised italic. See the Phase 1 report.
+ *
+ * 9 files → 6.
+ */
 const display = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400"],
   style: ["normal", "italic"],
   display: "swap",
   variable: "--font-cormorant",
@@ -28,7 +40,7 @@ const display = Cormorant_Garamond({
 
 const sans = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["400", "500"],
   display: "swap",
   variable: "--font-inter",
 });
