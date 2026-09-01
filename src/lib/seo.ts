@@ -8,11 +8,37 @@ import { siteSettings } from "@/content/site";
  * every claim below is either brand-owned or comes from the public profile.
  */
 
+/**
+ * Resolve the canonical origin.
+ *
+ * Order matters, and getting it wrong is an SEO defect rather than a bug:
+ *
+ *  1. NEXT_PUBLIC_SITE_URL — the real domain, once there is one. Always wins.
+ *  2. In PRODUCTION, the project's stable production domain. `VERCEL_URL` is
+ *     the *immutable per-deployment* host, which changes on every deploy — using
+ *     it in production would canonicalise the site to a URL that stops existing.
+ *  3. In preview/development on Vercel, the deployment host, so a preview is
+ *     self-consistent and its sitemap points at itself.
+ *  4. Locally, localhost.
+ *
+ * This module is server-only in practice (imported by pages, sitemap, robots),
+ * so non-public env vars are safe to read here.
+ */
+function resolveSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (process.env.VERCEL_ENV === "production" && productionHost) {
+    return `https://${productionHost}`;
+  }
+
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+
 export const seoConfig = {
-  /** Set NEXT_PUBLIC_SITE_URL to the real domain before production. */
-  siteUrl:
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  /** Set NEXT_PUBLIC_SITE_URL once a custom domain is attached. */
+  siteUrl: resolveSiteUrl(),
   siteName: siteSettings.brandName,
   defaultTitle: `${siteSettings.brandName} — Bridal Makeup & Hair Artist, Trichy`,
   titleTemplate: `%s — ${siteSettings.brandName}`,
