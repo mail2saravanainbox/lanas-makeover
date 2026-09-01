@@ -52,3 +52,9 @@ next-env.d.ts
 
 # Saved-webpage reference material kept locally; never part of the site.
 Protofolio image*
+
+# playwright
+/test-results
+/playwright-report
+/blob-report
+/.playwright

@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     // bundles and bury real findings.
     "Protofolio image*",
     "Protofolio image*/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 
