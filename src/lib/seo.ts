@@ -66,7 +66,17 @@ export function pageMetadata({
 }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);
   const desc = description ?? seoConfig.defaultDescription;
-  const ogImage = image ?? absoluteUrl("/opengraph-image");
+
+  /**
+   * Only pin an image when a real one is supplied. Left undefined, Next's
+   * file-based convention takes over: a route with its own opengraph-image.tsx
+   * uses that card, and every other route inherits the root one. Setting it
+   * here unconditionally would override — and silently discard — the
+   * per-story and per-article cards (§48).
+   */
+  const ogImages = image
+    ? [{ url: image, width: 1200, height: 630, alt: title ?? seoConfig.siteName }]
+    : undefined;
 
   return {
     title: title ?? seoConfig.defaultTitle,
@@ -82,14 +92,14 @@ export function pageMetadata({
       title: title ?? seoConfig.defaultTitle,
       description: desc,
       locale: seoConfig.locale,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: seoConfig.siteName }],
+      ...(ogImages ? { images: ogImages } : {}),
       ...(type === "article" ? { publishedTime, modifiedTime, tags } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: title ?? seoConfig.defaultTitle,
       description: desc,
-      images: [ogImage],
+      ...(image ? { images: [image] } : {}),
       ...(seoConfig.twitterHandle ? { creator: seoConfig.twitterHandle } : {}),
     },
   };
