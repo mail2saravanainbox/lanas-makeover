@@ -88,3 +88,20 @@ export function telLink(): string | null {
   const digits = siteSettings.phone.replace(/[^\d+]/g, "");
   return digits ? `tel:${digits}` : null;
 }
+
+/**
+ * Convenience: the enquiry message a bride arrives with when she continues on
+ * WhatsApp. Built from what she already typed into the form — nothing invented.
+ */
+export function whatsappEnquiry(input: {
+  date?: string;
+  city?: string;
+  weddingType?: string;
+}): string {
+  const date = input.date?.trim() || "my wedding date";
+  const city = input.city?.trim() || "my city";
+  const type = input.weddingType?.trim();
+  return `Hi ${siteSettings.artistName}, I'd like to check your availability for ${date} in ${city}${
+    type ? ` (${type})` : ""
+  }.`;
+}

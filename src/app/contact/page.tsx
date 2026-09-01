@@ -43,11 +43,30 @@ export default async function ContactPage() {
       />
 
       <div className="shell grid gap-16 pb-28 lg:grid-cols-[1.4fr_1fr] lg:gap-24 sm:pb-40">
-        <Reveal>
+        <Reveal className="lg:col-start-1 lg:row-start-1">
           <ContactForm />
         </Reveal>
 
-        <Reveal delay={200}>
+        {/* The second door. Rendered only when a real number is configured —
+            never a dead link. On mobile it sits above the form; on desktop it
+            heads the right-hand rail, beside it. */}
+        {whatsapp && (
+          <div className="order-first lg:order-none lg:col-start-2 lg:row-start-1">
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn w-full justify-center sm:w-auto"
+            >
+              Ask on WhatsApp
+            </a>
+            <p className="body-base mt-4">
+              Fastest for a date check. The form below is better for the full brief.
+            </p>
+          </div>
+        )}
+
+        <Reveal delay={200} className="lg:col-start-2 lg:row-start-2">
           <aside className="space-y-10 border-t border-ivory/12 pt-10 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
             <div>
               <h2 className="eyebrow mb-4">Direct</h2>

@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Saved-webpage reference material dropped into the project root. Not
+    // source, not committed — but ESLint would otherwise lint its minified
+    // bundles and bury real findings.
+    "Protofolio image*",
+    "Protofolio image*/**",
   ]),
 ]);
 

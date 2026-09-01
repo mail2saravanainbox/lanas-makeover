@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# …except the documented template, which must reach anyone who clones this.
+!.env.example
 
 # vercel
 .vercel
@@ -47,3 +49,6 @@ next-env.d.ts
 # ARE committed, because Vercel builds from git and must be able to serve them.
 /content/incoming/*
 !/content/incoming/README.md
+
+# Saved-webpage reference material kept locally; never part of the site.
+Protofolio image*

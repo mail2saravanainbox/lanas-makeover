@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { track } from "@/lib/analytics";
 import { cx } from "@/lib/utils";
+import { siteSettings, whatsappEnquiry, whatsappLink } from "@/content/site";
 
 /**
  * ENQUIRY FORM (§27)
@@ -10,9 +11,11 @@ import { cx } from "@/lib/utils";
  * Real HTML form semantics: labelled fields, native validation, a live region
  * for the result, and a disabled/pending state. No third-party form widget.
  *
- * The POST target is /api/contact, which currently validates and logs the
- * submission server-side. Wire it to an inbox or CRM there — the component
- * never changes.
+ * The POST target is /api/contact. That route reports whether the enquiry was
+ * actually delivered to an inbox, and this component tells the truth about it:
+ * a bride is only told her enquiry "has been received" when an inbox really
+ * received it. Otherwise she is shown the second door — WhatsApp, Instagram —
+ * and her typed message is left in the form so she can copy it.
  */
 
 const SERVICES = [
@@ -26,7 +29,7 @@ const SERVICES = [
 
 const WEDDING_TYPES = ["Muhurtham", "Reception", "Engagement", "Multiple events", "Other"];
 
-type Status = "idle" | "sending" | "sent" | "error";
+type Status = "idle" | "sending" | "sent" | "recorded" | "error";
 
 const field =
   "w-full border-0 border-b border-ivory/20 bg-transparent px-0 py-3 text-ivory placeholder:text-muted/60 focus:border-champagne focus:outline-none focus:ring-0 transition-colors duration-500";
@@ -34,6 +37,12 @@ const field =
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  /** Values of the submitted enquiry, used to pre-fill the WhatsApp message. */
+  const [submitted, setSubmitted] = useState<{
+    date?: string;
+    city?: string;
+    weddingType?: string;
+  } | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +51,7 @@ export default function ContactForm() {
 
     setStatus("sending");
     setMessage("");
+    setSubmitted(null);
 
     try {
       const res = await fetch("/api/contact", {
@@ -49,7 +59,11 @@ export default function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      const body = (await res.json()) as { ok?: boolean; error?: string };
+      const body = (await res.json()) as {
+        ok?: boolean;
+        delivered?: boolean;
+        error?: string;
+      };
 
       if (!res.ok || !body.ok) {
         setStatus("error");
@@ -57,15 +71,36 @@ export default function ContactForm() {
         return;
       }
 
-      setStatus("sent");
-      setMessage("Your enquiry has been received. You will hear back with your date's availability.");
-      track("contact_submit", { weddingType: String(data.weddingType ?? "") });
-      form.reset();
+      const delivered = body.delivered === true;
+      track("contact_submit", { weddingType: String(data.weddingType ?? ""), delivered });
+
+      setSubmitted({
+        date: String(data.weddingDate ?? ""),
+        city: String(data.city ?? ""),
+        weddingType: String(data.weddingType ?? ""),
+      });
+
+      if (delivered) {
+        setStatus("sent");
+        setMessage(
+          "Your enquiry has been received. You will hear back with your date's availability.",
+        );
+        form.reset();
+        return;
+      }
+
+      // Nothing was delivered. Say so, and leave her message in the form.
+      setStatus("recorded");
+      setMessage(
+        "Thank you. The enquiry inbox isn't connected yet — please also send your date on WhatsApp or Instagram so it isn't missed.",
+      );
     } catch {
       setStatus("error");
       setMessage("The enquiry could not be sent. Please try again, or message on Instagram.");
     }
   }
+
+  const continueHref = submitted ? whatsappLink(whatsappEnquiry(submitted)) : null;
 
   return (
     <form onSubmit={onSubmit} className="grid gap-x-10 gap-y-9 sm:grid-cols-2" noValidate={false}>
@@ -191,7 +226,7 @@ export default function ContactForm() {
           {status === "sending" ? "Sending…" : "Send enquiry"}
         </button>
 
-        <p
+        <div
           role="status"
           aria-live="polite"
           className={cx(
@@ -200,8 +235,33 @@ export default function ContactForm() {
             message ? "opacity-100" : "opacity-0",
           )}
         >
-          {message || " "}
-        </p>
+          <p>{message || " "}</p>
+
+          {(status === "recorded" || status === "sent") && (
+            <p className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+              {continueHref && (
+                <a
+                  href={continueHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link-wipe underline underline-offset-4 hover:text-ivory"
+                  onClick={() => track("whatsapp_click", { placement: "contact-form" })}
+                >
+                  Continue on WhatsApp
+                </a>
+              )}
+              <a
+                href={siteSettings.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-wipe underline underline-offset-4 hover:text-ivory"
+                onClick={() => track("instagram_click", { placement: "contact-form" })}
+              >
+                Message {siteSettings.instagramHandle}
+              </a>
+            </p>
+          )}
+        </div>
       </div>
     </form>
   );
