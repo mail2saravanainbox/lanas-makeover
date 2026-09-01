@@ -56,6 +56,11 @@ export default function EditorialImage({
         sizes={sizes}
         priority={priority}
         loading={priority ? undefined : "lazy"}
+        // A blur-up generated from the photograph itself, when the import
+        // pipeline produced one. Never a generic shimmer.
+        {...(image.blurDataURL
+          ? { placeholder: "blur" as const, blurDataURL: image.blurDataURL }
+          : {})}
         className="object-cover"
         style={{ objectPosition: position }}
         aria-hidden={decorative || undefined}

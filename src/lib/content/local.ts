@@ -20,6 +20,30 @@ import { testimonials } from "@/content/testimonials";
 import { faqs } from "@/content/faq";
 import { timeline } from "@/content/timeline";
 import { localPortfolio } from "@/content/portfolio/local";
+import importedPortfolio from "@/content/portfolio/portfolio.json";
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  REAL PHOTOGRAPHY TAKES OVER AUTOMATICALLY
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  `portfolio.json` is written by `npm run import:portfolio` from whatever
+ *  Lana drops into content/incoming/. The moment it contains a published item,
+ *  it replaces the placeholder set everywhere — homepage, portfolio, services,
+ *  hair, journal covers — with no code change.
+ *
+ *  Until then the placeholder plates hold the composition, clearly badged.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+const imported = (importedPortfolio.items ?? []) as unknown as PortfolioItem[];
+
+export const hasRealPhotography = imported.some((i) => i.published && i.imageUrl);
+
+/** The live portfolio: Lana's photographs when they exist, plates until then. */
+export const activePortfolio: PortfolioItem[] = hasRealPhotography
+  ? imported
+      .slice()
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+  : localPortfolio;
 
 /** Shared query logic so every provider filters identically. */
 export function applyPortfolioQuery(
@@ -47,11 +71,11 @@ export class LocalContentProvider implements ContentProvider {
   }
 
   async getPortfolio(options?: PortfolioQuery): Promise<PortfolioItem[]> {
-    return applyPortfolioQuery(localPortfolio, options);
+    return applyPortfolioQuery(activePortfolio, options);
   }
 
   async getPortfolioItem(slug: string): Promise<PortfolioItem | null> {
-    return localPortfolio.find((i) => i.slug === slug && i.published) ?? null;
+    return activePortfolio.find((i) => i.slug === slug && i.published) ?? null;
   }
 
   async getBrides(): Promise<BrideStory[]> {

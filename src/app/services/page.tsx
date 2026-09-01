@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { content } from "@/lib/content/provider";
+import { serviceImage } from "@/lib/content/slots";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import EditorialImage from "@/components/ui/EditorialImage";
@@ -18,10 +19,11 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function ServicesPage() {
   const provider = content();
-  const [services, settings] = await Promise.all([
+  const [allServices, settings] = await Promise.all([
     provider.getServices(),
     provider.getSiteSettings(),
   ]);
+  const services = allServices.map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
 
   return (
     <>

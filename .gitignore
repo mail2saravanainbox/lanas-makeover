@@ -42,3 +42,8 @@ next-env.d.ts
 
 # Vercel
 .vercel
+
+# Source photographs are inputs only — the optimised WebPs in public/portfolio
+# ARE committed, because Vercel builds from git and must be able to serve them.
+/content/incoming/*
+!/content/incoming/README.md

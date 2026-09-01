@@ -1,16 +1,28 @@
 import type { BrideStory } from "@/lib/types";
 
 /**
- * REAL BRIDE STORIES
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  REAL BRIDE STORIES
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  ⚠ EVERY ENTRY IS UNPUBLISHED. Nothing here reaches the website.
  *
- * ⚠ NO REAL CLIENT IS REPRESENTED HERE.
- *   The entries below demonstrate the *format* only. The `name` field holds a
- *   story title rather than an invented person, no photographs are attached,
- *   and every entry renders behind a visible "SAMPLE STORY" badge while
- *   `siteSettings.showPlaceholderBadges` is true.
+ *  A bride story asserts facts about a real person — her ceremony, her city,
+ *  her day. None of that has been supplied, so publishing these would be
+ *  fabricating client narratives, which the brief forbids outright.
  *
- *   Replace `name` with the bride's real (permissioned) name, add `hero.src`
- *   and `gallery[].src`, and the badge disappears on its own.
+ *  While this list has no published entry, the site shows FEATURED BRIDAL
+ *  LOOKS drawn from the real portfolio instead — genuine photographs with
+ *  neutral look titles and no invented identity.
+ *
+ *  TO PUBLISH A REAL STORY:
+ *    1. Get the bride's permission, in writing, for her name and photographs.
+ *    2. Fill in name / weddingType / location / look / date / story.
+ *    3. Point hero.src and gallery[].src at imported photographs
+ *       (see content/incoming/README.md).
+ *    4. Set `published: true`.
+ *  The homepage act, the /brides index and the story page all appear on their
+ *  own — no code change.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export const brides: BrideStory[] = [
   {
@@ -36,7 +48,7 @@ export const brides: BrideStory[] = [
     ],
     services: ["Muhurtham Bridal", "Bridal Hair", "Draping"],
     featured: true,
-    published: true,
+    published: false,
   },
   {
     slug: "an-evening-reception",
@@ -59,7 +71,7 @@ export const brides: BrideStory[] = [
     ],
     services: ["Reception", "Bridal Hair"],
     featured: true,
-    published: true,
+    published: false,
   },
   {
     slug: "an-engagement-morning",
@@ -78,6 +90,6 @@ export const brides: BrideStory[] = [
     gallery: [{ alt: "Sample story image — placeholder plate", tone: "ivory", seed: 322 }],
     services: ["Engagement", "Soft Hair Styling"],
     featured: false,
-    published: true,
+    published: false,
   },
 ];

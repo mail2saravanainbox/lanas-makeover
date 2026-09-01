@@ -73,7 +73,13 @@ export default async function PortfolioItemPage({
       {/* Full-bleed opening — the "camera moves into the image" beat */}
       <section className="relative h-[86vh] min-h-[32rem] w-full overflow-hidden">
         <EditorialImage
-          image={{ src: item.imageUrl, alt: item.alt, tone: item.tone, seed: item.seed }}
+          image={{
+            src: item.imageUrl,
+            alt: item.alt,
+            tone: item.tone,
+            seed: item.seed,
+            blurDataURL: item.blurDataURL,
+          }}
           className="absolute inset-0 h-full w-full"
           sizes="100vw"
           priority

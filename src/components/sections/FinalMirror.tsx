@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import PlaceholderPlate from "@/components/ui/PlaceholderPlate";
+import type { ImageRef } from "@/lib/types";
+import EditorialImage from "@/components/ui/EditorialImage";
 import { clamp } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 
@@ -26,7 +27,17 @@ function window4(p: number, a: number, b: number, c: number, d: number): number 
   return clamp(1 - (p - c) / (d - c));
 }
 
-export default function FinalMirror({ brand, cta }: { brand: string; cta: string }) {
+const PLATE: ImageRef = { alt: "The final look", tone: "bronze", seed: 999 };
+
+export default function FinalMirror({
+  brand,
+  cta,
+  image = PLATE,
+}: {
+  brand: string;
+  cta: string;
+  image?: ImageRef;
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [p, setP] = useState(0);
   const [reduced, setReduced] = useState(false);
@@ -85,7 +96,7 @@ export default function FinalMirror({ brand, cta }: { brand: string; cta: string
               transform: `scale(${(1.1 - p * 0.08).toFixed(3)})`,
             }}
           >
-            <PlaceholderPlate tone="bronze" seed={999} className="h-full w-full" />
+            <EditorialImage image={image} className="h-full w-full" sizes="100vw" decorative />
             <div className="absolute inset-0 bg-ink/70" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink" />
           </div>

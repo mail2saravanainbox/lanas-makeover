@@ -121,6 +121,7 @@ export default function PortfolioLightbox({
               alt: item.alt,
               tone: item.tone,
               seed: item.seed,
+              blurDataURL: item.blurDataURL,
             }}
             className="h-full w-full"
             sizes="(max-width: 1024px) 96vw, 72vw"

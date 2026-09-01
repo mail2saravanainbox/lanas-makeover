@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { SiteSettings } from "@/lib/types";
+import type { ImageRef, SiteSettings } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -9,7 +9,18 @@ import SplitLines from "@/components/ui/SplitLines";
  * ACT II — THE ARTIST (§6)
  * Every word here comes from `content/site.ts`. Nothing is invented in markup.
  */
-export default function ActArtist({ settings }: { settings: SiteSettings }) {
+/**
+ * §21 — when there is no genuine photograph OF LANA, this renders type rather
+ * than a stand-in. A bridal portrait from the portfolio is a photograph of a
+ * client, not of the artist, and presenting one here would misrepresent her.
+ */
+export default function ActArtist({
+  settings,
+  portrait = null,
+}: {
+  settings: SiteSettings;
+  portrait?: ImageRef | null;
+}) {
   return (
     <section className="section-dark relative overflow-hidden py-28 sm:py-40" aria-labelledby="artist-title">
       <div className="shell grid items-start gap-16 lg:grid-cols-[0.85fr_1fr] lg:gap-24">
@@ -19,11 +30,23 @@ export default function ActArtist({ settings }: { settings: SiteSettings }) {
               className="relative aspect-[4/5] w-full"
               style={{ transform: "translate3d(0, calc(var(--sy) * 24px), 0)" }}
             >
-              <EditorialImage
-                image={{ alt: `${settings.artistName} at work — placeholder plate`, tone: "ink", seed: 910 }}
-                className="h-full w-full"
-                sizes="(max-width: 1024px) 90vw, 38vw"
-              />
+              {portrait ? (
+                <EditorialImage
+                  image={portrait}
+                  className="h-full w-full"
+                  sizes="(max-width: 1024px) 90vw, 38vw"
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col justify-between border border-ivory/12 bg-ink-2 p-8">
+                  <p className="eyebrow">{settings.tagline}</p>
+                  <p className="font-display text-[clamp(2rem,4vw,3.4rem)] uppercase leading-[0.95] tracking-[0.06em] text-ivory/90">
+                    {settings.artistName}
+                  </p>
+                  <p className="text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                    {settings.location}
+                  </p>
+                </div>
+              )}
             </div>
           </Reveal>
 

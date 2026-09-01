@@ -1,3 +1,4 @@
+import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -7,7 +8,13 @@ import SplitLines from "@/components/ui/SplitLines";
  * ACT I — BEFORE THE BRIDE (§5)
  * The thesis of the whole site, stated in six words.
  */
-export default function ActBefore() {
+const PLATES: [ImageRef, ImageRef, ImageRef] = [
+  { alt: "Bridal portrait", tone: "bronze", seed: 901 },
+  { alt: "Detail study", tone: "ink", seed: 902 },
+  { alt: "Close detail", tone: "champagne", seed: 903 },
+];
+
+export default function ActBefore({ images = PLATES }: { images?: [ImageRef, ImageRef, ImageRef] }) {
   return (
     <section
       className="section-dark relative overflow-hidden py-28 sm:py-40"
@@ -68,7 +75,7 @@ export default function ActBefore() {
                 }}
               >
                 <EditorialImage
-                  image={{ alt: "Detail study — placeholder plate", tone: "ink", seed: 902 }}
+                  image={images[1]}
                   className="h-full w-full"
                   sizes="(max-width: 1024px) 40vw, 20vw"
                   decorative
@@ -84,7 +91,7 @@ export default function ActBefore() {
                 }}
               >
                 <EditorialImage
-                  image={{ alt: "Bridal portrait — placeholder plate", tone: "bronze", seed: 901 }}
+                  image={images[0]}
                   className="h-full w-full"
                   sizes="(max-width: 1024px) 90vw, 40vw"
                   badgeLabel="Placeholder"
@@ -100,7 +107,7 @@ export default function ActBefore() {
                 }}
               >
                 <EditorialImage
-                  image={{ alt: "Close detail — placeholder plate", tone: "champagne", seed: 903 }}
+                  image={images[2]}
                   className="h-full w-full"
                   sizes="(max-width: 1024px) 40vw, 18vw"
                   decorative

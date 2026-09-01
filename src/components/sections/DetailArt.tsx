@@ -5,7 +5,7 @@ import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import { cx } from "@/lib/utils";
-import type { MediaTone } from "@/lib/types";
+import type { ImageRef, MediaTone } from "@/lib/types";
 
 /**
  * THE ART OF THE DETAIL (§20)
@@ -30,7 +30,9 @@ const DETAILS: Array<{
   { key: "jewellery", label: "Jewellery", note: "Set last, and it changes everything set before it.", tone: "bronze", seed: 706 },
 ];
 
-export default function DetailArt() {
+const PLATES: ImageRef[] = DETAILS.map((d) => ({ alt: d.label, tone: d.tone, seed: d.seed }));
+
+export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) {
   const [active, setActive] = useState(0);
 
   return (
@@ -94,7 +96,7 @@ export default function DetailArt() {
                 }}
               >
                 <EditorialImage
-                  image={{ alt: `${d.label} — placeholder plate`, tone: d.tone, seed: d.seed }}
+                  image={images[i] ?? PLATES[i]}
                   className="h-full w-full"
                   sizes="(max-width: 1024px) 92vw, 42vw"
                   decorative

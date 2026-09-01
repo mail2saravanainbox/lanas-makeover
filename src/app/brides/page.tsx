@@ -8,6 +8,7 @@ import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
 import JsonLd from "@/components/ui/JsonLd";
 import ClosingCTA from "@/components/sections/ClosingCTA";
+import FeaturedLooksList from "@/components/sections/FeaturedLooksList";
 
 export const metadata: Metadata = pageMetadata({
   title: "Bride Stories",
@@ -18,7 +19,11 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function BridesPage() {
   const provider = content();
-  const [brides, settings] = await Promise.all([provider.getBrides(), provider.getSiteSettings()]);
+  const [brides, settings, featured] = await Promise.all([
+    provider.getBrides(),
+    provider.getSiteSettings(),
+    provider.getPortfolio({ featured: true, limit: 9 }),
+  ]);
 
   return (
     <>
@@ -39,18 +44,18 @@ export default async function BridesPage() {
         ]}
       />
 
-      {settings.showPlaceholderBadges && (
+      {brides.length === 0 && (
         <div className="shell -mt-6 mb-14">
           <p className="body-base max-w-xl border-l border-champagne/30 pl-5">
-            Sample entries. Real bride stories — with permission and photography — replace these
-            without any change to this page.
+            Individual bride stories are published only with the bride&rsquo;s permission. Until
+            then, this is the featured work.
           </p>
         </div>
       )}
 
       <section aria-label="Bride stories" className="shell pb-28 sm:pb-40">
         {brides.length === 0 ? (
-          <p className="body-lg py-16 text-center">The first stories are being written.</p>
+          <FeaturedLooksList items={featured} />
         ) : (
           <ul className="grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
             {brides.map((b, i) => (

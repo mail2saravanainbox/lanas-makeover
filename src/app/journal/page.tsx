@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { content } from "@/lib/content/provider";
+import { journalCover } from "@/lib/content/slots";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import EditorialImage from "@/components/ui/EditorialImage";
@@ -16,7 +17,9 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function JournalPage() {
-  const posts = await content().getPosts();
+  const all = await content().getPosts();
+  // A different photograph per article — never one bridal image for all (§20).
+  const posts = all.map((p, i) => ({ ...p, cover: journalCover(i, p.cover) }));
   const [lead, ...rest] = posts;
 
   return (

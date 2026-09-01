@@ -6,7 +6,7 @@ import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import { clamp, cx } from "@/lib/utils";
-import type { MediaTone } from "@/lib/types";
+import type { ImageRef, MediaTone } from "@/lib/types";
 
 /**
  * THE SILHOUETTE OF THE BRIDE (§19)
@@ -24,7 +24,9 @@ const LOOKS: Array<{ name: string; note: string; tone: MediaTone; seed: number }
   { name: "Bridal", note: "The silhouette that reads from the back of the hall.", tone: "rose", seed: 806 },
 ];
 
-export default function HairSilhouette() {
+const PLATES: ImageRef[] = LOOKS.map((l) => ({ alt: `${l.name} bridal hair`, tone: l.tone, seed: l.seed }));
+
+export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [p, setP] = useState(0);
 
@@ -112,7 +114,7 @@ export default function HairSilhouette() {
                   }}
                 >
                   <EditorialImage
-                    image={{ alt: `${l.name} bridal hair — placeholder plate`, tone: l.tone, seed: l.seed }}
+                    image={images[i] ?? PLATES[i]}
                     className="h-full w-full"
                     sizes="(max-width: 1024px) 92vw, 45vw"
                     decorative

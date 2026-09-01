@@ -36,6 +36,8 @@ export interface ImageRef {
   seed?: number;
   /** Focal point for art-directed cropping, 0–1. */
   focus?: { x: number; y: number };
+  /** Real blur-up placeholder, generated from the photograph itself. */
+  blurDataURL?: string;
 }
 
 export type PortfolioCategory =
@@ -71,6 +73,13 @@ export interface PortfolioItem {
   weight?: "tall" | "wide" | "full" | "standard";
   tone?: MediaTone;
   seed?: number;
+  /** Intrinsic dimensions of the imported photograph. */
+  width?: number;
+  height?: number;
+  /** Blur-up placeholder generated from the photograph itself. */
+  blurDataURL?: string;
+  /** Manual ordering within the gallery (§19). */
+  sortOrder?: number;
   source: ContentSource;
   /** Optional genuine before/after pair. Never fabricated. */
   beforeAfter?: { before: ImageRef; after: ImageRef };

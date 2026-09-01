@@ -127,10 +127,13 @@ export default function PortfolioGrid({
                       <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.055]">
                         <EditorialImage
                           image={{
-                            src: item.imageUrl,
+                            // Grids use the thumbnail — a 2000px file has no
+                            // business rendering at card size (§13, §34).
+                            src: item.thumbnailUrl ?? item.imageUrl,
                             alt: item.alt,
                             tone: item.tone,
                             seed: item.seed,
+                            blurDataURL: item.blurDataURL,
                           }}
                           className="h-full w-full"
                           sizes="(max-width: 768px) 92vw, (max-width: 1280px) 46vw, 33vw"

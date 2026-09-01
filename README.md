@@ -202,6 +202,74 @@ curl -X POST https://<host>/api/instagram/sync \
 
 ---
 
+## 6a. Adding Lana's photographs (the important one)
+
+The site ships with **no photographs**. Every image is a procedurally generated
+placeholder plate — there is not one stock photo, Unsplash image or AI-generated
+bride anywhere in the repository. Verified: zero references to any stock service,
+zero raster files, zero remote image URLs.
+
+### To fill the entire site with real work
+
+```bash
+# 1. Drop Lana's approved photographs here
+content/incoming/
+    bridal-01.jpg
+    muhurtham-gold-drape.jpg
+    hair-jadai-02.jpg
+    reception-evening-01.jpg
+    bts-morning-kit.jpg
+
+# 2. Run
+npm run import:portfolio
+```
+
+That is the whole process. The filename prefix sets the category
+(`bridal-`, `reception-`, `engagement-`, `hair-`, `editorial-`, `bts-`,
+`beforeafter-`, `party-`); see `content/incoming/README.md` for the full table.
+
+### What the pipeline does
+
+1. **Strips EXIF** — camera, GPS and personal metadata removed.
+2. Writes an optimised **WebP** (max 2000px) plus a **640px thumbnail**.
+3. Generates a real **blur-up placeholder from the photograph itself**.
+4. Derives intrinsic width/height, slug, readable title and descriptive alt text.
+5. Assigns an editorial layout weight from the actual aspect ratio.
+6. **Preserves your curation on every re-run** — `title`, `alt`, `category`,
+   `featured`, `published` and `sortOrder` survive.
+7. Writes `src/content/portfolio/portfolio.json`.
+
+### Where the photographs then appear — automatically
+
+The moment `portfolio.json` contains a published item it replaces the plates
+across the whole site, with **no code change**:
+
+| Slot | Fed from |
+|---|---|
+| Act I — the three parallax layers | bridal, editorial |
+| Act III — the five transformation stages | behind-scenes → editorial → hair → bridal |
+| Act IV — heritage motifs | bridal, hair |
+| The silhouette (hair sequence) | hair |
+| The art of the detail | editorial, bridal, hair |
+| The atelier | behind-scenes, editorial |
+| The final mirror | bridal, editorial |
+| Bridal worlds / services | each world's own category |
+| Journal covers | a *different* photograph per article |
+| Portfolio grid, lightbox, detail pages | everything published |
+
+Grids and WebGL use the **thumbnail**, never the 2000px original (§13, §34).
+
+Two slots are deliberately never auto-filled:
+
+* **The artist portrait.** A photograph of a bride is not a photograph of Lana.
+  Until a real portrait exists, `/about` and the homepage artist act render a
+  typography treatment instead of a stand-in.
+* **Bride stories.** These assert facts about a named person. Every sample entry
+  is `published: false`; the site shows *Featured Bridal Looks* — real work with
+  neutral titles — until permissioned stories are added.
+
+---
+
 ## 7. Content honesty
 
 This is a deliberate architectural feature, not an oversight.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { content } from "@/lib/content/provider";
+import { getImageSlots, journalCover, serviceImage } from "@/lib/content/slots";
 import { pageMetadata, personSchema } from "@/lib/seo";
 import JsonLd from "@/components/ui/JsonLd";
 
@@ -11,6 +12,7 @@ import ActRitual from "@/components/sections/ActRitual";
 import ActHeritage from "@/components/sections/ActHeritage";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import BrideStories from "@/components/sections/BrideStories";
+import FeaturedLooks from "@/components/sections/FeaturedLooks";
 import MorningTimeline from "@/components/sections/MorningTimeline";
 import DetailArt from "@/components/sections/DetailArt";
 import HairSilhouette from "@/components/sections/HairSilhouette";
@@ -36,14 +38,22 @@ export const metadata: Metadata = pageMetadata({ path: "/" });
 export default async function HomePage() {
   const provider = content();
 
-  const [settings, services, brides, posts, testimonials, timeline] = await Promise.all([
+  // Lana's photographs where they exist, plates where they don't (§31).
+  const slots = getImageSlots();
+
+  const [settings, services, brides, posts, testimonials, timeline, featured] = await Promise.all([
     provider.getSiteSettings(),
     provider.getServices(),
     provider.getBrides(),
     provider.getPosts(),
     provider.getTestimonials(),
     provider.getTimeline(),
+    provider.getPortfolio({ featured: true, limit: 6 }),
   ]);
+
+  // Each world shows work from its own category; each article a different image.
+  const worlds = services.slice(0, 6).map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
+  const journal = posts.map((p, i) => ({ ...p, cover: journalCover(i, p.cover) }));
 
   return (
     <>
@@ -57,46 +67,51 @@ export default async function HomePage() {
       />
 
       {/* ACT I — before the bride */}
-      <ActBefore />
+      <ActBefore images={slots.beforeLayers} />
 
       {/* ACT II — the artist */}
-      <ActArtist settings={settings} />
+      <ActArtist settings={settings} portrait={slots.artistPortrait} />
 
       {/* Silk — the camera passes through the cloth */}
       <SilkTransition line="Then the silk. Then the gold. Then the morning." />
 
       {/* ACT III — the ritual */}
-      <ActRitual />
+      <ActRitual images={slots.transformation} />
 
       {/* ACT IV — the heritage */}
-      <ActHeritage />
+      <ActHeritage images={slots.heritage} />
 
       {/* The worlds */}
-      <BridalWorlds services={services.slice(0, 6)} />
+      <BridalWorlds services={worlds} />
 
-      {/* ACT V — the women */}
-      <BrideStories brides={brides.slice(0, 3)} settings={settings} />
+      {/* ACT V — the women. Real stories when they exist (§17); until then,
+          featured bridal looks — genuine work, no invented identity (§16). */}
+      {brides.length > 0 ? (
+        <BrideStories brides={brides.slice(0, 3)} settings={settings} />
+      ) : (
+        <FeaturedLooks items={featured} />
+      )}
 
       {/* Her morning */}
       <MorningTimeline entries={timeline} />
 
       {/* The detail */}
-      <DetailArt />
+      <DetailArt images={slots.detail} />
 
       {/* The silhouette */}
-      <HairSilhouette />
+      <HairSilhouette images={slots.hair} />
 
       {/* The atelier */}
-      <Atelier />
+      <Atelier images={slots.atelier} />
 
       {/* ACT VII — the journal */}
-      <JournalTeaser posts={posts} />
+      <JournalTeaser posts={journal} />
 
       {/* Hidden entirely until real testimonials exist */}
       <Testimonials items={testimonials} />
 
       {/* ACT VIII — the final mirror */}
-      <FinalMirror brand={settings.brandName} cta={settings.bookingCta} />
+      <FinalMirror brand={settings.brandName} cta={settings.bookingCta} image={slots.finalMirror} />
 
       {/* ACT IX — your story */}
       <ClosingCTA settings={settings} />

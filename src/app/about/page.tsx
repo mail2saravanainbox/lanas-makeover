@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { content } from "@/lib/content/provider";
+import { getImageSlots } from "@/lib/content/slots";
 import { breadcrumbSchema, pageMetadata, personSchema } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import EditorialImage from "@/components/ui/EditorialImage";
@@ -23,6 +24,7 @@ export default async function AboutPage() {
     provider.getSiteSettings(),
     provider.getTestimonials(),
   ]);
+  const slots = getImageSlots();
 
   return (
     <>
@@ -54,21 +56,38 @@ export default async function AboutPage() {
         <div className="relative grid gap-14 lg:grid-cols-[0.9fr_1fr] lg:gap-20">
           <ParallaxFrame strength={0.5}>
             <Reveal blur>
-              <div
-                className="relative aspect-[4/5] w-full overflow-hidden"
-                style={{ transform: "translate3d(0, calc(var(--sy) * 22px), 0)" }}
-              >
-                <EditorialImage
-                  image={{
-                    alt: `${settings.artistName} — placeholder plate`,
-                    tone: "ink",
-                    seed: 960,
-                  }}
-                  className="h-full w-full"
-                  sizes="(max-width: 1024px) 92vw, 42vw"
-                  priority
-                />
-              </div>
+              {/* §21 — type, not a stand-in, until a real portrait of Lana exists. */}
+              {slots.artistPortrait ? (
+                <div
+                  className="relative aspect-[4/5] w-full overflow-hidden"
+                  style={{ transform: "translate3d(0, calc(var(--sy) * 22px), 0)" }}
+                >
+                  <EditorialImage
+                    image={slots.artistPortrait}
+                    className="h-full w-full"
+                    sizes="(max-width: 1024px) 92vw, 42vw"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div
+                  className="flex aspect-[4/5] w-full flex-col justify-between border border-ivory/12 bg-ink-2 p-9"
+                  style={{ transform: "translate3d(0, calc(var(--sy) * 22px), 0)" }}
+                >
+                  <p className="eyebrow">{settings.tagline}</p>
+                  <div>
+                    <p className="font-display text-[clamp(2.2rem,4.5vw,3.8rem)] uppercase leading-[0.95] tracking-[0.06em] text-ivory/90">
+                      {settings.artistName}
+                    </p>
+                    <p className="body-base mt-4 max-w-xs">
+                      An artist portrait has not been supplied yet.
+                    </p>
+                  </div>
+                  <p className="text-[0.62rem] uppercase tracking-[0.24em] text-muted">
+                    {settings.location}
+                  </p>
+                </div>
+              )}
             </Reveal>
           </ParallaxFrame>
 

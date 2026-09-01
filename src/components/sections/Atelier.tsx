@@ -1,3 +1,4 @@
+import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -22,7 +23,9 @@ const FRAMES: Array<{
   { label: "Setting the jadai", tone: "champagne", seed: 854, col: "sm:col-span-7", ratio: "aspect-[16/11]" },
 ];
 
-export default function Atelier() {
+const PLATES: ImageRef[] = FRAMES.map((f) => ({ alt: f.label, tone: f.tone, seed: f.seed }));
+
+export default function Atelier({ images = PLATES }: { images?: ImageRef[] }) {
   return (
     <section className="section-dark relative py-28 sm:py-40" aria-labelledby="atelier-title">
       <div className="shell">
@@ -54,7 +57,7 @@ export default function Atelier() {
                     style={{ transform: "translate3d(0, calc(var(--sy) * 16px), 0)" }}
                   >
                     <EditorialImage
-                      image={{ alt: `${f.label} — placeholder plate`, tone: f.tone, seed: f.seed }}
+                      image={images[i] ?? PLATES[i]}
                       className="absolute inset-0 h-full w-full"
                       sizes="(max-width: 640px) 92vw, 46vw"
                       decorative

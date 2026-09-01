@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useDeviceCapability } from "@/components/ui/useDeviceCapability";
-import PlaceholderPlate from "@/components/ui/PlaceholderPlate";
 import { clamp, cx } from "@/lib/utils";
-import type { MediaTone } from "@/lib/types";
+import type { ImageRef, MediaTone } from "@/lib/types";
+import EditorialImage from "@/components/ui/EditorialImage";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -69,7 +69,9 @@ const STAGES: Stage[] = [
   },
 ];
 
-export default function ActRitual() {
+const PLATES: ImageRef[] = STAGES.map((s) => ({ alt: s.name, tone: s.tone, seed: s.seed }));
+
+export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) {
   const cap = useDeviceCapability();
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -137,7 +139,12 @@ export default function ActRitual() {
                     transition: "opacity 320ms linear, transform 600ms cubic-bezier(0.16,1,0.3,1)",
                   }}
                 >
-                  <PlaceholderPlate tone={s.tone} seed={s.seed} className="h-full w-full" />
+                  <EditorialImage
+                    image={images[i] ?? PLATES[i]}
+                    className="h-full w-full"
+                    sizes="100vw"
+                    decorative
+                  />
                 </div>
               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />

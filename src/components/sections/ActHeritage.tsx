@@ -1,3 +1,4 @@
+import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -38,7 +39,9 @@ const MOTIFS = [
   },
 ];
 
-export default function ActHeritage() {
+const PLATES: ImageRef[] = MOTIFS.map((m) => ({ alt: m.name, tone: m.tone, seed: m.seed }));
+
+export default function ActHeritage({ images = PLATES }: { images?: ImageRef[] }) {
   return (
     <section className="section-dark relative overflow-hidden py-28 sm:py-40" aria-labelledby="heritage-title">
       <KolamGrid
@@ -85,7 +88,7 @@ export default function ActHeritage() {
                     style={{ transform: "translate3d(0, calc(var(--sy) * 18px), 0)" }}
                   >
                     <EditorialImage
-                      image={{ alt: `${m.name} — placeholder plate`, tone: m.tone, seed: m.seed }}
+                      image={images[i] ?? PLATES[i]}
                       className="h-full w-full"
                       sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 22vw"
                       decorative
