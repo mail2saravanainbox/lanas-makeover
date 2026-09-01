@@ -11,6 +11,12 @@ import JsonLd from "@/components/ui/JsonLd";
 import JournalViewTracker from "@/components/journal/JournalViewTracker";
 import { formatDate } from "@/lib/utils";
 
+/**
+ * Only published slugs get a page; anything else is a real 404 rather than a
+ * soft-404. See src/app/README-loading.md.
+ */
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const posts = await content().getPosts();
   return posts.map((p) => ({ slug: p.slug }));

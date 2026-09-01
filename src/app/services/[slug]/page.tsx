@@ -12,6 +12,12 @@ import ClosingCTA from "@/components/sections/ClosingCTA";
 
 export const revalidate = 3600;
 
+/**
+ * Only published slugs get a page; anything else is a real 404 rather than a
+ * soft-404. See src/app/README-loading.md.
+ */
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const services = await content().getServices();
   return services.map((s) => ({ slug: s.slug }));

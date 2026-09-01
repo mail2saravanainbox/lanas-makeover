@@ -9,6 +9,12 @@ import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import JsonLd from "@/components/ui/JsonLd";
 
+/**
+ * Only published slugs get a page; anything else is a real 404 rather than a
+ * soft-404. See src/app/README-loading.md.
+ */
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const brides = await content().getBrides();
   return brides.map((b) => ({ slug: b.slug }));
