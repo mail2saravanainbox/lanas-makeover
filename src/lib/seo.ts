@@ -68,15 +68,13 @@ export function pageMetadata({
   const desc = description ?? seoConfig.defaultDescription;
 
   /**
-   * Only pin an image when a real one is supplied. Left undefined, Next's
-   * file-based convention takes over: a route with its own opengraph-image.tsx
-   * uses that card, and every other route inherits the root one. Setting it
-   * here unconditionally would override — and silently discard — the
-   * per-story and per-article cards (§48).
+   * Every page gets a card, always. Routes with their own generated card pass
+   * its URL in explicitly (see the bride, journal and bridal-world routes) —
+   * the file convention is NOT relied on to cascade, because it does not once
+   * a route supplies its own `openGraph` object.
    */
-  const ogImages = image
-    ? [{ url: image, width: 1200, height: 630, alt: title ?? seoConfig.siteName }]
-    : undefined;
+  const ogImage = image ?? absoluteUrl("/opengraph-image");
+  const ogImages = [{ url: ogImage, width: 1200, height: 630, alt: title ?? seoConfig.siteName }];
 
   return {
     title: title ?? seoConfig.defaultTitle,
@@ -92,14 +90,14 @@ export function pageMetadata({
       title: title ?? seoConfig.defaultTitle,
       description: desc,
       locale: seoConfig.locale,
-      ...(ogImages ? { images: ogImages } : {}),
+      images: ogImages,
       ...(type === "article" ? { publishedTime, modifiedTime, tags } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: title ?? seoConfig.defaultTitle,
       description: desc,
-      ...(image ? { images: [image] } : {}),
+      images: [ogImage],
       ...(seoConfig.twitterHandle ? { creator: seoConfig.twitterHandle } : {}),
     },
   };

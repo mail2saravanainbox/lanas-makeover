@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
-import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { absoluteUrl, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import Reveal from "@/components/ui/Reveal";
@@ -30,7 +30,7 @@ export async function generateMetadata({
     title: `${service.name} — ${service.eyebrow}`,
     description: service.summary,
     path: `/services/${service.slug}`,
-    image: service.image.src,
+    image: service.image.src ?? absoluteUrl(`/services/${service.slug}/opengraph-image`),
   });
 }
 

@@ -29,7 +29,10 @@ export async function generateMetadata({
     title: post.seo?.title ?? post.title,
     description: post.seo?.description ?? post.excerpt,
     path: post.seo?.canonical ?? `/journal/${post.slug}`,
-    image: post.seo?.ogImage ?? post.cover.src,
+    image:
+      post.seo?.ogImage ??
+      post.cover.src ??
+      absoluteUrl(`/journal/${post.slug}/opengraph-image`),
     type: "article",
     publishedTime: post.publishedAt,
     modifiedTime: post.updatedAt,

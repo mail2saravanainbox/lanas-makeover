@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
-import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { absoluteUrl, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -27,8 +27,9 @@ export async function generateMetadata({
     title: bride.name,
     description: bride.excerpt,
     path: `/brides/${bride.slug}`,
-    // §48 — a bride story's OG image is that bride's featured image.
-    image: bride.hero.src,
+    // §48 — the bride's own photograph when it exists, otherwise the card
+    // generated for this story by ./opengraph-image.tsx.
+    image: bride.hero.src ?? absoluteUrl(`/brides/${bride.slug}/opengraph-image`),
     type: "article",
   });
 }
