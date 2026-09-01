@@ -22,7 +22,7 @@ export default function ActArtist({
   portrait?: ImageRef | null;
 }) {
   return (
-    <section className="section-dark relative overflow-hidden py-28 sm:py-40" aria-labelledby="artist-title">
+    <section className="section-dark relative overflow-hidden py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="artist-title">
       <div className="shell grid items-start gap-16 lg:grid-cols-[0.85fr_1fr] lg:gap-24">
         <ParallaxFrame className="relative order-2 lg:order-1" strength={0.7}>
           <Reveal blur>

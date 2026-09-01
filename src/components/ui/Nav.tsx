@@ -77,7 +77,7 @@ export default function Nav({
 
       <header
         className={cx(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)]",
           condensed
             ? "border-b border-ivory/10 bg-ink/70 backdrop-blur-xl"
             : "border-b border-transparent bg-transparent",
@@ -89,7 +89,7 @@ export default function Nav({
         >
           <Link
             href="/"
-            className="font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-500 hover:text-champagne sm:text-[1.05rem]"
+            className="font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-[1.05rem]"
           >
             {brand}
           </Link>
@@ -103,7 +103,7 @@ export default function Nav({
                     href={link.href}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-                      "link-wipe block py-3 text-[0.8rem] font-medium uppercase tracking-[0.26em] transition-colors duration-500",
+                      "link-wipe block py-3 text-[0.8rem] font-medium uppercase tracking-[0.26em] transition-colors duration-[var(--d-base)]",
                       active ? "text-champagne" : "text-ivory/70 hover:text-ivory",
                     )}
                   >
@@ -128,11 +128,11 @@ export default function Nav({
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={menuOpen}
-              className="group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ivory/20 transition-colors duration-500 hover:border-champagne/60 lg:hidden"
+              className="group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ivory/20 transition-colors duration-[var(--d-base)] hover:border-champagne/60 lg:hidden"
             >
               <span className="relative block h-[9px] w-[18px]">
-                <span className="absolute left-0 top-0 h-px w-full bg-ivory transition-transform duration-500 group-hover:translate-y-[1px]" />
-                <span className="absolute bottom-0 left-0 h-px w-full bg-ivory transition-transform duration-500 group-hover:-translate-y-[1px]" />
+                <span className="absolute left-0 top-0 h-px w-full bg-ivory transition-transform duration-[var(--d-base)] group-hover:translate-y-[1px]" />
+                <span className="absolute bottom-0 left-0 h-px w-full bg-ivory transition-transform duration-[var(--d-base)] group-hover:-translate-y-[1px]" />
               </span>
             </button>
           </div>

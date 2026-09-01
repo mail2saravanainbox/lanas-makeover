@@ -60,7 +60,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                     <li key={l.href}>
                       <Link
                         href={l.href}
-                        className="link-wipe text-sm text-ivory/65 transition-colors duration-500 hover:text-ivory"
+                        className="link-wipe text-sm text-ivory/65 transition-colors duration-[var(--d-base)] hover:text-ivory"
                       >
                         {l.label}
                       </Link>
@@ -86,7 +86,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             <li>
               <InstagramLink
                 href={settings.instagram}
-                className="link-wipe transition-colors duration-500 hover:text-ivory"
+                className="link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
                 placement="footer"
               >
                 {settings.instagramHandle}

@@ -17,7 +17,7 @@ export default function BrideStories({
   if (brides.length === 0) return null;
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="brides-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="brides-title">
       <div className="shell">
         <Reveal>
           <p className="eyebrow mb-8">08 — The women</p>
@@ -53,7 +53,7 @@ export default function BrideStories({
                         className="relative aspect-[4/5] w-full overflow-hidden"
                         style={{ transform: "translate3d(0, calc(var(--sy) * 26px), 0)" }}
                       >
-                        <div className="absolute inset-[-4%] transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                        <div className="absolute inset-[-4%] transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                           <EditorialImage
                             image={b.hero}
                             className="h-full w-full"

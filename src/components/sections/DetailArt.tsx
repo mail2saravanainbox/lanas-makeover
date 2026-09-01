@@ -36,7 +36,7 @@ export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) 
   const [active, setActive] = useState(0);
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="detail-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="detail-title">
       <div className="shell">
         <Reveal>
           <p className="eyebrow mb-8">10 — The detail</p>
@@ -58,11 +58,11 @@ export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) 
                   onFocus={() => setActive(i)}
                   onClick={() => setActive(i)}
                   aria-pressed={active === i}
-                  className="group flex w-full items-baseline justify-between gap-6 py-6 text-left transition-colors duration-500"
+                  className="group flex w-full items-baseline justify-between gap-6 py-6 text-left transition-colors duration-[var(--d-base)]"
                 >
                   <span
                     className={cx(
-                      "font-display text-[clamp(1.8rem,4vw,3rem)] uppercase leading-none tracking-[0.04em] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                      "font-display text-[clamp(1.8rem,4vw,3rem)] uppercase leading-none tracking-[0.04em] transition-all duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)]",
                       active === i
                         ? "translate-x-2 text-ivory"
                         : "translate-x-0 text-inactive group-hover:text-ivory/70",
@@ -72,7 +72,7 @@ export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) 
                   </span>
                   <span
                     className={cx(
-                      "hidden max-w-[22ch] shrink-0 text-right text-xs leading-relaxed transition-opacity duration-700 sm:block",
+                      "hidden max-w-[22ch] shrink-0 text-right text-xs leading-relaxed transition-opacity duration-[var(--d-base)] sm:block",
                       active === i ? "text-muted opacity-100" : "opacity-0",
                     )}
                   >
@@ -88,7 +88,7 @@ export default function DetailArt({ images = PLATES }: { images?: ImageRef[] }) 
               <div
                 key={d.key}
                 aria-hidden={active !== i}
-                className="absolute inset-0 transition-[opacity,transform,filter] duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="absolute inset-0 transition-[opacity,transform,filter] duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)]"
                 style={{
                   opacity: active === i ? 1 : 0,
                   transform: active === i ? "scale(1)" : "scale(1.07)",

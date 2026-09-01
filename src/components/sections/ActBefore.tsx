@@ -17,7 +17,7 @@ const PLATES: [ImageRef, ImageRef, ImageRef] = [
 export default function ActBefore({ images = PLATES }: { images?: [ImageRef, ImageRef, ImageRef] }) {
   return (
     <section
-      className="section-dark relative overflow-hidden py-28 sm:py-40"
+      className="section-dark relative overflow-hidden py-[var(--s-12)] sm:py-[var(--s-16)]"
       aria-labelledby="act-before-title"
     >
       {/* Oversized ghost word — depth cue, not decoration */}

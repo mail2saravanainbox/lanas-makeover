@@ -33,7 +33,7 @@ export default function WhatsAppButton({ href }: { href: string | null }) {
       className={[
         "fixed bottom-5 right-5 z-[55] flex h-12 w-12 items-center justify-center rounded-full",
         "border border-ivory/15 bg-ink-2/85 text-ivory/85 backdrop-blur-xl",
-        "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        "transition-all duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)]",
         "hover:border-champagne/50 hover:text-champagne",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0",
       ].join(" ")}

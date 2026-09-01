@@ -15,7 +15,7 @@ export default function MorningTimeline({ entries }: { entries: TimelineEntry[] 
   if (entries.length === 0) return null;
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="morning-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="morning-title">
       <div className="shell">
         <div className="grid gap-16 lg:grid-cols-[0.85fr_1fr] lg:gap-24">
           <div className="lg:sticky lg:top-32 lg:self-start">

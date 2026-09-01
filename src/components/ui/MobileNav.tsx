@@ -79,12 +79,12 @@ export default function MobileNav({
     >
       {/* Curtain */}
       <div
-        className="absolute inset-0 bg-ink transition-[clip-path] duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+        className="absolute inset-0 bg-ink transition-[clip-path] duration-[var(--d-slow)] ease-[cubic-bezier(0.65,0,0.35,1)]"
         style={{ clipPath: open ? "inset(0 0 0 0)" : "inset(0 0 100% 0)" }}
       />
 
       <div
-        className="relative flex h-full flex-col transition-opacity duration-500"
+        className="relative flex h-full flex-col transition-opacity duration-[var(--d-base)]"
         style={{ opacity: open ? 1 : 0, transitionDelay: open ? "260ms" : "0ms" }}
       >
         <div className="shell flex h-[var(--nav-h)] shrink-0 items-center justify-between">
@@ -96,7 +96,7 @@ export default function MobileNav({
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/20 text-ivory transition-colors duration-500 hover:border-champagne/60"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/20 text-ivory transition-colors duration-[var(--d-base)] hover:border-champagne/60"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
               <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1" fill="none" />
@@ -109,7 +109,7 @@ export default function MobileNav({
             {links.map((link, i) => (
               <li key={link.href} className="line-mask">
                 <span
-                  className="block transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  className="block transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)]"
                   style={{
                     transform: open ? "none" : "translate3d(0,105%,0)",
                     transitionDelay: open ? `${320 + i * 70}ms` : "0ms",

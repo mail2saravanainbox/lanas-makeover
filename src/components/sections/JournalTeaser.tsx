@@ -11,7 +11,7 @@ export default function JournalTeaser({ posts }: { posts: BlogPost[] }) {
   const featured = posts.slice(0, 3);
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="journal-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="journal-title">
       <div className="shell">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
@@ -38,7 +38,7 @@ export default function JournalTeaser({ posts }: { posts: BlogPost[] }) {
               <Reveal delay={i * 130}>
                 <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
-                    <div className="absolute inset-0 transition-transform duration-[1300ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
+                    <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
                       <EditorialImage
                         image={p.cover}
                         className="h-full w-full"
@@ -50,7 +50,7 @@ export default function JournalTeaser({ posts }: { posts: BlogPost[] }) {
                   <p className="eyebrow mt-6">
                     {p.category} · {formatDate(p.publishedAt)}
                   </p>
-                  <h3 className="mt-4 font-display text-2xl leading-snug text-ivory transition-colors duration-500 group-hover:text-champagne">
+                  <h3 className="mt-4 font-display text-2xl leading-snug text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                     {p.title}
                   </h3>
                   <p className="body-base mt-3 line-clamp-3">{p.excerpt}</p>

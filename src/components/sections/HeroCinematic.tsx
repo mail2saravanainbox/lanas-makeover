@@ -163,7 +163,7 @@ export default function HeroCinematic({
             {/* The wordmark is the brand's name, not the page's subject. The
                 H1 below carries what this business actually is — the one
                 sentence a search result should be able to quote. */}
-            <p className="display-xl uppercase leading-[0.9] text-ivory">
+            <p className="display-xl wordmark-mobile uppercase leading-[0.9] text-ivory">
               {brand.replace(/'s/i, "’s")}
             </p>
             <h1 className="eyebrow mt-6 text-champagne/85">
@@ -185,7 +185,7 @@ export default function HeroCinematic({
           <div
             aria-hidden="true"
             className={cx(
-              "absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 transition-opacity duration-700",
+              "absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 transition-opacity duration-[var(--d-base)]",
             )}
             style={{ opacity: reduced ? 0 : clamp(1 - P * 4) }}
           >

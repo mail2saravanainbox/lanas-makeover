@@ -29,7 +29,7 @@ export default function FeaturedLooksList({ items }: { items: PortfolioItem[] })
                   className="relative aspect-[3/4] w-full overflow-hidden"
                   style={{ transform: "translate3d(0, calc(var(--sy) * 20px), 0)" }}
                 >
-                  <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                  <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                     <EditorialImage
                       image={{
                         src: item.thumbnailUrl ?? item.imageUrl,
@@ -45,7 +45,7 @@ export default function FeaturedLooksList({ items }: { items: PortfolioItem[] })
                 </div>
               </ParallaxFrame>
               <p className="eyebrow mt-6">{item.category.replace("-", " ")}</p>
-              <h2 className="mt-3 font-display text-2xl text-ivory transition-colors duration-500 group-hover:text-champagne">
+              <h2 className="mt-3 font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                 {item.title}
               </h2>
             </Link>

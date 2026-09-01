@@ -27,7 +27,7 @@ const PLATES: ImageRef[] = FRAMES.map((f) => ({ alt: f.label, tone: f.tone, seed
 
 export default function Atelier({ images = PLATES }: { images?: ImageRef[] }) {
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="atelier-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="atelier-title">
       <div className="shell">
         <div className="max-w-2xl">
           <Reveal>

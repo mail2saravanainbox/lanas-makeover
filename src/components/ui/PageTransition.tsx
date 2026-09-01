@@ -40,7 +40,7 @@ export default function PageTransition({ brand }: { brand: string }) {
         clipPath: playing ? "inset(0 0 0 0)" : "inset(0 0 100% 0)",
         transition: playing
           ? "none"
-          : "clip-path 850ms cubic-bezier(0.65, 0, 0.35, 1)",
+          : "clip-path var(--d-slow) var(--ease-veil)",
         backgroundColor: "var(--color-ink)",
         visibility: playing ? "visible" : undefined,
       }}
@@ -49,7 +49,7 @@ export default function PageTransition({ brand }: { brand: string }) {
         className="font-display text-[0.8rem] uppercase tracking-[0.4em] text-champagne"
         style={{
           opacity: playing ? 1 : 0,
-          transition: "opacity 420ms ease",
+          transition: "opacity var(--d-base) ease",
         }}
       >
         {brand}

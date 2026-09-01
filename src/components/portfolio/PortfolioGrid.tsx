@@ -131,7 +131,7 @@ export default function PortfolioGrid({
                   }}
                   aria-pressed={filter === f.key}
                   className={cx(
-                    "link-wipe text-[0.75rem] uppercase tracking-[0.26em] transition-colors duration-500",
+                    "link-wipe text-[0.75rem] uppercase tracking-[0.26em] transition-colors duration-[var(--d-base)]",
                     filter === f.key ? "text-champagne" : "text-ivory/55 hover:text-ivory",
                   )}
                 >
@@ -166,7 +166,7 @@ export default function PortfolioGrid({
                       className="annotate group relative block h-full w-full overflow-hidden"
                       style={{ transform: "translate3d(0, calc(var(--sy) * 18px), 0)" }}
                     >
-                      <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.055]">
+                      <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.055]">
                         <EditorialImage
                           image={{
                             // Grids use the thumbnail — a 2000px file has no
@@ -183,9 +183,9 @@ export default function PortfolioGrid({
                         />
                       </div>
 
-                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-focus-visible:opacity-100" />
+                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent opacity-0 transition-opacity duration-[var(--d-base)] group-hover:opacity-100 group-focus-visible:opacity-100" />
 
-                      <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 p-5 text-left opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 p-5 text-left opacity-0 transition-all duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                         <span className="eyebrow block !text-champagne/80">
                           {item.category.replace("-", " ")}
                         </span>

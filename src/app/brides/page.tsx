@@ -53,7 +53,7 @@ export default async function BridesPage() {
         </div>
       )}
 
-      <section aria-label="Bride stories" className="shell pb-28 sm:pb-40">
+      <section aria-label="Bride stories" className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         {brides.length === 0 ? (
           <FeaturedLooksList items={featured} />
         ) : (
@@ -67,7 +67,7 @@ export default async function BridesPage() {
                         className="relative aspect-[3/4] w-full overflow-hidden"
                         style={{ transform: "translate3d(0, calc(var(--sy) * 20px), 0)" }}
                       >
-                        <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                        <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                           <EditorialImage
                             image={b.hero}
                             className="h-full w-full"
@@ -80,7 +80,7 @@ export default async function BridesPage() {
                     <p className="eyebrow mt-6">
                       {b.weddingType} · {b.location}
                     </p>
-                    <h2 className="mt-3 font-display text-2xl text-ivory transition-colors duration-500 group-hover:text-champagne">
+                    <h2 className="mt-3 font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                       {b.name}
                     </h2>
                     <p className="body-base mt-3 line-clamp-3">{b.excerpt}</p>

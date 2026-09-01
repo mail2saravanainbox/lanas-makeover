@@ -44,13 +44,13 @@ export default async function JournalPage() {
       {posts.length === 0 ? (
         <p className="shell body-lg pb-40 text-center">The first articles are being written.</p>
       ) : (
-        <div className="shell pb-28 sm:pb-40">
+        <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
           {/* Lead article */}
           <Reveal blur>
             <Link href={`/journal/${lead.slug}`} data-cursor="read" className="group block">
               <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
                 <div className="relative aspect-[16/10] w-full overflow-hidden">
-                  <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]">
+                  <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]">
                     <EditorialImage
                       image={lead.cover}
                       className="h-full w-full"
@@ -64,7 +64,7 @@ export default async function JournalPage() {
                   <p className="eyebrow mb-5">
                     {lead.category} · {formatDate(lead.publishedAt)} · {lead.readingMinutes} min
                   </p>
-                  <h2 className="display-sm text-ivory transition-colors duration-500 group-hover:text-champagne">
+                  <h2 className="display-sm text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                     {lead.title}
                   </h2>
                   <p className="body-lg mt-6 max-w-xl">{lead.excerpt}</p>
@@ -83,7 +83,7 @@ export default async function JournalPage() {
                   <Reveal delay={(i % 3) * 120}>
                     <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
                       <div className="relative aspect-[4/3] w-full overflow-hidden">
-                        <div className="absolute inset-0 transition-transform duration-[1300ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
+                        <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
                           <EditorialImage
                             image={p.cover}
                             className="h-full w-full"
@@ -95,7 +95,7 @@ export default async function JournalPage() {
                       <p className="eyebrow mt-6">
                         {p.category} · {formatDate(p.publishedAt)}
                       </p>
-                      <h2 className="mt-3 font-display text-2xl leading-snug text-ivory transition-colors duration-500 group-hover:text-champagne">
+                      <h2 className="mt-3 font-display text-2xl leading-snug text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                         {p.title}
                       </h2>
                       <p className="body-base mt-3 line-clamp-3">{p.excerpt}</p>

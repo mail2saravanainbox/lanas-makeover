@@ -162,7 +162,7 @@ export default async function PortfolioItemPage({
       </section>
 
       {related.length > 0 && (
-        <section aria-labelledby="related-title" className="pb-28 sm:pb-40">
+        <section aria-labelledby="related-title" className="pb-[var(--s-12)] sm:pb-[var(--s-16)]">
           <div className="shell mb-12">
             <h2 id="related-title" className="display-sm text-ivory">
               More from this world

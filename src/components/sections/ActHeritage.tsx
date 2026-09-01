@@ -106,7 +106,7 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
         cells={7}
       />
 
-      <div className="shell relative z-10 pb-16 pt-28 sm:pt-40">
+      <div className="shell relative z-10 pb-16 pt-[var(--s-12)] sm:pt-[var(--s-16)]">
         <Reveal>
           <p className="eyebrow mb-8">06 — The Tamil soul</p>
         </Reveal>
@@ -144,7 +144,7 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
                 key={m.name}
                 aria-hidden={!on}
                 className="absolute inset-0"
-                style={{ opacity: on ? 1 : 0, transition: "opacity 500ms linear" }}
+                style={{ opacity: on ? 1 : 0, transition: "opacity var(--d-base) linear" }}
               >
                 {/* MATERIAL — the close-up */}
                 <div

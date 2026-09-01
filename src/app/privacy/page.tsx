@@ -29,7 +29,7 @@ export default async function PrivacyPage() {
         ]}
       />
 
-      <div className="shell-narrow space-y-8 pb-28 sm:pb-40">
+      <div className="shell-narrow space-y-8 pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <p className="body-base">
           Last updated when this site was built. This page describes what the website does with
           information. It is written in plain language and is not a substitute for legal advice.

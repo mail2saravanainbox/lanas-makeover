@@ -12,7 +12,7 @@ export default function Testimonials({ items }: { items: Testimonial[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="testimonials-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="testimonials-title">
       <div className="shell">
         <Reveal>
           <p className="eyebrow mb-8">12 — In their words</p>

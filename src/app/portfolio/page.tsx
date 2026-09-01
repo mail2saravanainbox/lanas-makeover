@@ -41,7 +41,7 @@ export default async function PortfolioPage() {
         ]}
       />
 
-      <section aria-label="Portfolio gallery" className="pb-28 sm:pb-40">
+      <section aria-label="Portfolio gallery" className="pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <PortfolioGrid items={items} />
       </section>
 

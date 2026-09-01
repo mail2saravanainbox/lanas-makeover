@@ -154,7 +154,7 @@ export default async function JournalArticlePage({
       </article>
 
       {related.length > 0 && (
-        <section aria-labelledby="related-articles" className="shell pb-28 sm:pb-40">
+        <section aria-labelledby="related-articles" className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
           <h2 id="related-articles" className="display-sm mb-10 text-ivory">
             Keep reading
           </h2>
@@ -163,7 +163,7 @@ export default async function JournalArticlePage({
               <li key={p.slug}>
                 <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
-                    <div className="absolute inset-0 transition-transform duration-[1300ms] group-hover:scale-105">
+                    <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] group-hover:scale-105">
                       <EditorialImage
                         image={p.cover}
                         className="h-full w-full"

@@ -38,7 +38,7 @@ export default async function FaqPage() {
         ]}
       />
 
-      <div className="shell pb-28 sm:pb-40">
+      <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <dl className="max-w-3xl divide-y divide-ivory/10 border-y border-ivory/10">
           {faqs.map((f, i) => (
             <div key={f.id} className="py-9">

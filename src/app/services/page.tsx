@@ -56,7 +56,7 @@ export default async function ServicesPage() {
               <li key={d.slug}>
                 <Link
                   href={`/${d.slug}`}
-                  className="link-wipe font-display text-2xl text-ivory transition-colors duration-500 hover:text-champagne"
+                  className="link-wipe font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
                 >
                   {d.eyebrow}
                 </Link>
@@ -66,7 +66,7 @@ export default async function ServicesPage() {
         </Reveal>
       </div>
 
-      <div className="shell pb-28 sm:pb-40">
+      <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <ul className="space-y-28 sm:space-y-40">
           {services.map((s, i) => (
             <li key={s.slug} id={s.slug} className="scroll-mt-32">

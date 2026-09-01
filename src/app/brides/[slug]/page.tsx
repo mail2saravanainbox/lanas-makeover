@@ -168,7 +168,7 @@ export default async function BrideStoryPage({
       </article>
 
       {others.length > 0 && (
-        <section aria-labelledby="more-brides" className="shell pb-28 sm:pb-40">
+        <section aria-labelledby="more-brides" className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
           <h2 id="more-brides" className="display-sm mb-10 text-ivory">
             More stories
           </h2>
@@ -177,7 +177,7 @@ export default async function BrideStoryPage({
               <li key={b.slug}>
                 <Link href={`/brides/${b.slug}`} data-cursor="read" className="group block">
                   <div className="relative aspect-[16/10] w-full overflow-hidden">
-                    <div className="absolute inset-0 transition-transform duration-[1300ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                    <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                       <EditorialImage
                         image={b.hero}
                         className="h-full w-full"

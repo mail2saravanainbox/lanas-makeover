@@ -10,7 +10,7 @@ export default function BridalWorlds({ services }: { services: Service[] }) {
   if (services.length === 0) return null;
 
   return (
-    <section className="section-dark relative py-28 sm:py-40" aria-labelledby="worlds-title">
+    <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="worlds-title">
       <div className="shell">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>

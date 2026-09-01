@@ -87,7 +87,7 @@ export default function Cursor() {
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[70]">
       <div
         ref={ringRef}
-        className="absolute left-0 top-0 flex items-center justify-center rounded-full border border-ivory/45 transition-[width,height,background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
+        className="absolute left-0 top-0 flex items-center justify-center rounded-full border border-ivory/45 transition-[width,height,background-color,border-color] duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
         style={{
           width: label ? 82 : down ? 26 : 34,
           height: label ? 82 : down ? 26 : 34,

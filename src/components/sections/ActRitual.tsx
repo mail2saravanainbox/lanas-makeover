@@ -143,7 +143,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                   style={{
                     opacity: clamp(1 - Math.abs(exact - i)),
                     transform: `scale(${(1 + Math.abs(exact - i) * 0.045).toFixed(3)})`,
-                    transition: "opacity 320ms linear, transform 600ms cubic-bezier(0.16,1,0.3,1)",
+                    transition: "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}
                 >
                   <EditorialImage
@@ -167,7 +167,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                   <li key={s.index} className="flex items-baseline gap-3">
                     <span
                       className={cx(
-                        "font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-500",
+                        "font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-[var(--d-base)]",
                         on ? "text-champagne" : "text-inactive",
                       )}
                     >
@@ -175,7 +175,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                     </span>
                     <span
                       className={cx(
-                        "font-display text-lg uppercase tracking-[0.22em] transition-all duration-700 sm:text-xl",
+                        "font-display text-lg uppercase tracking-[0.22em] transition-all duration-[var(--d-base)] sm:text-xl",
                         on ? "text-ivory opacity-100" : "text-inactive opacity-70",
                       )}
                     >
@@ -190,7 +190,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
               <p
                 key={active}
                 className="display-sm text-balance text-ivory/90"
-                style={{ animation: "stage-in 900ms cubic-bezier(0.16,1,0.3,1) both" }}
+                style={{ animation: "stage-in var(--d-slow) var(--ease-silk) both" }}
               >
                 {STAGES[active].note}
               </p>

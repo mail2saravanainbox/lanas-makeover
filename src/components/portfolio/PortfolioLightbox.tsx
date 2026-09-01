@@ -88,13 +88,13 @@ export default function PortfolioLightbox({
         aria-label="Close image"
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-ink/95 backdrop-blur-xl"
-        style={{ animation: "lb-veil 500ms ease both" }}
+        style={{ animation: "lb-veil var(--d-base) ease both" }}
         tabIndex={-1}
       />
 
       <div
         className="relative z-10 flex h-full w-full max-w-6xl flex-col px-4 py-6 sm:px-8 sm:py-10"
-        style={{ animation: "lb-in 750ms cubic-bezier(0.16,1,0.3,1) both" }}
+        style={{ animation: "lb-in var(--d-base) var(--ease-silk) both" }}
       >
         <div className="flex shrink-0 items-start justify-between gap-6">
           <div>
@@ -106,7 +106,7 @@ export default function PortfolioLightbox({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-500 hover:border-champagne"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-[var(--d-base)] hover:border-champagne"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
               <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1" fill="none" />
@@ -154,7 +154,7 @@ export default function PortfolioLightbox({
               type="button"
               onClick={() => go(-1)}
               aria-label="Previous image"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-500 hover:border-champagne"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-[var(--d-base)] hover:border-champagne"
             >
               <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
                 <path d="M15 5H1m0 0l4-4M1 5l4 4" stroke="currentColor" fill="none" />
@@ -164,7 +164,7 @@ export default function PortfolioLightbox({
               type="button"
               onClick={() => go(1)}
               aria-label="Next image"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-500 hover:border-champagne"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/25 text-ivory transition-colors duration-[var(--d-base)] hover:border-champagne"
             >
               <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
                 <path d="M1 5h14m0 0l-4-4m4 4l-4 4" stroke="currentColor" fill="none" />

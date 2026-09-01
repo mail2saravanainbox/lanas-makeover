@@ -25,7 +25,7 @@ export default function TermsPage() {
         ]}
       />
 
-      <div className="shell-narrow space-y-8 pb-28 sm:pb-40">
+      <div className="shell-narrow space-y-8 pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <h2 className="display-sm text-ivory">Use of this website</h2>
         <p className="body-base">
           This website presents the work and services of Lana&apos;s Makeover. Its content is

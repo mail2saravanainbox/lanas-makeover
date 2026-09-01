@@ -82,7 +82,7 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
                   <li key={l.name}>
                     <span
                       className={cx(
-                        "text-[0.8rem] uppercase tracking-[0.24em] transition-colors duration-500",
+                        "text-[0.8rem] uppercase tracking-[0.24em] transition-colors duration-[var(--d-base)]",
                         i === active ? "text-champagne" : "text-inactive",
                       )}
                     >
@@ -92,7 +92,7 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
                 ))}
               </ol>
 
-              <p key={active} className="body-base mt-8 max-w-md" style={{ animation: "hair-in 800ms cubic-bezier(0.16,1,0.3,1) both" }}>
+              <p key={active} className="body-base mt-8 max-w-md" style={{ animation: "hair-in var(--d-slow) var(--ease-silk) both" }}>
                 {LOOKS[active].note}
               </p>
 
@@ -110,7 +110,7 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
                   style={{
                     opacity: clamp(1 - Math.abs(exact - i) * 1.15),
                     transform: `scale(${(1 + Math.abs(exact - i) * 0.06).toFixed(3)}) translateY(${((exact - i) * 3).toFixed(2)}%)`,
-                    transition: "opacity 240ms linear, transform 700ms cubic-bezier(0.16,1,0.3,1)",
+                    transition: "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}
                 >
                   <EditorialImage

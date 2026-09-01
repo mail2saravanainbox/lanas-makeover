@@ -28,20 +28,55 @@
   --color-indigo: #4a4d63;
 
   /* ── South Indian accent language (§17) ────────────────────────────────
-     Used sparingly, as accents only. The photography supplies the colour;
-     these exist so a rule, a hover state or a label can carry a note of the
-     ceremony without the page becoming a wedding invitation. */
+     Two survive. maroon, antique-gold and temple-green were defined and never
+     used once — a palette nobody painted with.
+       · silk-red is spent in exactly ONE place: the dot on the active nav
+         link. A single note of the ceremony, not a theme.
+       · jasmine is the annotation label's ground. */
   --color-silk-red: #8d2f2a;
-  --color-maroon: #5c2320;
-  --color-antique-gold: #b08d4f;
   --color-jasmine: #f7f3e9;
-  --color-temple-green: #2f4034;
 
   --font-display: var(--font-cormorant), "Cormorant Garamond", "Times New Roman", serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-veil: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Motion scale ──────────────────────────────────────────────────────
+     Three durations, and no others. The site previously used ten
+     (500/600/700/850/900/1150/1200/1400/1500/1800ms), which is not a system,
+     it is an accident. Ambient loops — the grain drift, the scroll cue — are
+     deliberately outside this scale; they are texture, not response.
+       fast  a state you are acknowledging (hover, focus, colour)
+       base  something moving (buttons, links, page fade)
+       slow  something arriving (reveals, masked lines, dissolves) */
+  --d-fast: 240ms;
+  --d-base: 600ms;
+  --d-slow: 900ms;
+
+  /* ── Space scale ── */
+  --s-1: 0.5rem;
+  --s-2: 1rem;
+  --s-3: 1.5rem;
+  --s-4: 2rem;
+  --s-6: 3rem;
+  --s-8: 4rem;
+  --s-12: 6rem;
+  --s-16: 8rem;
+
+  /* ── Measure ── */
+  --measure: 46rem;
+  --measure-note: 34rem;
+
+  --shadow-plate: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+
+  /* ── Display scale ──────────────────────────────────────────────────────
+     Reined in at the top end: 11rem of Cormorant at 10.5vw overshot every
+     viewport it was meant to fill. */
+  --display-xl: clamp(3rem, 9vw, 9rem);
+  --display-lg: clamp(2.4rem, 6vw, 5.5rem);
+  --display-md: clamp(1.9rem, 3.8vw, 3.2rem);
+  --display-sm: clamp(1.4rem, 2.2vw, 1.9rem);
 }
 
 :root {
@@ -125,7 +160,7 @@
 .display-xl {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(2.9rem, 10.5vw, 11rem);
+  font-size: var(--display-xl);
   line-height: 0.94;
   letter-spacing: -0.03em;
 }
@@ -133,7 +168,7 @@
 .display-lg {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(2.3rem, 7vw, 6.5rem);
+  font-size: var(--display-lg);
   line-height: 0.98;
   letter-spacing: -0.025em;
 }
@@ -141,7 +176,7 @@
 .display-md {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(1.9rem, 4.4vw, 3.8rem);
+  font-size: var(--display-md);
   line-height: 1.06;
   letter-spacing: -0.02em;
 }
@@ -149,9 +184,17 @@
 .display-sm {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: clamp(1.45rem, 2.6vw, 2.2rem);
+  font-size: var(--display-sm);
   line-height: 1.15;
   letter-spacing: -0.015em;
+}
+
+/* The wordmark is the one string that must never wrap badly on a phone. */
+@media (max-width: 639px) {
+  .wordmark-mobile {
+    font-size: 2.2rem;
+    text-wrap: balance;
+  }
 }
 
 .eyebrow {
@@ -224,9 +267,19 @@
 
 .shell-narrow {
   width: 100%;
-  max-width: 46rem;
+  max-width: var(--measure);
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 5vw, 2rem);
+}
+
+/* Prose measures. .measure is the body column; .measure-note is the aside,
+   the caption, the marginal remark — never the same width as the argument. */
+.measure {
+  max-width: var(--measure);
+}
+
+.measure-note {
+  max-width: var(--measure-note);
 }
 
 /* ── Reveal primitives (driven by IntersectionObserver, not by scroll libs) ─ */
@@ -235,8 +288,8 @@
   opacity: 0;
   transform: translate3d(0, 1.75rem, 0);
   transition:
-    opacity 1.15s var(--ease-silk),
-    transform 1.15s var(--ease-silk);
+    opacity var(--d-slow) var(--ease-silk),
+    transform var(--d-slow) var(--ease-silk);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
@@ -247,12 +300,13 @@
 
 [data-reveal-blur] {
   opacity: 0;
-  filter: blur(14px);
+  /* 14px was a smear, not a focus pull. */
+  filter: blur(6px);
   transform: scale(1.04);
   transition:
-    opacity 1.5s var(--ease-silk),
-    filter 1.5s var(--ease-silk),
-    transform 1.8s var(--ease-silk);
+    opacity var(--d-slow) var(--ease-silk),
+    filter var(--d-slow) var(--ease-silk),
+    transform var(--d-slow) var(--ease-silk);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
@@ -271,7 +325,7 @@
 .line-mask > span {
   display: block;
   transform: translate3d(0, 105%, 0);
-  transition: transform 1.25s var(--ease-silk);
+  transition: transform var(--d-slow) var(--ease-silk);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: transform;
 }
@@ -304,9 +358,9 @@
   overflow: hidden;
   isolation: isolate;
   transition:
-    color 0.7s var(--ease-silk),
-    border-color 0.7s var(--ease-silk),
-    background-color 0.7s var(--ease-silk);
+    color var(--d-base) var(--ease-silk),
+    border-color var(--d-base) var(--ease-silk),
+    background-color var(--d-base) var(--ease-silk);
 }
 
 .btn::before {
@@ -316,7 +370,7 @@
   z-index: -1;
   background: var(--color-champagne);
   transform: translate3d(0, 101%, 0);
-  transition: transform 0.75s var(--ease-silk);
+  transition: transform var(--d-base) var(--ease-silk);
 }
 
 .btn:hover::before,
@@ -336,6 +390,18 @@
   border-color: var(--color-champagne);
 }
 
+/* The entire budget for silk-red: a 4px dot marking where you are. */
+nav[aria-label="Primary"] [aria-current="page"]::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 0.7em;
+  vertical-align: middle;
+  border-radius: 999px;
+  background: var(--color-silk-red);
+}
+
 /* Understated text link with a wiping underline */
 .link-wipe {
   position: relative;
@@ -353,7 +419,7 @@
   background: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform 0.65s var(--ease-silk);
+  transition: transform var(--d-base) var(--ease-silk);
 }
 
 .link-wipe:hover::after,
@@ -478,8 +544,8 @@
   opacity: 0;
   transform: translate3d(0, 0.5rem, 0);
   transition:
-    opacity 0.6s var(--ease-silk),
-    transform 0.6s var(--ease-silk);
+    opacity var(--d-base) var(--ease-silk),
+    transform var(--d-base) var(--ease-silk);
   pointer-events: none;
 }
 

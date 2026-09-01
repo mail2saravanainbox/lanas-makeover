@@ -54,7 +54,7 @@ export default function WorldCard({
       style={{ ["--tx" as string]: 0, ["--ty" as string]: 0 }}
     >
       <div
-        className="relative overflow-hidden transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
+        className="relative overflow-hidden transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
         style={{
           transform:
             "rotateY(calc(var(--tx) * 7deg)) rotateX(calc(var(--ty) * -7deg)) translateZ(0)",
@@ -62,7 +62,7 @@ export default function WorldCard({
       >
         <div className="relative aspect-[4/5] w-full overflow-hidden">
           <div
-            className="absolute inset-[-6%] transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
+            className="absolute inset-[-6%] transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
             style={{
               transform:
                 "translate3d(calc(var(--tx) * -22px), calc(var(--ty) * -22px), 0)",
@@ -72,12 +72,12 @@ export default function WorldCard({
           </div>
 
           {/* Legibility scrim — always, never conditional */}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent opacity-90 transition-opacity duration-700 group-hover:opacity-75" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent opacity-90 transition-opacity duration-[var(--d-base)] group-hover:opacity-75" />
 
           {/* Sheen sweep on hover */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 -translate-x-full opacity-0 transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-full group-hover:opacity-100"
+            className="absolute inset-0 -translate-x-full opacity-0 transition-all duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-full group-hover:opacity-100"
             style={{
               background:
                 "linear-gradient(105deg, transparent 35%, rgba(242,237,228,0.10) 50%, transparent 65%)",
@@ -90,10 +90,10 @@ export default function WorldCard({
 
           <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
             <p className="eyebrow mb-3 !text-champagne/80">{eyebrow}</p>
-            <h3 className="font-display text-3xl leading-none text-ivory transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1">
+            <h3 className="font-display text-3xl leading-none text-ivory transition-transform duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1">
               {name}
             </h3>
-            <p className="body-base mt-3 max-h-0 overflow-hidden opacity-0 transition-all duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-32 group-hover:opacity-100 group-focus-visible:max-h-32 group-focus-visible:opacity-100">
+            <p className="body-base mt-3 max-h-0 overflow-hidden opacity-0 transition-all duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-32 group-hover:opacity-100 group-focus-visible:max-h-32 group-focus-visible:opacity-100">
               {summary}
             </p>
           </div>
