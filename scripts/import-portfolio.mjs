@@ -53,7 +53,11 @@ const EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif", ".tif", ".tiff"]
 
 /** Filename prefix → portfolio category. Extend freely. */
 const CATEGORY_RULES = [
-  [/^(bridal|muhurtham|muhurtam|wedding|kalyanam|saree|jewel)/i, "bridal"],
+  // Tamil-specific prefixes first — they are the house speciality.
+  [/^(tamil|kanchipuram|thali|thaali|vanki|oddiyanam|kunjalam)/i, "tamil-bridal"],
+  [/^(muhurtham|muhurtam|kalyanam|mandapam|oonjal)/i, "muhurtham"],
+  [/^(jadai|kunjalam)/i, "jadai"],
+  [/^(bridal|wedding|saree|jewel)/i, "bridal"],
   [/^(reception)/i, "reception"],
   [/^(engagement|nischayam|betrothal|ring)/i, "engagement"],
   [/^(hair|jadai|braid|bun|jasmine|hairstyle)/i, "hair"],
@@ -65,6 +69,9 @@ const CATEGORY_RULES = [
 
 /** Human-readable label for alt text and titles. */
 const CATEGORY_LABEL = {
+  "tamil-bridal": "Tamil bridal makeup and hair",
+  muhurtham: "Tamil muhurtham bridal look",
+  jadai: "traditional jadai and jasmine",
   bridal: "South Indian bridal makeup and hair",
   reception: "reception makeup",
   engagement: "engagement makeup",
@@ -99,6 +106,9 @@ function titleFor(slug, category) {
   if (words.length) return words.join(" ");
   // No descriptive filename — use a neutral look title, never an invented name.
   const fallback = {
+    "tamil-bridal": "Tamil Bridal Look",
+    muhurtham: "Muhurtham Look",
+    jadai: "Jadai & Jasmine",
     bridal: "South Indian Bridal Look",
     reception: "Reception Look",
     engagement: "Engagement Look",

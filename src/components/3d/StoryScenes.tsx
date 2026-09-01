@@ -7,6 +7,7 @@ import { bindPointer, pointer } from "./pointer";
 import { damp } from "@/lib/utils";
 import Atmosphere from "./Atmosphere";
 import JasmineBloom from "./JasmineBloom";
+import HeroSequence from "./HeroSequence";
 import SilkScene from "./SilkScene";
 import TransformationScene from "./TransformationScene";
 
@@ -81,8 +82,8 @@ export default function StoryScenes({ light }: { light: boolean }) {
           <directionalLight position={[2.4, 3.2, 4]} intensity={2.3} color="#ffe9c9" />
           <directionalLight position={[-3.2, 1.4, -2.2]} intensity={1.5} color="#c9a96a" />
 
-          {/* ACT I — the bloom held in the opening frame */}
-          <JasmineBloom anchor="[data-scene='hero-jasmine']" seed={0} scale={1} drift={1} />
+          {/* THE FIRST FLOWER — the opening sequence owns the camera */}
+          <HeroSequence anchor="[data-scene='hero-track']" />
 
           {/* ACT IV — a smaller bloom drifting through the heritage act */}
           <JasmineBloom anchor="[data-scene='heritage-jasmine']" seed={3} scale={0.72} drift={0.6} />

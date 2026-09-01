@@ -41,6 +41,14 @@ export interface ImageRef {
 }
 
 export type PortfolioCategory =
+  /**
+   * The house speciality. Kept distinct from generic "bridal" so the site can
+   * lead with Tamil work without asserting that every bridal frame is Tamil —
+   * a claim only Lana can make about her own photographs.
+   */
+  | "tamil-bridal"
+  | "muhurtham"
+  | "jadai"
   | "bridal"
   | "reception"
   | "engagement"

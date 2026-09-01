@@ -36,7 +36,8 @@ export default function MorningTimeline({ entries }: { entries: TimelineEntry[] 
             </Reveal>
             <Reveal delay={360}>
               <p className="body-base mt-6 max-w-sm text-muted">
-                Illustrative. Every real morning is timed backwards from the muhurtham.
+                The order is fixed. The hours are not — every morning is timed backwards
+                from the muhurtham itself.
               </p>
             </Reveal>
           </div>
@@ -49,8 +50,8 @@ export default function MorningTimeline({ entries }: { entries: TimelineEntry[] 
                     aria-hidden="true"
                     className="absolute -left-[calc(2rem+3.5px)] top-2 block h-[7px] w-[7px] rounded-full bg-champagne sm:-left-[calc(3rem+3.5px)]"
                   />
-                  <p className="font-mono text-[0.68rem] tracking-[0.24em] text-champagne/80">
-                    <time>{e.time}</time>
+                  <p className="text-[0.62rem] uppercase tracking-[0.28em] text-champagne/80">
+                    {e.time}
                   </p>
                   <h3 className="display-sm mt-3 text-ivory">{e.title}</h3>
                   {e.note && <p className="body-base mt-3 max-w-md">{e.note}</p>}

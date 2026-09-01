@@ -34,38 +34,45 @@ interface Stage {
 const STAGES: Stage[] = [
   {
     index: "01",
-    name: "Bare",
-    note: "Nothing on the skin yet. This is where the look is actually decided — what is there, what is not, and what will be left alone.",
+    name: "The Face",
+    note: "Before anything is added. This is where the look is actually decided — what is there, what is not, and what will be left alone.",
     tone: "ink",
     seed: 501,
   },
   {
     index: "02",
-    name: "Prepared",
-    note: "Cleanse, correct, protect. The half hour nobody photographs and every finish depends on.",
+    name: "The Skin",
+    note: "Cleanse, correct, protect. The half hour nobody photographs, and the one every finish depends on.",
     tone: "ivory",
     seed: 502,
   },
   {
     index: "03",
-    name: "Defined",
-    note: "Structure arrives. The brow, the eye, the line of the jaw — drawn out rather than drawn on.",
+    name: "The Eyes",
+    note: "Definition arrives. The brow, the lash line, the shape of the eye — drawn out rather than drawn on.",
     tone: "bronze",
     seed: 503,
   },
   {
     index: "04",
-    name: "Adorned",
-    note: "Gold, silk and jasmine. The weight of the ceremony settles onto her.",
-    tone: "champagne",
+    name: "The Hair",
+    note: "The jadai is built. Braid, volume, anchor points — then the jasmine, measured in muzham, threaded down its length.",
+    tone: "olive",
     seed: 504,
   },
   {
     index: "05",
-    name: "Bridal",
+    name: "The Adornment",
+    note: "Kanchipuram silk, and gold set last. Vanki, oddiyanam, the weight of the ceremony settling onto her.",
+    tone: "champagne",
+    seed: 505,
+  },
+  {
+    index: "06",
+    name: "The Bride",
     note: "And then she is ready. Still, unmistakably, herself.",
     tone: "rose",
-    seed: 505,
+    seed: 506,
   },
 ];
 
@@ -111,17 +118,17 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
       <div className="shell relative z-20 pb-20 pt-28 text-center sm:pt-40">
         <p className="eyebrow mb-8">04 — The bridal ritual</p>
         <h2 id="ritual-title" className="display-md mx-auto max-w-[16ch] text-balance text-ivory">
-          Skin. Eyes. Hair.
+          Face. Skin. Eyes. Hair.
           <br />
-          <span className="italic-serif text-champagne">Jewellery. Bride.</span>
+          <span className="italic-serif text-champagne">Gold. Bride.</span>
         </h2>
         <p className="body-lg mx-auto mt-8 max-w-xl">
-          Five stages, in the order they actually happen. Scroll through them.
+          Six stages, in the order a Tamil bridal morning actually runs.
         </p>
       </div>
 
       {/* ── The track ─────────────────────────────────────────────────────── */}
-      <div ref={trackRef} data-scene="transformation-track" className="relative h-[420vh]">
+      <div ref={trackRef} data-scene="transformation-track" className="relative h-[500vh]">
         <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
           {/* Anchor the WebGL plane binds to */}
           <div data-scene="transformation" className="absolute inset-0" />

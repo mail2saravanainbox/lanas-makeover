@@ -64,6 +64,7 @@ export default async function HomePage() {
         brand={settings.brandName}
         tagline={settings.tagline}
         cta={settings.bookingCta}
+        portrait={slots.heroPortrait}
       />
 
       {/* ACT I — before the bride */}

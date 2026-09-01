@@ -21,6 +21,16 @@
   --color-olive: #7d7f63;
   --color-indigo: #4a4d63;
 
+  /* ── South Indian accent language (§17) ────────────────────────────────
+     Used sparingly, as accents only. The photography supplies the colour;
+     these exist so a rule, a hover state or a label can carry a note of the
+     ceremony without the page becoming a wedding invitation. */
+  --color-silk-red: #8d2f2a;
+  --color-maroon: #5c2320;
+  --color-antique-gold: #b08d4f;
+  --color-jasmine: #f7f3e9;
+  --color-temple-green: #2f4034;
+
   --font-display: var(--font-cormorant), "Cormorant Garamond", "Times New Roman", serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
@@ -406,4 +416,48 @@
 .section-veil {
   /* Lets the canvas glow through while keeping text contrast safe. */
   background-color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+}
+
+/* ── Editorial annotations (§10) ────────────────────────────────────────────
+   A small uppercase label that rises into view on hover — the way a magazine
+   captions a plate. Used on portfolio and material imagery, never decorative. */
+
+.annotate {
+  position: relative;
+}
+
+.annotate::after {
+  content: attr(data-annotate);
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background: var(--color-jasmine);
+  opacity: 0;
+  transform: translate3d(0, 0.5rem, 0);
+  transition:
+    opacity 0.6s var(--ease-silk),
+    transform 0.6s var(--ease-silk);
+  pointer-events: none;
+}
+
+.annotate:hover::after,
+.annotate:focus-visible::after,
+.annotate:focus-within::after {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .annotate::after {
+    transition: opacity 0.01ms;
+    transform: none;
+  }
 }

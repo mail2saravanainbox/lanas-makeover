@@ -20,9 +20,17 @@ import { track } from "@/lib/analytics";
  * 400-image Instagram archive costs the same first paint as a 12-image one.
  */
 
+/**
+ * Tamil work leads (§12, §13). A filter only appears when the archive actually
+ * contains that category, so the site never advertises a speciality it cannot
+ * show.
+ */
 const FILTERS: Array<{ key: PortfolioCategory | "all"; label: string }> = [
+  { key: "tamil-bridal", label: "Tamil Bridal" },
+  { key: "muhurtham", label: "Muhurtham" },
+  { key: "jadai", label: "Jadai" },
   { key: "all", label: "All" },
-  { key: "bridal", label: "Bridal" },
+  { key: "bridal", label: "South Indian Bridal" },
   { key: "reception", label: "Reception" },
   { key: "engagement", label: "Engagement" },
   { key: "hair", label: "Hair" },
@@ -37,6 +45,20 @@ const SPAN: Record<NonNullable<PortfolioItem["weight"]>, string> = {
   full: "md:col-span-12 aspect-[16/9]",
 };
 
+/** Editorial annotation shown on hover — a caption, not a tooltip (§10). */
+const CATEGORY_ANNOTATION: Partial<Record<PortfolioCategory, string>> = {
+  "tamil-bridal": "Tamil bridal",
+  muhurtham: "Muhurtham",
+  jadai: "Jadai",
+  hair: "Hair",
+  bridal: "Bridal",
+  reception: "Reception",
+  engagement: "Engagement",
+  editorial: "Editorial",
+  "behind-scenes": "In the chair",
+  "before-after": "Transformation",
+};
+
 const PAGE = 12;
 
 export default function PortfolioGrid({
@@ -46,7 +68,16 @@ export default function PortfolioGrid({
   items: PortfolioItem[];
   showFilters?: boolean;
 }) {
-  const [filter, setFilter] = useState<PortfolioCategory | "all">("all");
+  /**
+   * Opens on Tamil bridal when that work exists — the specialisation should be
+   * the first thing a visitor sees, not something they have to filter for.
+   */
+  const initial: PortfolioCategory | "all" = items.some((i) => i.category === "tamil-bridal")
+    ? "tamil-bridal"
+    : items.some((i) => i.category === "muhurtham")
+      ? "muhurtham"
+      : "all";
+  const [filter, setFilter] = useState<PortfolioCategory | "all">(initial);
   const [shown, setShown] = useState(PAGE);
   const [open, setOpen] = useState<number | null>(null);
 
@@ -121,7 +152,8 @@ export default function PortfolioGrid({
                         track("portfolio_view", { slug: item.slug, category: item.category });
                       }}
                       aria-label={`View ${item.title}`}
-                      className="group relative block h-full w-full overflow-hidden"
+                      data-annotate={CATEGORY_ANNOTATION[item.category] ?? "View look"}
+                      className="annotate group relative block h-full w-full overflow-hidden"
                       style={{ transform: "translate3d(0, calc(var(--sy) * 18px), 0)" }}
                     >
                       <div className="absolute inset-0 transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.055]">

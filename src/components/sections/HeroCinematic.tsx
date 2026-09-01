@@ -2,189 +2,203 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { ImageRef } from "@/lib/types";
 import { useDeviceCapability } from "@/components/ui/useDeviceCapability";
-import { cx } from "@/lib/utils";
+import EditorialImage from "@/components/ui/EditorialImage";
+import { clamp, cx, norm } from "@/lib/utils";
 import JasmineSvg from "./JasmineSvg";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  THE OPENING (§3)
+ *  THE FIRST FLOWER — the opening
  * ═══════════════════════════════════════════════════════════════════════════
- *  No navbar. No logo bar. No hero-with-a-button.
+ *  One jasmine flower, held close. The camera discovers it belongs to a
+ *  strand. The strand crosses the lens and becomes the mask through which the
+ *  bride arrives.
  *
- *  A held line of type, a single flower in the dark, and then the name. The
- *  whole sequence is 4.4 seconds and never blocks the scroll — the moment a
- *  visitor moves the page, the sequence resolves to its final state.
+ *  THE FLOWER IS THE PORTAL. That is the whole idea, and every value below
+ *  serves it — nothing moves for decoration.
  *
- *  Under prefers-reduced-motion the final frame is simply the first frame.
+ *  Scroll-driven, never scroll-jacked: the page scrolls natively and the
+ *  sequence reads its position. Under reduced motion the whole thing resolves
+ *  to its final frame immediately, with every word still present.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-
-type Phase = 0 | 1 | 2 | 3;
-
 export default function HeroCinematic({
   brand,
   tagline,
   cta,
+  portrait,
 }: {
   brand: string;
   tagline: string;
   cta: string;
+  portrait: ImageRef;
 }) {
   const cap = useDeviceCapability();
-  const [phase, setPhase] = useState<Phase>(0);
-  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [p, setP] = useState(0);
+  const [reduced, setReduced] = useState(false);
 
-  // ── The sequence ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const skipAll = window.setTimeout(() => setPhase(3), 0);
-      return () => window.clearTimeout(skipAll);
-    }
-
-    const timers = [
-      window.setTimeout(() => setPhase(1), 260),
-      window.setTimeout(() => setPhase(2), 3300),
-      window.setTimeout(() => setPhase(3), 4500),
-    ];
-
-    // Any scroll intent skips straight to the resolved frame.
-    const skip = () => {
-      if (window.scrollY > 24) {
-        timers.forEach(clearTimeout);
-        setPhase(3);
-        window.removeEventListener("scroll", skip);
-      }
-    };
-    window.addEventListener("scroll", skip, { passive: true });
-
-    return () => {
-      timers.forEach(clearTimeout);
-      window.removeEventListener("scroll", skip);
-    };
+    const t = window.setTimeout(
+      () => setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches),
+      0,
+    );
+    return () => window.clearTimeout(t);
   }, []);
 
-  // ── Scroll-linked depth, written straight to a CSS variable ─────────────
   useEffect(() => {
-    const el = sectionRef.current;
+    const el = trackRef.current;
     if (!el) return;
     let raf = 0;
-
     const update = () => {
       raf = 0;
-      const p = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
-      el.style.setProperty("--hero-p", p.toFixed(4));
+      const r = el.getBoundingClientRect();
+      const travel = r.height - window.innerHeight;
+      setP(travel > 0 ? clamp(-r.top / travel) : 0);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
-
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
   const has3D = cap.ready && cap.allow3D;
-  const showOpening = phase >= 1 && phase < 2;
-  const showBrand = phase >= 2;
+
+  // ── Phase weights. One scroll value, five beats. ────────────────────────
+  const P = reduced ? 1 : p;
+  const opening = 1 - norm(P, 0.10, 0.20); // "before she becomes a bride…"
+  const discover = norm(P, 0.18, 0.38);
+  const travel = norm(P, 0.38, 0.58);
+  const cross = norm(P, 0.58, 0.78);
+  const pullback = norm(P, 0.78, 1.0);
+
+  // The bride is revealed *through* the strand: an aperture opening from the
+  // centre as the flower crosses the lens.
+  const aperture = reduced ? 1 : norm(P, 0.6, 0.9);
+  const brandIn = reduced ? 1 : norm(P, 0.84, 0.96);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative isolate flex min-h-[100dvh] items-center justify-center overflow-hidden"
-      style={{ ["--hero-p" as string]: 0 }}
-      aria-label="Introduction"
-    >
-      {/* The flower. An empty anchor box — the WebGL bloom binds to it. */}
-      <div
-        data-scene="hero-jasmine"
-        className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(60vmin,34rem)] -translate-x-1/2 -translate-y-1/2"
-        style={{
-          opacity: "calc(1 - var(--hero-p) * 0.85)",
-          transform: "translate(-50%, -50%) scale(calc(1 + var(--hero-p) * 0.22))",
-        }}
-      >
-        {!has3D && <JasmineSvg className="h-full w-full opacity-90" />}
-      </div>
-
-      {/* Warm pool of light behind the type */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(58% 46% at 50% 46%, rgba(160,122,78,0.20) 0%, rgba(10,8,6,0) 70%)",
-        }}
-      />
-
-      {/* ── Type ────────────────────────────────────────────────────────── */}
-      <div
-        className="shell relative flex flex-col items-center text-center"
-        style={{
-          opacity: "calc(1 - var(--hero-p) * 1.35)",
-          transform: "translate3d(0, calc(var(--hero-p) * -3rem), 0)",
-        }}
-      >
-        {/* Act I line */}
-        <h1
-          className={cx(
-            "display-lg max-w-[22ch] text-balance text-ivory transition-[opacity,transform,filter] duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-            showOpening
-              ? "translate-y-0 opacity-100 blur-0"
-              : phase === 0
-                ? "translate-y-6 opacity-0 blur-md"
-                : "pointer-events-none absolute -translate-y-6 opacity-0 blur-md",
-          )}
-          aria-hidden={!showOpening}
-        >
-          Every bride has a moment
-          <br />
-          <span className="italic-serif text-champagne">before she becomes the bride.</span>
-        </h1>
-
-        {/* Identity */}
-        <div
-          className={cx(
-            "flex flex-col items-center transition-[opacity,transform,filter] duration-[1600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-            showBrand
-              ? "translate-y-0 opacity-100 blur-0"
-              : "pointer-events-none absolute translate-y-8 opacity-0 blur-lg",
-          )}
-        >
-          <p className="display-xl uppercase leading-[0.9] text-ivory">
-            {brand.replace(/'s/i, "’s")}
-          </p>
-          <p className="eyebrow mt-7 text-champagne/85">{tagline}</p>
-
+    <section aria-label="Introduction" className="relative">
+      <div ref={trackRef} data-scene="hero-track" className="relative h-[420vh]">
+        <div className="sticky top-0 flex h-[100dvh] items-center justify-center overflow-hidden">
+          {/* ── The bride, behind the flower ──────────────────────────────── */}
           <div
-            className={cx(
-              "mt-11 transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]",
-              phase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
-            )}
+            aria-hidden={aperture < 0.5}
+            className="absolute inset-0"
+            style={{
+              // The aperture: the flower is the portal, so the portrait opens
+              // outward from the centre of the frame rather than fading in.
+              clipPath: `circle(${(aperture * 120).toFixed(1)}% at 50% 45%)`,
+              opacity: reduced ? 1 : clamp(aperture * 1.2),
+              transform: `scale(${(1.18 - pullback * 0.18).toFixed(3)})`,
+              transition: reduced ? "none" : "transform 120ms linear",
+            }}
           >
-            <Link href="/contact" className="btn">
+            <EditorialImage
+              image={portrait}
+              className="h-full w-full"
+              sizes="100vw"
+              priority
+              decorative
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/35 to-ink/65" />
+          </div>
+
+          {/* ── The flower ────────────────────────────────────────────────── */}
+          <div
+            data-scene="hero-jasmine"
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(78vmin,44rem)] -translate-x-1/2 -translate-y-1/2"
+            style={{
+              // 2D understudy mirrors the same five beats.
+              opacity: has3D ? 0 : clamp(1 - pullback * 1.4),
+              transform: `translate(-50%, -50%) translateX(${(travel * 22 - cross * 62).toFixed(1)}%) scale(${(1 + discover * 0.2 - pullback * 0.3).toFixed(3)})`,
+              filter: `blur(${(cross * 6).toFixed(1)}px)`,
+            }}
+          >
+            {!has3D && <JasmineSvg className="h-full w-full" />}
+          </div>
+
+          {/* Warm pool of light — the room the flower sits in */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(50% 40% at 50% 46%, rgba(160,122,78,0.22) 0%, rgba(10,8,6,0) 72%)",
+              opacity: clamp(1 - aperture),
+            }}
+          />
+
+          {/* ── PHASE 1 — the held line ───────────────────────────────────── */}
+          <p
+            aria-hidden={opening < 0.5}
+            className="shell absolute text-center font-display text-[clamp(1.5rem,3.6vw,2.9rem)] font-light italic leading-snug text-champagne"
+            style={{
+              opacity: reduced ? 0 : opening,
+              transform: `translateY(${((1 - opening) * -18).toFixed(1)}px)`,
+              filter: `blur(${((1 - opening) * 8).toFixed(1)}px)`,
+            }}
+          >
+            Before she becomes a bride&hellip;
+          </p>
+
+          {/* ── PHASE 5 — the identity ────────────────────────────────────── */}
+          <div
+            className="shell relative z-10 flex flex-col items-center text-center"
+            style={{
+              opacity: brandIn,
+              transform: `translateY(${((1 - brandIn) * 26).toFixed(1)}px)`,
+              pointerEvents: brandIn > 0.6 ? "auto" : "none",
+            }}
+            aria-hidden={brandIn < 0.5}
+          >
+            <h1 className="display-xl uppercase leading-[0.9] text-ivory">
+              {brand.replace(/'s/i, "’s")}
+            </h1>
+            <p className="eyebrow mt-6 text-champagne/85">{tagline}</p>
+
+            <p className="display-sm mt-10 max-w-[22ch] text-balance text-ivory/85">
+              Every bride has a moment
+              <br />
+              <span className="italic-serif text-champagne">before she becomes the bride.</span>
+            </p>
+
+            <Link href="/contact" className="btn mt-10" tabIndex={brandIn > 0.6 ? 0 : -1}>
               {cta}
             </Link>
           </div>
-        </div>
-      </div>
 
-      {/* Scroll cue */}
-      <div
-        aria-hidden="true"
-        className={cx(
-          "absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 transition-opacity duration-1000",
-          phase >= 3 ? "opacity-100" : "opacity-0",
-        )}
-        style={{ opacity: "calc(1 - var(--hero-p) * 2)" }}
-      >
-        <span className="text-[0.55rem] uppercase tracking-[0.34em] text-muted">Scroll</span>
-        <span className="relative block h-12 w-px overflow-hidden bg-ivory/15">
-          <span className="absolute inset-x-0 top-0 h-4 animate-[scroll-cue_2.6s_cubic-bezier(0.65,0,0.35,1)_infinite] bg-champagne" />
-        </span>
+          {/* Scroll cue — only while there is still sequence left to run */}
+          <div
+            aria-hidden="true"
+            className={cx(
+              "absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 transition-opacity duration-700",
+            )}
+            style={{ opacity: reduced ? 0 : clamp(1 - P * 4) }}
+          >
+            <span className="text-[0.55rem] uppercase tracking-[0.34em] text-muted">
+              Scroll to begin
+            </span>
+            <span className="relative block h-12 w-px overflow-hidden bg-ivory/15">
+              <span className="absolute inset-x-0 top-0 h-4 animate-[scroll-cue_2.6s_cubic-bezier(0.65,0,0.35,1)_infinite] bg-champagne" />
+            </span>
+          </div>
+
+          {/* The sequence, linearly, for assistive technology */}
+          <p className="sr-only">
+            {brand}. {tagline}. Every bride has a moment before she becomes the bride.
+          </p>
+        </div>
       </div>
 
       <style>{`
@@ -192,6 +206,9 @@ export default function HeroCinematic({
           0%   { transform: translateY(-100%); }
           55%  { transform: translateY(300%); }
           100% { transform: translateY(300%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes scroll-cue { 0%,100% { transform: translateY(100%); } }
         }
       `}</style>
     </section>

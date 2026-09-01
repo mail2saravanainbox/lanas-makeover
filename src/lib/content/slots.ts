@@ -65,6 +65,25 @@ function pick(
   });
 }
 
+/**
+ * One category preference per slot, so a sequence can move deliberately
+ * through different kinds of work rather than drawing all six frames from the
+ * same pool. Distinct photographs wherever the archive allows it.
+ */
+function pickOrdered(
+  preferences: PortfolioCategory[][],
+  fallbacks: ImageRef[],
+): ImageRef[] {
+  const used = new Set<string>();
+  return fallbacks.map((fallback, index) => {
+    const available = pool(preferences[index] ?? []);
+    const fresh = available.find((i) => !used.has(i.id)) ?? available[0];
+    if (!fresh) return fallback;
+    used.add(fresh.id);
+    return toImageRef(fresh);
+  });
+}
+
 function one(
   category: PortfolioCategory | PortfolioCategory[],
   fallback: ImageRef,
@@ -77,6 +96,8 @@ const plate = (alt: string, tone: MediaTone, seed: number): ImageRef => ({ alt, 
 
 export interface ImageSlots {
   hasRealPhotography: boolean;
+  /** The bride revealed through the flower. Establishes the brand in 2s (§15). */
+  heroPortrait: ImageRef;
   beforeLayers: [ImageRef, ImageRef, ImageRef];
   /** null → the About/Artist sections render a typography treatment (§21). */
   artistPortrait: ImageRef | null;
@@ -92,6 +113,9 @@ export function getImageSlots(): ImageSlots {
   return {
     hasRealPhotography,
 
+    // The single strongest bridal frame, reserved for the opening reveal.
+    heroPortrait: one(["bridal"], plate("Bridal portrait", "bronze", 900)),
+
     // ACT I — foreground / plane / background
     beforeLayers: [
       one(["bridal", "editorial"], plate("Bridal portrait", "bronze", 901)),
@@ -106,28 +130,54 @@ export function getImageSlots(): ImageSlots {
      */
     artistPortrait: null,
 
-    // ACT III — the five stages, in narrative order (§9)
-    transformation: pick(
-      ["behind-scenes", "editorial", "hair", "bridal"],
+    /**
+     * THE MUHURTHAM RITUAL — six stages.
+     * Face → Skin → Eyes → Hair → Adornment → Bride. The category order below
+     * mirrors that arc, so real photography lands on the right beat: the
+     * unmade face and the preparation come from behind-the-scenes work, the
+     * hair stage from hair work, and the last two from finished bridal frames.
+     */
+    transformation: pickOrdered(
       [
-        plate("Bare", "ink", 501),
-        plate("Prepared", "ivory", 502),
-        plate("Defined", "bronze", 503),
-        plate("Adorned", "champagne", 504),
-        plate("Bridal", "rose", 505),
+        ["behind-scenes", "editorial"],
+        ["behind-scenes", "editorial"],
+        ["editorial", "bridal"],
+        ["hair"],
+        ["bridal"],
+        ["bridal"],
+      ],
+      [
+        plate("The face", "ink", 501),
+        plate("The skin", "ivory", 502),
+        plate("The eyes", "bronze", 503),
+        plate("The hair", "olive", 504),
+        plate("The adornment", "champagne", 505),
+        plate("The bride", "rose", 506),
       ],
     ),
 
-    // ACT IV — the heritage motifs
-    heritage: pick(
-      ["bridal", "hair"],
+    /**
+     * MATERIAL → BRIDE, interleaved: [silk close-up, silk worn, gold close-up,
+     * gold worn, jasmine close-up, jasmine worn]. Close-ups prefer detail and
+     * hair work; the resolutions prefer finished bridal frames.
+     */
+    heritage: pickOrdered(
       [
-        plate("Kanchipuram", "bronze", 601),
-        plate("Zari", "champagne", 602),
-        plate("Jasmine", "olive", 603),
-        plate("Temple gold", "bronze", 604),
+        ["editorial", "bridal"],
+        ["tamil-bridal", "muhurtham", "bridal"],
+        ["editorial", "bridal"],
+        ["tamil-bridal", "muhurtham", "bridal"],
+        ["jadai", "hair"],
+        ["tamil-bridal", "muhurtham", "bridal"],
       ],
-      1,
+      [
+        plate("Kanchipuram silk", "bronze", 601),
+        plate("Silk, worn", "rose", 611),
+        plate("Temple gold", "champagne", 602),
+        plate("Gold, worn", "bronze", 612),
+        plate("Jasmine", "olive", 603),
+        plate("Jasmine in her hair", "ivory", 613),
+      ],
     ),
 
     // The silhouette sequence

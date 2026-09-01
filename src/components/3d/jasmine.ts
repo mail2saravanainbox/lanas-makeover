@@ -126,6 +126,85 @@ export function createJasmineBloom(seed = 0): THREE.Group {
   return group;
 }
 
+/**
+ * A JASMINE STRAND — the kunjalam-style string that runs down a jadai.
+ *
+ * Blooms and buds threaded along a gentle curve. This is the object the
+ * opening sequence travels along: one flower at first, then the discovery that
+ * it belongs to a strand, then the strand itself crossing the frame.
+ *
+ * Returned with the blooms in order so the caller can reveal them one by one.
+ */
+export function createJasmineStrand(count = 7): {
+  group: THREE.Group;
+  blooms: THREE.Group[];
+  curve: THREE.CatmullRomCurve3;
+} {
+  const group = new THREE.Group();
+
+  // A slack, hanging line — never a straight axis.
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-3.4, 1.5, -1.2),
+    new THREE.Vector3(-1.7, 0.35, -0.35),
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(1.7, 0.22, -0.45),
+    new THREE.Vector3(3.4, 1.25, -1.35),
+  ]);
+
+  // The thread itself — barely visible, but the eye needs it to read as a strand.
+  const thread = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 96, 0.008, 6, false),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#6d6250"),
+      roughness: 0.9,
+      metalness: 0,
+    }),
+  );
+  group.add(thread);
+
+  const blooms: THREE.Group[] = [];
+
+  for (let i = 0; i < count; i++) {
+    // Centre bloom sits at t = 0.5 so the sequence opens on it.
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    const bloom = createJasmineBloom(i * 1.7);
+    const point = curve.getPointAt(t);
+    const tangent = curve.getTangentAt(t);
+
+    bloom.position.copy(point);
+    // Blooms hang off the thread rather than sitting on it.
+    bloom.position.y -= 0.06;
+    bloom.rotation.z = Math.atan2(tangent.y, tangent.x) * 0.35;
+    bloom.rotation.y = i * 0.9;
+
+    // The centre bloom is the hero; the rest recede.
+    const distanceFromCentre = Math.abs(t - 0.5) * 2;
+    bloom.scale.setScalar(0.36 * (1 - distanceFromCentre * 0.34));
+
+    bloom.userData.t = t;
+    bloom.userData.index = i;
+    blooms.push(bloom);
+    group.add(bloom);
+  }
+
+  // A few closed buds for realism — a real strand is never all open flowers.
+  const budGeometry = new THREE.CapsuleGeometry(0.022, 0.05, 4, 8);
+  const budMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#eee8db"),
+    roughness: 0.7,
+  });
+  for (let i = 0; i < count * 2; i++) {
+    const t = (i + 0.5) / (count * 2);
+    const bud = new THREE.Mesh(budGeometry, budMaterial);
+    bud.position.copy(curve.getPointAt(t));
+    bud.position.y -= 0.045;
+    bud.rotation.z = Math.sin(i * 2.1) * 0.5;
+    group.add(bud);
+  }
+
+  return { group, blooms, curve };
+}
+
 /** Frees the geometry/material a bloom owns. */
 export function disposeBloom(group: THREE.Group): void {
   group.traverse((obj) => {
