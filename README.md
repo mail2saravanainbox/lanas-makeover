@@ -312,6 +312,36 @@ photograph is one line:** add `src` to the `ImageRef` and the plate disappears.
   artist's actual base.
 * All SEO config is editable in `src/lib/seo.ts`.
 
+### Before indexing
+
+A client/ops checklist. None of it is code — do it once, before submitting the
+site to Search Console.
+
+1. **Set `NEXT_PUBLIC_SITE_URL`** to the real origin (e.g.
+   `https://www.lanasmakeover.com`) in the Vercel project's Production
+   environment. Until it is set, canonicals, Open Graph URLs, `sitemap.xml`
+   and `robots.txt` point at whatever host answered the build — which for a
+   Vercel deployment is a per-deploy hostname that stops existing.
+2. **Confirm the live host answers `200` to Googlebot.** From a machine
+   outside the Vercel account:
+
+   ```bash
+   curl -sI -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" \
+     https://<host>/ | head -20
+   ```
+
+   Look for `HTTP/2 200`. A `401` means Vercel **Deployment Protection** is on
+   (Project → Settings → Deployment Protection); a production site cannot be
+   indexed while it is. An automated-access refusal page — Vercel's bot
+   challenge — is the same problem wearing a different status code.
+3. **Confirm no header blocks crawlers**: the response must not carry
+   `x-robots-tag: noindex`, and `https://<host>/robots.txt` must be reachable
+   and must not `Disallow: /`.
+4. **Then** submit `https://<host>/sitemap.xml` in Search Console.
+
+Steps 1–3 are settings in the Vercel dashboard and the domain registrar. This
+repository cannot change them and does not try to.
+
 ---
 
 ## 9. Analytics

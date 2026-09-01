@@ -160,10 +160,15 @@ export default function HeroCinematic({
             className="shell absolute inset-x-0 bottom-[12vh] z-10 flex flex-col items-start text-left"
             style={{ opacity: brandIn }}
           >
-            <h1 className="display-xl uppercase leading-[0.9] text-ivory">
+            {/* The wordmark is the brand's name, not the page's subject. The
+                H1 below carries what this business actually is — the one
+                sentence a search result should be able to quote. */}
+            <p className="display-xl uppercase leading-[0.9] text-ivory">
               {brand.replace(/'s/i, "’s")}
+            </p>
+            <h1 className="eyebrow mt-6 text-champagne/85">
+              Tamil bridal makeup &amp; hair artist, Trichy
             </h1>
-            <p className="eyebrow mt-6 text-champagne/85">{tagline}</p>
 
             <p className="display-sm mt-8 max-w-[22ch] text-balance text-ivory/85">
               Every bride has a moment
@@ -194,7 +199,8 @@ export default function HeroCinematic({
 
           {/* The sequence, linearly, for assistive technology */}
           <p className="sr-only">
-            {brand}. {tagline}. Every bride has a moment before she becomes the bride.
+            {brand}. {tagline}. Every bride has a moment before she becomes the
+            bride.
           </p>
         </div>
       </div>

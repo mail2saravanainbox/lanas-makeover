@@ -40,10 +40,10 @@ export const seoConfig = {
   /** Set NEXT_PUBLIC_SITE_URL once a custom domain is attached. */
   siteUrl: resolveSiteUrl(),
   siteName: siteSettings.brandName,
-  defaultTitle: `${siteSettings.brandName} — Bridal Makeup & Hair Artist, Trichy`,
+  defaultTitle: `${siteSettings.brandName} — Tamil Bridal Makeup & Hair Artist, Trichy`,
   titleTemplate: `%s — ${siteSettings.brandName}`,
   defaultDescription:
-    "Bridal and party transformation makeup artist based in Trichy, Tamil Nadu. Natural, HD and South Indian bridal looks, with bridal hair styling. Travel available.",
+    "Tamil bridal makeup and hair artist based in Trichy. Natural, HD and South Indian bridal looks; jadai and bridal hair styling; engagement, reception and occasion makeup. Travel available.",
   locale: "en_IN",
   /**
    * Descriptive only. These describe what the business genuinely does; they are

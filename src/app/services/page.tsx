@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { content } from "@/lib/content/provider";
+import { bridal, hair, makeup } from "@/content/disciplines";
 import { serviceImage } from "@/lib/content/slots";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
@@ -43,6 +44,27 @@ export default async function ServicesPage() {
           { name: "Services", href: "/services" },
         ]}
       />
+
+      {/* The three discipline pages exist, carry their own metadata and are in
+          the sitemap — but nothing on the site linked to them, so a crawler
+          reached them only by sitemap and a visitor not at all. */}
+      <div className="shell pb-20">
+        <Reveal>
+          <h2 className="eyebrow mb-6">Disciplines</h2>
+          <ul className="flex flex-wrap gap-x-10 gap-y-4">
+            {[bridal, makeup, hair].map((d) => (
+              <li key={d.slug}>
+                <Link
+                  href={`/${d.slug}`}
+                  className="link-wipe font-display text-2xl text-ivory transition-colors duration-500 hover:text-champagne"
+                >
+                  {d.eyebrow}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </div>
 
       <div className="shell pb-28 sm:pb-40">
         <ul className="space-y-28 sm:space-y-40">
