@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cx } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import MobileNav from "./MobileNav";
+import { onScrollY } from "@/lib/motion/scheduler";
 
 export interface NavLink {
   href: string;
@@ -54,17 +55,14 @@ export default function Nav({
   const [menuOpen, setMenuOpen] = useState(false);
   const links = navLinks(hasBrides);
 
-  useEffect(() => {
-    const onScroll = () => setCondensed(window.scrollY > 40);
-
-    // Deferred a frame so the first paint is never a cascading re-render.
-    const initial = requestAnimationFrame(onScroll);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(initial);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
+  useEffect(
+    () =>
+      onScrollY((y) => {
+        const next = y > 40;
+        setCondensed((prev) => (prev === next ? prev : next));
+      }),
+    [],
+  );
 
   return (
     <>

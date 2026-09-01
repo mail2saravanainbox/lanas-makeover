@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
+import { onScrollY } from "@/lib/motion/scheduler";
 
 /**
  * Discreet floating WhatsApp affordance.
@@ -13,12 +14,14 @@ import { track } from "@/lib/analytics";
 export default function WhatsAppButton({ href }: { href: string | null }) {
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.7);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  useEffect(
+    () =>
+      onScrollY((y, vh) => {
+        const next = y > vh * 0.7;
+        setVisible((prev) => (prev === next ? prev : next));
+      }),
+    [],
+  );
 
   if (!href) return null;
 

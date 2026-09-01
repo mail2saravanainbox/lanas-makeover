@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { damp } from "@/lib/utils";
+import { onFrame, register } from "@/lib/motion/scheduler";
+import { pointer } from "@/lib/motion/pointer";
 
 /**
  * Depth without WebGL.
@@ -9,6 +11,12 @@ import { damp } from "@/lib/utils";
  * Layers move at different rates against the pointer and against scroll,
  * which is what makes a flat photograph read as a plane in space. Damped, so
  * it drifts rather than snaps. Disabled on touch and under reduced motion.
+ *
+ * There used to be one requestAnimationFrame and one getBoundingClientRect
+ * per instance, per frame — and /services renders six of these. Now the
+ * scheduler supplies the rect on scroll frames, the shared pointer is damped
+ * once for the whole page, and this component's frame callback is pure
+ * arithmetic against numbers that already exist.
  */
 export default function ParallaxFrame({
   children,
@@ -29,42 +37,26 @@ export default function ParallaxFrame({
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const target = { x: 0, y: 0 };
-    const current = { x: 0, y: 0, s: 0 };
-    let raf = 0;
-    let last = performance.now();
+    /** Where the element sits relative to the viewport centre, −1…1-ish. */
+    let targetS = 0;
+    let currentS = 0;
 
-    const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      target.x = (e.clientX - (r.left + r.width / 2)) / r.width;
-      target.y = (e.clientY - (r.top + r.height / 2)) / r.height;
-    };
+    const stopScroll = register(el, ({ top, height, vh }) => {
+      targetS = (top + height / 2 - vh / 2) / vh;
+    });
 
-    const tick = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-
-      current.x = damp(current.x, fine ? target.x : 0, 3.4, dt);
-      current.y = damp(current.y, fine ? target.y : 0, 3.4, dt);
-
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const centred = (r.top + r.height / 2 - vh / 2) / vh;
-      current.s = damp(current.s, centred, 6, dt);
-
-      el.style.setProperty("--px", (current.x * strength).toFixed(4));
-      el.style.setProperty("--py", (current.y * strength).toFixed(4));
-      el.style.setProperty("--sy", (current.s * scrollStrength).toFixed(4));
-
-      raf = requestAnimationFrame(tick);
-    };
-
-    raf = requestAnimationFrame(tick);
-    if (fine) window.addEventListener("pointermove", onMove, { passive: true });
+    const stopFrame = onFrame((dt) => {
+      currentS = damp(currentS, targetS, 6, dt);
+      // ×0.5: the shared pointer spans the viewport in −1…1, where the old
+      // per-instance one spanned the element. Same amplitude on screen.
+      el.style.setProperty("--px", ((fine ? pointer.x : 0) * strength * 0.5).toFixed(4));
+      el.style.setProperty("--py", ((fine ? -pointer.y : 0) * strength * 0.5).toFixed(4));
+      el.style.setProperty("--sy", (currentS * scrollStrength).toFixed(4));
+    });
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", onMove);
+      stopScroll();
+      stopFrame();
     };
   }, [strength, scrollStrength]);
 

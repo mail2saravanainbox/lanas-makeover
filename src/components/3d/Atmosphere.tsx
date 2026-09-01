@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { createAtmosphereMaterial } from "./materials";
-import { pointer } from "./pointer";
+import { pointer } from "@/lib/motion/pointer";
 import { damp } from "@/lib/utils";
 
 /**

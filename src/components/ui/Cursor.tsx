@@ -10,6 +10,10 @@ import { damp } from "@/lib/utils";
  * on anything and the cursor reads it. Supported: view · drag · open · read.
  * The real pointer is only hidden once this is actually running, so a failure
  * here can never leave the page cursorless.
+ *
+ * `mix-blend-mode: difference` is gone: it forced the compositor to keep the
+ * whole page as a blend backdrop for a 28px circle, and on the ivory surfaces
+ * it inverted into a colour that belongs to no part of this palette.
  */
 const LABELS: Record<string, string> = {
   view: "View",
@@ -89,11 +93,10 @@ export default function Cursor() {
         ref={ringRef}
         className="absolute left-0 top-0 flex items-center justify-center rounded-full border border-ivory/45 transition-[width,height,background-color,border-color] duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
         style={{
-          width: label ? 82 : down ? 26 : 34,
-          height: label ? 82 : down ? 26 : 34,
+          width: label ? 64 : down ? 22 : 28,
+          height: label ? 64 : down ? 22 : 28,
           backgroundColor: label ? "rgba(224,205,178,0.92)" : "transparent",
           borderColor: label ? "rgba(224,205,178,0)" : "rgba(242,237,228,0.45)",
-          mixBlendMode: label ? "normal" : "difference",
         }}
       >
         {label && (

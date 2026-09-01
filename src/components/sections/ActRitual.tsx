@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useDeviceCapability } from "@/components/ui/useDeviceCapability";
 import { clamp, cx } from "@/lib/utils";
+import { useScrollProgress } from "@/lib/motion/scheduler";
 import type { ImageRef, MediaTone } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 
@@ -81,36 +82,33 @@ const PLATES: ImageRef[] = STAGES.map((s) => ({ alt: s.name, tone: s.tone, seed:
 export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) {
   const cap = useDeviceCapability();
   const trackRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
+  const plateRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const barRef = useRef<HTMLDivElement>(null);
+  /**
+   * Six stages across a 500vh track. `active` changes six times; the plate
+   * crossfade and the progress bar are written directly to the DOM and never
+   * enter React at all.
+   */
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let raf = 0;
+  useScrollProgress(trackRef, ({ p }) => {
+    const exact = p * (STAGES.length - 1);
 
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      setProgress(travel > 0 ? clamp(-r.top / travel) : 0);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
+    for (let i = 0; i < STAGES.length; i++) {
+      const el = plateRefs.current[i];
+      if (!el) continue;
+      const d = Math.abs(exact - i);
+      el.style.opacity = clamp(1 - d).toFixed(4);
+      el.style.transform = `scale(${(1 + d * 0.045).toFixed(3)})`;
+    }
 
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+    if (barRef.current) barRef.current.style.width = `${(p * 100).toFixed(2)}%`;
+
+    const index = Math.round(exact);
+    setActive((prev) => (prev === index ? prev : index));
+  });
 
   const has3D = cap.ready && cap.allow3D && !cap.coarsePointer && !cap.lowPower;
-  const exact = progress * (STAGES.length - 1);
-  const active = Math.round(exact);
 
   return (
     <section aria-labelledby="ritual-title" className="section-dark relative">
@@ -139,11 +137,14 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
               {STAGES.map((s, i) => (
                 <div
                   key={s.index}
+                  ref={(el) => {
+                    plateRefs.current[i] = el;
+                  }}
                   className="absolute inset-0"
                   style={{
-                    opacity: clamp(1 - Math.abs(exact - i)),
-                    transform: `scale(${(1 + Math.abs(exact - i) * 0.045).toFixed(3)})`,
-                    transition: "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
+                    opacity: i === 0 ? 1 : 0,
+                    transition:
+                      "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}
                 >
                   <EditorialImage
@@ -197,8 +198,9 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
 
               <div className="mt-10 h-px w-full bg-ivory/12 lg:ml-auto lg:w-56">
                 <div
+                  ref={barRef}
                   className="h-px bg-champagne"
-                  style={{ width: `${progress * 100}%`, transition: "width 120ms linear" }}
+                  style={{ width: 0, transition: "width 120ms linear" }}
                 />
               </div>
               <p className="sr-only" aria-live="polite">

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import { clamp, cx } from "@/lib/utils";
+import { useScrollProgress } from "@/lib/motion/scheduler";
 import type { ImageRef, MediaTone } from "@/lib/types";
 
 /**
@@ -28,33 +29,28 @@ const PLATES: ImageRef[] = LOOKS.map((l) => ({ alt: `${l.name} bridal hair`, ton
 
 export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [p, setP] = useState(0);
+  const frameRefs = useRef<Array<HTMLDivElement | null>>([]);
+  /**
+   * Six states across a 380vh track — so six re-renders for the whole
+   * section, not one per scroll frame. The crossfade between them is written
+   * straight to the DOM below.
+   */
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      setP(travel > 0 ? clamp(-r.top / travel) : 0);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  useScrollProgress(trackRef, ({ p }) => {
+    const exact = p * (LOOKS.length - 1);
 
-  const exact = p * (LOOKS.length - 1);
-  const active = Math.round(exact);
+    for (let i = 0; i < LOOKS.length; i++) {
+      const el = frameRefs.current[i];
+      if (!el) continue;
+      const d = Math.abs(exact - i);
+      el.style.opacity = clamp(1 - d * 1.15).toFixed(4);
+      el.style.transform = `scale(${(1 + d * 0.06).toFixed(3)}) translateY(${((exact - i) * 3).toFixed(2)}%)`;
+    }
+
+    const index = Math.round(exact);
+    setActive((prev) => (prev === index ? prev : index));
+  });
 
   return (
     <section aria-labelledby="hair-title" className="section-dark relative">
@@ -105,12 +101,15 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
               {LOOKS.map((l, i) => (
                 <div
                   key={l.name}
+                  ref={(el) => {
+                    frameRefs.current[i] = el;
+                  }}
                   aria-hidden="true"
                   className="absolute inset-0"
                   style={{
-                    opacity: clamp(1 - Math.abs(exact - i) * 1.15),
-                    transform: `scale(${(1 + Math.abs(exact - i) * 0.06).toFixed(3)}) translateY(${((exact - i) * 3).toFixed(2)}%)`,
-                    transition: "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
+                    opacity: i === 0 ? 1 : 0,
+                    transition:
+                      "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}
                 >
                   <EditorialImage

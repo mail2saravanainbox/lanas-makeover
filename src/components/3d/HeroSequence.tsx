@@ -10,7 +10,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { createJasmineStrand, disposeBloom } from "./jasmine";
 import { useDomSync } from "./useDomSync";
-import { pointer } from "./pointer";
+import { pointer } from "@/lib/motion/pointer";
 import { clamp, damp, norm } from "@/lib/utils";
 
 /**

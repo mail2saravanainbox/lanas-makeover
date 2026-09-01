@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import { clamp } from "@/lib/utils";
+import { useScrollProgress } from "@/lib/motion/scheduler";
 import { track } from "@/lib/analytics";
 
 /**
@@ -39,8 +40,16 @@ export default function FinalMirror({
   image?: ImageRef;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [p, setP] = useState(0);
+  const portraitRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
+  const endRef = useRef<HTMLDivElement>(null);
   const [reduced, setReduced] = useState(false);
+  /**
+   * Which of the four beats is on screen. The only state in the component: it
+   * changes four times across the whole track and exists so `aria-hidden` and
+   * the CTA's tabIndex are correct. Opacity and blur never touch React.
+   */
+  const [beat, setBeat] = useState(0);
 
   useEffect(() => {
     const t = window.setTimeout(
@@ -50,34 +59,37 @@ export default function FinalMirror({
     return () => window.clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      setP(travel > 0 ? clamp(-r.top / travel) : 0);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  useScrollProgress(trackRef, ({ p }) => {
+    if (reduced) return;
 
-  const l1 = reduced ? 1 : window4(p, 0.04, 0.14, 0.26, 0.34);
-  const l2 = reduced ? 1 : window4(p, 0.36, 0.44, 0.54, 0.61);
-  const l3 = reduced ? 1 : window4(p, 0.63, 0.70, 0.78, 0.84);
-  const end = reduced ? 1 : clamp((p - 0.84) / 0.1);
-  const portrait = reduced ? 0.55 : clamp((p - 0.02) / 0.2) * (1 - clamp((p - 0.8) / 0.12) * 0.55);
+    const l = [
+      window4(p, 0.04, 0.14, 0.26, 0.34),
+      window4(p, 0.36, 0.44, 0.54, 0.61),
+      window4(p, 0.63, 0.7, 0.78, 0.84),
+    ];
+    const end = clamp((p - 0.84) / 0.1);
+    const portrait = clamp((p - 0.02) / 0.2) * (1 - clamp((p - 0.8) / 0.12) * 0.55);
+
+    if (portraitRef.current) {
+      portraitRef.current.style.opacity = portrait.toFixed(4);
+      portraitRef.current.style.transform = `scale(${(1.1 - p * 0.08).toFixed(3)})`;
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const el = lineRefs.current[i];
+      if (!el) continue;
+      el.style.opacity = l[i].toFixed(4);
+      el.style.filter = `blur(${((1 - l[i]) * 10).toFixed(1)}px)`;
+    }
+
+    if (endRef.current) {
+      endRef.current.style.opacity = end.toFixed(4);
+      endRef.current.style.transform = `translateY(calc(-50% + ${((1 - end) * 24).toFixed(1)}px))`;
+    }
+
+    const next = p < 0.35 ? 0 : p < 0.62 ? 1 : p < 0.84 ? 2 : 3;
+    setBeat((prev) => (prev === next ? prev : next));
+  }, [reduced]);
 
   return (
     <section aria-labelledby="mirror-title" className="section-dark relative">
@@ -89,12 +101,10 @@ export default function FinalMirror({
         <div className="sticky top-0 flex h-[100dvh] items-center justify-center overflow-hidden">
           {/* The portrait, held behind everything */}
           <div
+            ref={portraitRef}
             aria-hidden="true"
             className="absolute inset-0"
-            style={{
-              opacity: portrait,
-              transform: `scale(${(1.1 - p * 0.08).toFixed(3)})`,
-            }}
+            style={{ opacity: reduced ? 0.55 : 0, transform: "scale(1.1)" }}
           >
             <EditorialImage image={image} className="h-full w-full" sizes="100vw" decorative />
             <div className="absolute inset-0 bg-ink/70" />
@@ -105,8 +115,11 @@ export default function FinalMirror({
           <div className="shell relative z-10 text-center">
             <p
               className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance text-ivory"
-              style={{ opacity: l1, filter: `blur(${((1 - l1) * 10).toFixed(1)}px)` }}
-              aria-hidden={l1 < 0.5}
+              ref={(el) => {
+                lineRefs.current[0] = el;
+              }}
+              style={{ opacity: reduced ? 1 : 0 }}
+              aria-hidden={!reduced && beat !== 0}
             >
               And then, she looked
               <br /> in the mirror.
@@ -114,8 +127,11 @@ export default function FinalMirror({
 
             <p
               className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance text-ivory"
-              style={{ opacity: l2, filter: `blur(${((1 - l2) * 10).toFixed(1)}px)` }}
-              aria-hidden={l2 < 0.5}
+              ref={(el) => {
+                lineRefs.current[1] = el;
+              }}
+              style={{ opacity: reduced ? 1 : 0 }}
+              aria-hidden={!reduced && beat !== 1}
             >
               She didn’t see
               <br /> someone else.
@@ -123,20 +139,24 @@ export default function FinalMirror({
 
             <p
               className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance"
-              style={{ opacity: l3, filter: `blur(${((1 - l3) * 10).toFixed(1)}px)` }}
-              aria-hidden={l3 < 0.5}
+              ref={(el) => {
+                lineRefs.current[2] = el;
+              }}
+              style={{ opacity: reduced ? 1 : 0 }}
+              aria-hidden={!reduced && beat !== 2}
             >
               <span className="italic-serif text-champagne">She saw herself.</span>
             </p>
 
             {/* Resolution */}
             <div
-              className="absolute inset-x-0 top-1/2 -translate-y-1/2"
+              ref={endRef}
+              className="absolute inset-x-0 top-1/2"
               style={{
-                opacity: end,
-                transform: `translateY(calc(-50% + ${((1 - end) * 24).toFixed(1)}px))`,
+                opacity: reduced ? 1 : 0,
+                transform: reduced ? "translateY(-50%)" : "translateY(calc(-50% + 24px))",
               }}
-              aria-hidden={end < 0.5}
+              aria-hidden={!reduced && beat !== 3}
             >
               <p className="display-md uppercase tracking-[0.14em] text-ivory">
                 {brand.replace(/'s/i, "’s")}
@@ -148,7 +168,7 @@ export default function FinalMirror({
                 href="/contact"
                 onClick={() => track("booking_click", { placement: "final-mirror" })}
                 className="btn mt-11"
-                tabIndex={end > 0.5 ? 0 : -1}
+                tabIndex={reduced || beat === 3 ? 0 : -1}
               >
                 {cta}
               </Link>

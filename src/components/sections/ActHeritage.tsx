@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ImageRef, MediaTone } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import KolamGrid from "./KolamGrid";
 import { clamp, norm } from "@/lib/utils";
+import { useScrollProgress } from "@/lib/motion/scheduler";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -65,39 +66,35 @@ const MATERIALS: Material[] = [
   },
 ];
 
+/** Each material owns an equal share of the track. */
+const SPAN = 1 / MATERIALS.length;
+
 export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [p, setP] = useState(0);
+  const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
+  /**
+   * The ONLY React state here. It changes three times across a 320vh track —
+   * once per material — and drives the panel that is mounted-visible and the
+   * aria-live announcement. Everything continuous is a CSS custom property
+   * written straight to the DOM, so scrolling re-renders nothing.
+   */
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      setP(travel > 0 ? clamp(-r.top / travel) : 0);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  useScrollProgress(trackRef, ({ p }) => {
+    const index = Math.min(MATERIALS.length - 1, Math.floor(p / SPAN));
 
-  // Each material owns a third of the track; within it, the close-up resolves
-  // into the bride at the two-thirds mark.
-  const span = 1 / MATERIALS.length;
-  const activeIndex = Math.min(MATERIALS.length - 1, Math.floor(p / span));
-  const local = clamp((p - activeIndex * span) / span);
-  const reveal = norm(local, 0.45, 0.85);
+    for (let i = 0; i < MATERIALS.length; i++) {
+      const el = panelRefs.current[i];
+      if (!el) continue;
+      // Within this material's share: 0 as it starts, 1 as it ends.
+      const local = clamp((p - i * SPAN) / SPAN);
+      // The close-up resolves into the bride across the last half of it.
+      el.style.setProperty("--local", local.toFixed(4));
+      el.style.setProperty("--reveal", norm(local, 0.45, 0.85).toFixed(4));
+    }
+
+    setActiveIndex((prev) => (prev === index ? prev : index));
+  });
 
   return (
     <section aria-labelledby="heritage-title" className="section-dark relative">
@@ -142,16 +139,26 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
             return (
               <div
                 key={m.name}
+                ref={(el) => {
+                  panelRefs.current[i] = el;
+                }}
                 aria-hidden={!on}
                 className="absolute inset-0"
-                style={{ opacity: on ? 1 : 0, transition: "opacity var(--d-base) linear" }}
+                style={
+                  {
+                    opacity: on ? 1 : 0,
+                    transition: "opacity var(--d-base) linear",
+                    "--local": 0,
+                    "--reveal": 0,
+                  } as React.CSSProperties
+                }
               >
                 {/* MATERIAL — the close-up */}
                 <div
                   className="absolute inset-0"
                   style={{
-                    opacity: 1 - reveal,
-                    transform: `scale(${(1 + reveal * 0.12).toFixed(3)})`,
+                    opacity: "calc(1 - var(--reveal))",
+                    transform: "scale(calc(1 + var(--reveal) * 0.12))",
                   }}
                 >
                   <EditorialImage
@@ -166,9 +173,9 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
                 <div
                   className="absolute inset-0"
                   style={{
-                    clipPath: `circle(${(reveal * 115).toFixed(1)}% at 50% 45%)`,
-                    opacity: clamp(reveal * 1.3),
-                    transform: `scale(${(1.1 - reveal * 0.1).toFixed(3)})`,
+                    clipPath: "circle(calc(var(--reveal) * 115%) at 50% 45%)",
+                    opacity: "min(1, calc(var(--reveal) * 1.3))",
+                    transform: "scale(calc(1.1 - var(--reveal) * 0.1))",
                   }}
                 >
                   <EditorialImage
@@ -186,8 +193,8 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
                   <p
                     className="display-lg text-ivory"
                     style={{
-                      transform: `translateY(${((1 - local) * 14).toFixed(1)}px)`,
-                      opacity: clamp(local * 3),
+                      transform: "translateY(calc((1 - var(--local)) * 14px))",
+                      opacity: "min(1, calc(var(--local) * 3))",
                     }}
                   >
                     {m.name}

@@ -1,10 +1,9 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect } from "react";
 import * as THREE from "three";
-import { bindPointer, pointer } from "./pointer";
-import { damp } from "@/lib/utils";
+import { bindPointer } from "@/lib/motion/pointer";
 import Atmosphere from "./Atmosphere";
 import JasmineBloom from "./JasmineBloom";
 import HeroSequence from "./HeroSequence";
@@ -41,16 +40,6 @@ import TransformationScene from "./TransformationScene";
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-/** Damps the raw pointer once per frame for every scene to read. */
-function PointerRig() {
-  useFrame((_, delta) => {
-    const dt = Math.min(delta, 0.05);
-    pointer.x = damp(pointer.x, pointer.tx, 3.5, dt);
-    pointer.y = damp(pointer.y, pointer.ty, 3.5, dt);
-  }, -1);
-  return null;
-}
-
 export default function StoryScenes({ light }: { light: boolean }) {
   useEffect(() => bindPointer(), []);
 
@@ -74,7 +63,6 @@ export default function StoryScenes({ light }: { light: boolean }) {
         frameloop="always"
       >
         <Suspense fallback={null}>
-          <PointerRig />
           <Atmosphere />
 
           {/* Warm key, champagne rim. Two lights, deliberately. */}

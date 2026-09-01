@@ -11,7 +11,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { createTransformationMaterial } from "./materials";
 import { useDomSync } from "./useDomSync";
-import { pointer } from "./pointer";
+import { pointer } from "@/lib/motion/pointer";
 import { damp } from "@/lib/utils";
 
 /**
