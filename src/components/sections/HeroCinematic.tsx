@@ -84,7 +84,10 @@ export default function HeroCinematic({
   // The bride is revealed *through* the strand: an aperture opening from the
   // centre as the flower crosses the lens.
   const aperture = reduced ? 1 : norm(P, 0.6, 0.9);
-  const brandIn = reduced ? 1 : norm(P, 0.84, 0.96);
+  // INTERIM (Task 1.2 → replaced wholesale by Task 2.3's Hero).
+  // The identity is present in frame one. Nobody should have to scroll four
+  // viewports to learn whose site this is.
+  const brandIn = 1;
 
   return (
     <section aria-label="Introduction" className="relative">
@@ -152,28 +155,23 @@ export default function HeroCinematic({
             Before she becomes a bride&hellip;
           </p>
 
-          {/* ── PHASE 5 — the identity ────────────────────────────────────── */}
+          {/* ── THE IDENTITY — bottom-left, from scroll zero ──────────────── */}
           <div
-            className="shell relative z-10 flex flex-col items-center text-center"
-            style={{
-              opacity: brandIn,
-              transform: `translateY(${((1 - brandIn) * 26).toFixed(1)}px)`,
-              pointerEvents: brandIn > 0.6 ? "auto" : "none",
-            }}
-            aria-hidden={brandIn < 0.5}
+            className="shell absolute inset-x-0 bottom-[12vh] z-10 flex flex-col items-start text-left"
+            style={{ opacity: brandIn }}
           >
             <h1 className="display-xl uppercase leading-[0.9] text-ivory">
               {brand.replace(/'s/i, "’s")}
             </h1>
             <p className="eyebrow mt-6 text-champagne/85">{tagline}</p>
 
-            <p className="display-sm mt-10 max-w-[22ch] text-balance text-ivory/85">
+            <p className="display-sm mt-8 max-w-[22ch] text-balance text-ivory/85">
               Every bride has a moment
               <br />
               <span className="italic-serif text-champagne">before she becomes the bride.</span>
             </p>
 
-            <Link href="/contact" className="btn mt-10" tabIndex={brandIn > 0.6 ? 0 : -1}>
+            <Link href="/contact" className="btn mt-9">
               {cta}
             </Link>
           </div>

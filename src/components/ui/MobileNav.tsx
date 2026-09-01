@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { NAV_LINKS } from "./Nav";
+import type { NavLink } from "./Nav";
 import { siteSettings } from "@/content/site";
 import { track } from "@/lib/analytics";
 
@@ -17,11 +17,13 @@ export default function MobileNav({
   onClose,
   brand,
   cta,
+  links,
 }: {
   open: boolean;
   onClose: () => void;
   brand: string;
   cta: string;
+  links: NavLink[];
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -104,7 +106,7 @@ export default function MobileNav({
 
         <nav aria-label="Mobile" className="shell flex flex-1 flex-col justify-center">
           <ul className="space-y-1">
-            {NAV_LINKS.map((link, i) => (
+            {links.map((link, i) => (
               <li key={link.href} className="line-mask">
                 <span
                   className="block transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"

@@ -58,6 +58,8 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const settings = await content().getSiteSettings();
+  // "Brides" only earns a nav link once there is a bride story behind it.
+  const hasBrides = (await content().getBrides()).length > 0;
 
   return (
     <html lang="en-IN" className={`${display.variable} ${sans.variable}`}>
@@ -69,7 +71,7 @@ export default async function RootLayout({
         <Cursor />
         <PageTransition brand={settings.brandName} />
 
-        <Nav brand={settings.brandName} cta={settings.bookingCta} />
+        <Nav brand={settings.brandName} cta={settings.bookingCta} hasBrides={hasBrides} />
 
         <div className="page-content flex min-h-dvh flex-col">
           <main id="main" className="flex-1">
