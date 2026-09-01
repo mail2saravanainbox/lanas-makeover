@@ -1,98 +1,33 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect } from "react";
-import * as THREE from "three";
+import dynamic from "next/dynamic";
 import { useDeviceCapability } from "@/components/ui/useDeviceCapability";
-import { bindPointer, pointer } from "./pointer";
-import { damp } from "@/lib/utils";
-import Atmosphere from "./Atmosphere";
-import JasmineBloom from "./JasmineBloom";
-import SilkScene from "./SilkScene";
-import TransformationScene from "./TransformationScene";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  THE STORY CANVAS
+ *  STORY CANVAS — the gatekeeper
  * ═══════════════════════════════════════════════════════════════════════════
- *  ONE fixed WebGL surface behind the whole document. Every scene inside it
- *  binds itself to a plain DOM element via `data-scene="…"`, so the 3D layer
- *  follows the HTML rather than replacing it.
+ *  Deliberately tiny. It holds no Three.js import of its own; it decides
+ *  whether this device should get the WebGL layer at all, and only then pulls
+ *  the scenes in with a dynamic import.
  *
- *  Consequences, all deliberate:
- *   · No scroll-jacking — the page scrolls natively, WebGL follows.
- *   · Removing this component leaves a complete, premium 2D site (§35).
- *   · Content stays in the DOM: crawlable, selectable, screen-readable.
- *   · Scenes whose anchor is absent on the current route cost nothing.
+ *  Consequence: a visitor on a low-power phone, with reduced motion enabled,
+ *  or without WebGL never downloads the 3D runtime. They get the complete 2D
+ *  experience, which is the baseline the whole site is designed around.
+ *
+ *  `ssr: false` because there is nothing to server-render — the canvas is
+ *  decorative, and every word of the story lives in the DOM regardless.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-
-/** Damps the raw pointer once per frame for every scene to read. */
-function PointerRig() {
-  useFrame((_, delta) => {
-    const dt = Math.min(delta, 0.05);
-    pointer.x = damp(pointer.x, pointer.tx, 3.5, dt);
-    pointer.y = damp(pointer.y, pointer.ty, 3.5, dt);
-  }, -1);
-  return null;
-}
+const StoryScenes = dynamic(() => import("./StoryScenes"), { ssr: false });
 
 export default function StoryCanvas() {
   const cap = useDeviceCapability();
 
-  useEffect(() => bindPointer(), []);
-
   // The 2D experience is the baseline; WebGL is additive and always optional.
   if (!cap.ready || !cap.allow3D) return null;
 
-  // Phones get the atmosphere and the jasmine, but not the heavy shader planes.
-  const light = cap.coarsePointer || cap.lowPower;
-
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0"
-      data-story-canvas=""
-    >
-      <Canvas
-        gl={{
-          antialias: !light,
-          alpha: true,
-          powerPreference: "high-performance",
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.06,
-        }}
-        dpr={light ? [1, 1.4] : [1, 1.75]}
-        camera={{ position: [0, 0, 5], fov: 45, near: 0.1, far: 60 }}
-        performance={{ min: 0.45 }}
-        frameloop="always"
-      >
-        <Suspense fallback={null}>
-          <PointerRig />
-          <Atmosphere />
-
-          {/* Warm key, champagne rim. Two lights, deliberately. */}
-          <ambientLight intensity={0.55} color="#6b5a44" />
-          <directionalLight position={[2.4, 3.2, 4]} intensity={2.3} color="#ffe9c9" />
-          <directionalLight position={[-3.2, 1.4, -2.2]} intensity={1.5} color="#c9a96a" />
-
-          {/* ACT I — the bloom held in the opening frame */}
-          <JasmineBloom anchor="[data-scene='hero-jasmine']" seed={0} scale={1} drift={1} />
-
-          {/* ACT IV — a smaller bloom drifting through the heritage act */}
-          <JasmineBloom anchor="[data-scene='heritage-jasmine']" seed={3} scale={0.72} drift={0.6} />
-
-          {!light && (
-            <>
-              <TransformationScene
-                anchor="[data-scene='transformation']"
-                trackAnchor="[data-scene='transformation-track']"
-              />
-              <SilkScene anchor="[data-scene='silk']" />
-            </>
-          )}
-        </Suspense>
-      </Canvas>
-    </div>
-  );
+  // Phones that do get WebGL keep the atmosphere and jasmine, but not the
+  // two heavy shader planes.
+  return <StoryScenes light={cap.coarsePointer || cap.lowPower} />;
 }
