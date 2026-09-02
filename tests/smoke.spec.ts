@@ -235,3 +235,27 @@ test("the hero's frame actually has a size", async ({ page }) => {
   expect(box!.width).toBeGreaterThan(200);
   expect(box!.height).toBeGreaterThan(200);
 });
+
+test("portfolio grid tiles have a size", async ({ page }) => {
+  await page.goto("/portfolio");
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await page.waitForTimeout(1200);
+
+  /**
+   * Regression guard. Every tile once rendered at zero height: the <li> carries
+   * the aspect ratio, but Reveal and ParallaxFrame sit between it and the
+   * button's h-full at height:auto, so h-full resolved against nothing. The
+   * images all loaded — naturalWidth > 0, no failed requests — and the grid was
+   * simply a black rectangle. Latent since the grid was written, invisible
+   * until the portfolio had its first published item.
+   */
+  const boxes = await page.evaluate(() =>
+    [...document.querySelectorAll("li img")].map((i) => {
+      const r = i.getBoundingClientRect();
+      return { w: Math.round(r.width), h: Math.round(r.height) };
+    }),
+  );
+
+  expect(boxes.length, "tiles rendered").toBeGreaterThan(0);
+  expect(boxes.filter((b) => b.h === 0), "tiles with zero height").toHaveLength(0);
+});

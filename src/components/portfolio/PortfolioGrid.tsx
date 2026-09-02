@@ -187,8 +187,14 @@ export default function PortfolioGrid({
 
             return (
               <li key={item.id} className={cx(SPAN[weight], offset, "relative")}>
-                <Reveal blur delay={(i % 3) * 110}>
-                  <ParallaxFrame strength={0.4}>
+                {/* h-full all the way down. The <li> carries the aspect ratio,
+                    but Reveal and ParallaxFrame are plain divs at height:auto —
+                    without this the button's h-full resolves against nothing and
+                    every tile renders at zero height. Latent since the grid was
+                    written; invisible until the portfolio had its first
+                    published item. */}
+                <Reveal blur delay={(i % 3) * 110} className="h-full">
+                  <ParallaxFrame strength={0.4} className="h-full">
                     <button
                       type="button"
                       data-cursor="view"
