@@ -189,16 +189,29 @@ test("the ritual reaches stage eight and reports it", async ({ page }) => {
   });
   expect(track, "the 300vh ritual track").not.toBeNull();
 
-  // Land at the very bottom of the track — stage eight.
-  await page.evaluate(
-    (t) => window.scrollTo(0, t.top + t.height - window.innerHeight),
-    track!,
-  );
-  await page.waitForTimeout(1500);
-
-  // The aria-live region is the actual contract here: it is what a screen
-  // reader is told, and it is unambiguous where matching body copy is not.
-  await expect(page.locator('[aria-live="polite"]').first()).toHaveText(/Stage 08: The Bride/);
+  /**
+   * Re-measure and re-scroll on every attempt rather than trusting one jump.
+   * The track's offset shifts while the page settles, and a single scrollTo
+   * against a stale offset lands on the wrong stage — which made this flaky
+   * roughly one run in three.
+   */
+  await expect
+    .poll(
+      async () => {
+        await page.evaluate(() => {
+          const el = [...document.querySelectorAll("section")]
+            .find((s) => s.getAttribute("aria-labelledby") === "ritual-title")
+            ?.querySelector<HTMLElement>("div[class*='300vh']");
+          if (!el) return;
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo(0, top + el.offsetHeight - window.innerHeight);
+        });
+        await page.waitForTimeout(500);
+        return page.locator('[aria-live="polite"]').first().textContent();
+      },
+      { timeout: 15_000 },
+    )
+    .toMatch(/Stage 08: The Bride/);
 
   const fired = await page.evaluate(() =>
     ((window as unknown as { dataLayer: Array<{ event?: string }> }).dataLayer ?? []).some(
@@ -206,4 +219,17 @@ test("the ritual reaches stage eight and reports it", async ({ page }) => {
     ),
   );
   expect(fired, "ritual_complete on the dataLayer").toBe(true);
+});
+
+test("the hero's frame actually has a size", async ({ page }) => {
+  await page.goto("/");
+
+  // Regression guard. The frame once rendered 1280x0 — valid markup, correct
+  // classes, no height — because PlaceholderPlate's own `relative` beat the
+  // `absolute` passed in via className. Nothing in the DOM looked wrong; the
+  // hero was simply an empty black rectangle on the live site.
+  const box = await page.locator("[data-hero] [data-placeholder], [data-hero] img").first().boundingBox();
+  expect(box, "the hero frame is in the DOM").not.toBeNull();
+  expect(box!.width).toBeGreaterThan(200);
+  expect(box!.height).toBeGreaterThan(200);
 });
