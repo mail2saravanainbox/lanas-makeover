@@ -77,6 +77,42 @@ export const siteSettings: SiteSettings = {
   signatureTamil: "மல்லிகை",
 
   /**
+   * ───────────────────────────────────────────────────────────────────────
+   *  THE HERO
+   * ───────────────────────────────────────────────────────────────────────
+   *  `poster` / `posterPortrait` are left undefined on purpose: the poster
+   *  resolves from Lana's portfolio through slots.ts, so it fills itself the
+   *  moment a featured bridal photograph is imported. Set them only to pin a
+   *  specific frame.
+   *
+   *  TODO(client): `video` stays undefined until Lana supplies footage. The
+   *  hero is complete without it — poster, or placeholder plate.
+   *
+   *  When it exists, drop the files in /public/video and set:
+   *
+   *    video: {
+   *      landscape: {
+   *        av1:  "/video/hero-landscape.av1.mp4",
+   *        webm: "/video/hero-landscape.webm",
+   *        mp4:  "/video/hero-landscape.mp4",
+   *      },
+   *      portrait: { ...same three, hero-portrait.* },
+   *    }
+   *
+   *  ENCODE LADDER — scripts/encode-video.sh reproduces this exactly.
+   *    · 24 fps, no audio track at all (-an). It is muted by policy; shipping
+   *      an audio stream is bytes nobody will ever hear.
+   *    · landscape 1920x1080, portrait 1080x1920.
+   *    · H.264  CRF 23, +faststart (moov atom first, so it starts on the
+   *             first bytes rather than the last)
+   *    · VP9    CRF 31
+   *    · AV1    CRF 35
+   *    · 8 seconds or under. It loops; nobody watches it twice.
+   * ───────────────────────────────────────────────────────────────────────
+   */
+  hero: {},
+
+  /**
    * Master honesty switches.
    *  contentIsPlaceholder → shows the demo-content notice in /admin + footer.
    *  showPlaceholderBadges → tags placeholder imagery in the UI so nothing

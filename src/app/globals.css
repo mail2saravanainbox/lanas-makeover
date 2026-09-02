@@ -190,6 +190,12 @@
   letter-spacing: -0.015em;
 }
 
+/* The wordmark. Display type is tracked tight; a wordmark is not — it is read
+   as a name, letter by letter. */
+.wordmark {
+  letter-spacing: 0.06em;
+}
+
 /* The wordmark is the one string that must never wrap badly on a phone. */
 @media (max-width: 639px) {
   .wordmark-mobile {

@@ -40,6 +40,36 @@ export interface ImageRef {
   blurDataURL?: string;
 }
 
+/**
+ * One encode of one video, in the three formats worth shipping.
+ * `mp4` (H.264) is required: it is the only one every device plays.
+ */
+export interface VideoSources {
+  /** AV1 in MP4. Smallest, newest decoders only. */
+  av1?: string;
+  webm?: string;
+  mp4: string;
+}
+
+/**
+ * The hero's media.
+ *
+ * `poster` and `posterPortrait` are OVERRIDES. Normally both stay undefined
+ * and the poster resolves from the portfolio through slots.ts, like every
+ * other photograph on the site — set them only to pin a specific frame.
+ *
+ * `video` is undefined until Lana supplies footage. The hero is complete
+ * without it: poster, or plate.
+ */
+export interface HeroMedia {
+  poster?: ImageRef;
+  posterPortrait?: ImageRef;
+  video?: {
+    landscape: VideoSources;
+    portrait?: VideoSources;
+  };
+}
+
 export type PortfolioCategory =
   /**
    * The house speciality. Kept distinct from generic "bridal" so the site can
@@ -196,6 +226,7 @@ export interface SiteSettings {
   secondaryCta: string;
   /** One word of Tamil, rendered once per page. See site.ts. */
   signatureTamil: string;
+  hero: HeroMedia;
   /** Marks demo copy so the UI can be honest about what is placeholder. */
   contentIsPlaceholder: boolean;
   showPlaceholderBadges: boolean;

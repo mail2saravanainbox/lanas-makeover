@@ -5,7 +5,7 @@ import { pageMetadata, personSchema } from "@/lib/seo";
 import JsonLd from "@/components/ui/JsonLd";
 import BrandVeil from "@/components/ui/BrandVeil";
 
-import HeroCinematic from "@/components/sections/HeroCinematic";
+import Hero from "@/components/sections/Hero";
 import ActBefore from "@/components/sections/ActBefore";
 import ActArtist from "@/components/sections/ActArtist";
 import SilkTransition from "@/components/sections/SilkTransition";
@@ -70,12 +70,13 @@ export default async function HomePage() {
           Homepage only — it is an opening, not a loader. */}
       <BrandVeil brand={settings.brandName} />
 
-      {/* ACT 0 — the opening */}
-      <HeroCinematic
+      {/* The opening — one screen, not four */}
+      <Hero
         brand={settings.brandName}
-        tagline={settings.tagline}
         cta={settings.bookingCta}
-        portrait={slots.heroPortrait}
+        poster={settings.hero.poster ?? slots.heroPoster}
+        posterPortrait={settings.hero.posterPortrait ?? slots.heroPosterPortrait}
+        video={settings.hero.video}
       />
 
       {/* ACT I — before the bride */}

@@ -96,6 +96,13 @@ const plate = (alt: string, tone: MediaTone, seed: number): ImageRef => ({ alt, 
 
 export interface ImageSlots {
   hasRealPhotography: boolean;
+  /**
+   * The hero's poster — the first thing anyone sees, and the LCP element.
+   * Landscape-weighted, because the hero is a 16:9 frame on most screens.
+   */
+  heroPoster: ImageRef;
+  /** 9:16 for portrait viewports. Null when nothing suitable exists. */
+  heroPosterPortrait: ImageRef | null;
   /** The bride revealed through the flower. Establishes the brand in 2s (§15). */
   heroPortrait: ImageRef;
   beforeLayers: [ImageRef, ImageRef, ImageRef];
@@ -109,9 +116,38 @@ export interface ImageSlots {
   finalMirror: ImageRef;
 }
 
+/**
+ * The strongest bridal frame available, preferring the shape the slot needs.
+ * `weight` is the only orientation signal the import pipeline records, so
+ * "wide"/"full" stand in for landscape and "tall" for portrait.
+ */
+function poster(shape: "landscape" | "portrait"): ImageRef | null {
+  const available = pool(["tamil-bridal", "muhurtham", "bridal"]);
+  if (available.length === 0) return null;
+
+  const wanted =
+    shape === "landscape"
+      ? (w?: PortfolioItem["weight"]) => w === "wide" || w === "full"
+      : (w?: PortfolioItem["weight"]) => w === "tall";
+
+  const ordered = [
+    ...available.filter((i) => i.featured && wanted(i.weight)),
+    ...available.filter((i) => !i.featured && wanted(i.weight)),
+    // Portrait has no fallback to the wrong shape: a 3:4 frame letterboxed
+    // across a phone is worse than the plate it would replace.
+    ...(shape === "landscape" ? available.filter((i) => i.featured) : []),
+  ];
+
+  return ordered[0] ? toImageRef(ordered[0]) : null;
+}
+
 export function getImageSlots(): ImageSlots {
   return {
     hasRealPhotography,
+
+    heroPoster:
+      poster("landscape") ?? plate("Bridal portrait — the opening frame", "bronze", 100),
+    heroPosterPortrait: poster("portrait"),
 
     // The single strongest bridal frame, reserved for the opening reveal.
     heroPortrait: one(["bridal"], plate("Bridal portrait", "bronze", 900)),
