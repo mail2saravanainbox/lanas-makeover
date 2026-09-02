@@ -122,7 +122,7 @@ export default async function HomePage() {
         <FeaturedLooks index={n.brides!} items={featured} />
       )}
 
-      <ActHeritage index={n.heritage!} images={slots.heritage} />
+      <ActHeritage index={n.heritage!} images={slots.heritage} details={slots.detail} />
 
       <BridalWorlds index={n.ceremonies!} services={worlds} />
 

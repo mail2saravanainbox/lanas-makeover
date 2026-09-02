@@ -1,17 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ImageRef, MediaTone } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import KolamGrid from "./KolamGrid";
-import { clamp, norm, sectionEyebrow } from "@/lib/utils";
-import { useScrollProgress } from "@/lib/motion/scheduler";
+import { sectionEyebrow } from "@/lib/utils";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  ACT IV — MATERIAL → MOVEMENT → BRIDE
+ *  MATERIAL → BRIDE — three panels, no pin
  * ═══════════════════════════════════════════════════════════════════════════
  *  Not an information block about Tamil materials. A sequence.
  *
@@ -20,9 +19,15 @@ import { useScrollProgress } from "@/lib/motion/scheduler";
  *    JASMINE   close on the strand     → it is in her hair
  *                                      → THE BRIDE
  *
- *  Each material holds, then the camera pulls back and the bride is revealed
- *  carrying it. That is the whole grammar of the site in miniature: the detail
- *  always resolves into the woman.
+ *  Each material holds, then the bride is revealed carrying it. That is the
+ *  whole grammar of the site in miniature: the detail always resolves into
+ *  the woman.
+ *
+ *  This used to be a 320vh scroll track with one sticky frame, which meant
+ *  three panels' worth of content cost three viewports of scrolling and could
+ *  only be read in one direction at one speed. It is now three ordinary 100vh
+ *  panels that reveal themselves on arrival. Same grammar, a third of the
+ *  scroll, and every panel reachable by keyboard.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -66,46 +71,136 @@ const MATERIALS: Material[] = [
   },
 ];
 
-/** Each material owns an equal share of the track. */
-const SPAN = 1 / MATERIALS.length;
+/**
+ * One material. Holds its close-up, then opens an aperture onto the bride
+ * wearing it when the panel arrives in view.
+ */
+function Panel({
+  material,
+  closeUp,
+  bride,
+  reduced,
+}: {
+  material: Material;
+  closeUp: ImageRef;
+  bride: ImageRef;
+  reduced: boolean;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setOpen(true);
+          io.disconnect();
+        }
+      },
+      // 0.6 — the panel is properly on screen, not merely touching the edge.
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  /** Hover (or tap) plays the reveal again: closed, then open. */
+  function replay() {
+    if (reduced) return;
+    setOpen(false);
+    window.setTimeout(() => setOpen(true), 60);
+  }
+
+  // Reduced motion is open by definition — derived, not set in an effect.
+  const p = open || reduced ? 1 : 0;
+
+  return (
+    <section
+      ref={ref}
+      aria-label={material.name}
+      className="relative flex min-h-[100dvh] items-end overflow-hidden"
+      onMouseEnter={replay}
+      onClick={replay}
+    >
+      {/* THE BRIDE — she is wearing it */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          clipPath: reduced ? undefined : `circle(${p * 115}% at 50% 45%)`,
+          opacity: reduced ? 1 : Math.min(1, p * 1.3),
+          transform: `scale(${1.1 - p * 0.1})`,
+          transition: reduced
+            ? undefined
+            : "clip-path calc(var(--d-slow) * 2) var(--ease-silk), opacity var(--d-slow) var(--ease-silk), transform calc(var(--d-slow) * 2) var(--ease-silk)",
+        }}
+      >
+        <EditorialImage image={bride} className="h-full w-full" sizes="100vw" decorative />
+      </div>
+
+      {/* THE MATERIAL — close, then gone. Under reduced motion it stays as a
+          corner thumbnail rather than disappearing: the close-up is content,
+          not a transition. */}
+      {reduced ? (
+        <div className="absolute right-6 top-6 z-10 aspect-square w-[40%] max-w-[18rem] overflow-hidden border border-ivory/15">
+          <EditorialImage image={closeUp} className="h-full w-full" sizes="40vw" decorative />
+        </div>
+      ) : (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            opacity: 1 - p,
+            transform: `scale(${1 + p * 0.12})`,
+            transition:
+              "opacity var(--d-slow) var(--ease-silk), transform calc(var(--d-slow) * 2) var(--ease-silk)",
+          }}
+        >
+          <EditorialImage image={closeUp} className="h-full w-full" sizes="100vw" decorative />
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/55" />
+
+      <div className="shell relative z-10 pb-[12vh]">
+        <p className="display-lg text-ivory">{material.name}</p>
+        <p className="italic-serif mt-4 max-w-xl text-[clamp(1.05rem,2vw,1.5rem)] text-champagne">
+          {material.line}
+        </p>
+        <p className="body-base measure-note mt-5">{material.note}</p>
+      </div>
+    </section>
+  );
+}
 
 export default function ActHeritage({
   index,
   images = [],
+  details = [],
 }: {
   index: number;
   images?: ImageRef[];
+  /** Macro close-ups from the deleted DetailArt section, preferred for the
+      material frames — a macro of a weave says "silk" where a bridal portrait
+      says "bride". */
+  details?: ImageRef[];
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
-  /**
-   * The ONLY React state here. It changes three times across a 320vh track —
-   * once per material — and drives the panel that is mounted-visible and the
-   * aria-live announcement. Everything continuous is a CSS custom property
-   * written straight to the DOM, so scrolling re-renders nothing.
-   */
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [reduced, setReduced] = useState(false);
 
-  useScrollProgress(trackRef, ({ p }) => {
-    const index = Math.min(MATERIALS.length - 1, Math.floor(p / SPAN));
-
-    for (let i = 0; i < MATERIALS.length; i++) {
-      const el = panelRefs.current[i];
-      if (!el) continue;
-      // Within this material's share: 0 as it starts, 1 as it ends.
-      const local = clamp((p - i * SPAN) / SPAN);
-      // The close-up resolves into the bride across the last half of it.
-      el.style.setProperty("--local", local.toFixed(4));
-      el.style.setProperty("--reveal", norm(local, 0.45, 0.85).toFixed(4));
-    }
-
-    setActiveIndex((prev) => (prev === index ? prev : index));
-  });
+  useEffect(() => {
+    const t = window.setTimeout(
+      () => setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches),
+      0,
+    );
+    return () => window.clearTimeout(t);
+  }, []);
 
   return (
     <section aria-labelledby="heritage-title" className="section-dark relative">
       <KolamGrid
-        className="pointer-events-none absolute right-[4%] top-[6%] z-10 h-[30rem] w-[30rem] text-champagne/[0.05]"
+        className="pointer-events-none absolute right-[4%] top-[6%] z-10 h-[30rem] w-[30rem] text-champagne/[0.09]"
         cells={7}
       />
 
@@ -127,107 +222,17 @@ export default function ActHeritage({
         </Reveal>
       </div>
 
-      <div ref={trackRef} className="relative h-[320vh]">
-        <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
-          {MATERIALS.map((m, i) => {
-            const on = i === activeIndex;
-            const closeUp = images[i * 2] ?? { alt: m.name, tone: m.tone, seed: m.seed };
-            const bride =
-              images[i * 2 + 1] ?? { alt: `${m.name} worn`, tone: m.brideTone, seed: m.brideSeed };
-
-            return (
-              <div
-                key={m.name}
-                ref={(el) => {
-                  panelRefs.current[i] = el;
-                }}
-                aria-hidden={!on}
-                className="absolute inset-0"
-                style={
-                  {
-                    opacity: on ? 1 : 0,
-                    transition: "opacity var(--d-base) linear",
-                    "--local": 0,
-                    "--reveal": 0,
-                  } as React.CSSProperties
-                }
-              >
-                {/* MATERIAL — the close-up */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    opacity: "calc(1 - var(--reveal))",
-                    transform: "scale(calc(1 + var(--reveal) * 0.12))",
-                  }}
-                >
-                  <EditorialImage
-                    image={closeUp}
-                    className="h-full w-full"
-                    sizes="100vw"
-                    decorative
-                  />
-                </div>
-
-                {/* BRIDE — she is wearing it. Revealed by a widening aperture. */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    clipPath: "circle(calc(var(--reveal) * 115%) at 50% 45%)",
-                    opacity: "min(1, calc(var(--reveal) * 1.3))",
-                    transform: "scale(calc(1.1 - var(--reveal) * 0.1))",
-                  }}
-                >
-                  <EditorialImage
-                    image={bride}
-                    className="h-full w-full"
-                    sizes="100vw"
-                    decorative
-                  />
-                </div>
-
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/55" />
-
-                {/* Type */}
-                <div className="shell relative flex h-full flex-col justify-end pb-20 sm:pb-28">
-                  <p
-                    className="display-lg text-ivory"
-                    style={{
-                      transform: "translateY(calc((1 - var(--local)) * 14px))",
-                      opacity: "min(1, calc(var(--local) * 3))",
-                    }}
-                  >
-                    {m.name}
-                  </p>
-                  <p className="italic-serif mt-4 max-w-xl text-[clamp(1.05rem,2vw,1.5rem)] text-champagne">
-                    {m.line}
-                  </p>
-                  <p className="body-base mt-5 max-w-md">{m.note}</p>
-
-                  {/* Progress through the three materials */}
-                  <ol className="mt-10 flex gap-5" aria-label="Materials">
-                    {MATERIALS.map((other, j) => (
-                      <li
-                        key={other.name}
-                        className={
-                          j === activeIndex
-                            ? "text-[0.75rem] uppercase tracking-[0.26em] text-champagne"
-                            : "text-[0.75rem] uppercase tracking-[0.26em] text-inactive"
-                        }
-                      >
-                        {other.name}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
-            );
-          })}
-
-          <p className="sr-only" aria-live="polite">
-            {MATERIALS[activeIndex].name}: {MATERIALS[activeIndex].line}
-          </p>
-        </div>
-      </div>
+      {MATERIALS.map((m, i) => (
+        <Panel
+          key={m.name}
+          material={m}
+          closeUp={details[i] ?? images[i * 2] ?? { alt: m.name, tone: m.tone, seed: m.seed }}
+          bride={
+            images[i * 2 + 1] ?? { alt: `${m.name} worn`, tone: m.brideTone, seed: m.brideSeed }
+          }
+          reduced={reduced}
+        />
+      ))}
 
       {/* The resolution of the sequence */}
       <div className="shell relative z-10 py-24 text-center sm:py-32">
