@@ -10,6 +10,7 @@ npm run import:portfolio
 
 | Filename prefix | Category |
 |---|---|
+| `ritual-01-` … `ritual-08-` | ritual (ORDERED — see below) |
 | `bridal-` `muhurtham-` `wedding-` `saree-` `jewel-` | bridal |
 | `reception-` | reception |
 | `engagement-` `nischayam-` | engagement |
@@ -18,6 +19,31 @@ npm run import:portfolio
 | `bts-` `behind-` `atelier-` `kit-` | behind-scenes |
 | `beforeafter-` `transformation-` | before-after |
 | `party-` `occasion-` | other |
+
+### The ritual frames — the one ordered set
+
+`ritual-01-…` through `ritual-08-…` fill the homepage's transformation
+sequence, in that order:
+
+| Prefix | Stage | Ratio |
+|---|---|---|
+| `ritual-01-` | The Face | 3:4 |
+| `ritual-02-` | The Skin | 3:4 |
+| `ritual-03-` | The Eyes | 3:4 |
+| `ritual-04-` | The Hair | 3:4 |
+| `ritual-05-` | The Jasmine | 3:4 |
+| `ritual-06-` | The Gold | 3:4 |
+| `ritual-07-` | The Silk | 3:4 |
+| `ritual-08-` | The Bride | 3:4 |
+
+**One bride, one camera position, registered on the eyes.** These eight frames
+are the only slot on the site that is never filled from another category. Every
+other slot borrows from a neighbouring pool when its own is empty; this one
+keeps its placeholder plate instead, because the section's whole claim is that
+these are eight moments of the same morning on the same woman. A frame of a
+different bride would quietly make that a lie.
+
+Any index you do not supply keeps its plate. Supplying only four is fine.
 
 Examples:
 

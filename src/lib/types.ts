@@ -89,6 +89,12 @@ export type PortfolioCategory =
    * a claim only Lana can make about her own photographs.
    */
   | "tamil-bridal"
+  /**
+   * The eight ordered frames of ONE bride's morning, filed as ritual-01- …
+   * ritual-08-. Never mixed with any other category: a ritual frame that is
+   * not the same woman breaks the only thing the section is doing.
+   */
+  | "ritual"
   | "muhurtham"
   | "jadai"
   | "bridal"

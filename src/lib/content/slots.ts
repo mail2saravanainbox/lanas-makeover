@@ -141,6 +141,32 @@ function poster(shape: "landscape" | "portrait"): ImageRef | null {
   return ordered[0] ? toImageRef(ordered[0]) : null;
 }
 
+/**
+ * The eight ritual frames in filename order, with a plate wherever the
+ * photograph does not exist yet.
+ */
+function ritualFrames(): ImageRef[] {
+  const plates: ImageRef[] = [
+    plate("The face", "ink", 501),
+    plate("The skin", "ivory", 502),
+    plate("The eyes", "bronze", 503),
+    plate("The hair", "olive", 504),
+    plate("The jasmine", "olive", 505),
+    plate("The gold", "champagne", 506),
+    plate("The silk", "bronze", 507),
+    plate("The bride", "rose", 508),
+  ];
+
+  const ordered = pool("ritual")
+    .slice()
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+
+  return plates.map((fallback, i) => {
+    const item = ordered.find((x) => x.slug.startsWith(`ritual-${String(i + 1).padStart(2, "0")}`));
+    return item ? toImageRef(item) : fallback;
+  });
+}
+
 export function getImageSlots(): ImageSlots {
   return {
     hasRealPhotography,
@@ -167,30 +193,19 @@ export function getImageSlots(): ImageSlots {
     artistPortrait: null,
 
     /**
-     * THE MUHURTHAM RITUAL — six stages.
-     * Face → Skin → Eyes → Hair → Adornment → Bride. The category order below
-     * mirrors that arc, so real photography lands on the right beat: the
-     * unmade face and the preparation come from behind-the-scenes work, the
-     * hair stage from hair work, and the last two from finished bridal frames.
+     * THE MUHURTHAM RITUAL — eight ordered frames.
+     *
+     * Face → Skin → Eyes → Hair → Jasmine → Gold → Silk → Bride.
+     *
+     * DELIBERATELY NOT FILLED FROM OTHER CATEGORIES. Every other slot on the
+     * site borrows from neighbouring pools when its own is empty; this one
+     * must not. The section's entire claim is that these are eight moments of
+     * ONE morning on ONE woman — a frame drawn from unrelated bridal work
+     * would quietly turn that into a lie. Missing indices keep their plate.
+     *
+     * Import as ritual-01-… through ritual-08-; see content/incoming/README.md.
      */
-    transformation: pickOrdered(
-      [
-        ["behind-scenes", "editorial"],
-        ["behind-scenes", "editorial"],
-        ["editorial", "bridal"],
-        ["hair"],
-        ["bridal"],
-        ["bridal"],
-      ],
-      [
-        plate("The face", "ink", 501),
-        plate("The skin", "ivory", 502),
-        plate("The eyes", "bronze", 503),
-        plate("The hair", "olive", 504),
-        plate("The adornment", "champagne", 505),
-        plate("The bride", "rose", 506),
-      ],
-    ),
+    transformation: ritualFrames(),
 
     /**
      * MATERIAL → BRIDE, interleaved: [silk close-up, silk worn, gold close-up,

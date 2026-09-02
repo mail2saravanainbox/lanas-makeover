@@ -19,7 +19,9 @@ export type AnalyticsEvent =
   | "booking_click"
   | "whatsapp_click"
   | "instagram_click"
-  | "contact_submit";
+  | "contact_submit"
+  /** Fired once per page view, when the ritual's eighth frame becomes active. */
+  | "ritual_complete";
 
 type Payload = Record<string, string | number | boolean | undefined>;
 

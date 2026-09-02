@@ -53,7 +53,10 @@ const EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif", ".tif", ".tiff"]
 
 /** Filename prefix → portfolio category. Extend freely. */
 const CATEGORY_RULES = [
-  // Tamil-specific prefixes first — they are the house speciality.
+  // The ordered ritual set comes FIRST, before any other rule can claim it.
+  // ritual-05-jasmine.jpg must not be filed as `hair` by the jasmine rule.
+  [/^ritual-0[1-8]/i, "ritual"],
+  // Tamil-specific prefixes next — they are the house speciality.
   [/^(tamil|kanchipuram|thali|thaali|vanki|oddiyanam|kunjalam)/i, "tamil-bridal"],
   [/^(muhurtham|muhurtam|kalyanam|mandapam|oonjal)/i, "muhurtham"],
   [/^(jadai|kunjalam)/i, "jadai"],
@@ -69,6 +72,7 @@ const CATEGORY_RULES = [
 
 /** Human-readable label for alt text and titles. */
 const CATEGORY_LABEL = {
+  ritual: "a stage of the bridal morning",
   "tamil-bridal": "Tamil bridal makeup and hair",
   muhurtham: "Tamil muhurtham bridal look",
   jadai: "traditional jadai and jasmine",
