@@ -25,7 +25,7 @@ showing the client anything true about how their own photographs will behave.
 | A fixed banner on every page | "Presentation comp — stand-in imagery, not Lana's work or her clients." Undismissable. |
 | Every route `noindex, nofollow` | `pageMetadata` ignores its own `noIndex` argument here; nothing in this build is indexable. |
 | `robots.txt` disallows everything | Not just `/admin` and `/api` — the whole site. |
-| Images are gitignored | `content/comp/*` never enters the repository. |
+| Source images gitignored | `content/comp/*` never enters the repository. The DERIVED WebPs in `public/portfolio/` must be committed — Vercel builds from git and has to serve them. |
 
 The per-image "Placeholder" badges are off in a comp — a client needs to see
 the design carrying photography — so the banner replaces them as the statement

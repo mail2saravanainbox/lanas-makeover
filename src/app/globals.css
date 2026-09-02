@@ -81,6 +81,9 @@
 }
 
 :root {
+  /* COMP BUILD: the presentation banner is fixed at the top, so everything
+     else that pins to the viewport top has to start below it. */
+  --comp-banner-h: 2.25rem;
   --page: var(--color-ink);
   --on-page: var(--color-ivory);
   --rule: rgba(242, 237, 228, 0.13);
@@ -591,6 +594,14 @@ html.lm-veiled #lm-veil[data-veil="out"] {
   html.lm-veiled #lm-veil {
     display: none;
   }
+}
+
+/* ── Comp banner offset ─────────────────────────────────────────────────────
+   The banner is fixed at z-95 and would otherwise sit on top of the header,
+   clipping the wordmark and the booking CTA. ─────────────────────────────── */
+
+header {
+  top: var(--comp-banner-h);
 }
 
 /* ── Document layering ──────────────────────────────────────────────────────

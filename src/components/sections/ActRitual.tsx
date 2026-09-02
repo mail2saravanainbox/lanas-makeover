@@ -251,7 +251,10 @@ export default function ActRitual({
                   />
                 </div>
               ))}
-            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
+            {/* COMP: lighter than the redesign branch. That scrim was tuned to keep
+                type legible over placeholder plates; over real photography it
+                buries the frame. */}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/35 to-ink/65" />
           </div>
 
           {/* Readable content, always present */}

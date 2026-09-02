@@ -29,5 +29,8 @@ It is **not** a source of imagery for the real site. Files here are stand-ins
 for a presentation. `content/incoming/` is where Lana's own photographs go, on
 the `redesign` branch, and that is the only imagery that ever reaches a bride.
 
-This folder is gitignored — the images stay on whoever's machine is running
-the pitch, and never enter the repository.
+This folder is gitignored — the originals stay on whoever's machine is running
+the pitch. The optimised WebPs the import writes into `public/portfolio/` ARE
+committed, because Vercel builds from git and cannot serve what is not there.
+That is the only place comp imagery lives in the repo, and it lives on this
+branch only.
