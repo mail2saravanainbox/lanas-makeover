@@ -197,6 +197,40 @@ export function articleSchema(input: {
   };
 }
 
+export function collectionPageSchema(input: {
+  name: string;
+  description: string;
+  path: string;
+  images: Array<{ url: string; caption: string }>;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: input.name,
+    description: input.description,
+    url: absoluteUrl(input.path),
+    isPartOf: { "@type": "WebSite", name: seoConfig.siteName, url: seoConfig.siteUrl },
+    about: { "@type": "BeautySalon", name: seoConfig.siteName, url: seoConfig.siteUrl },
+    ...(input.images.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: input.images.length,
+            itemListElement: input.images.map((img, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "ImageObject",
+                contentUrl: img.url,
+                caption: img.caption,
+              },
+            })),
+          },
+        }
+      : {}),
+  };
+}
+
 export function breadcrumbSchema(trail: Array<{ name: string; path: string }>): Json {
   return {
     "@context": "https://schema.org",

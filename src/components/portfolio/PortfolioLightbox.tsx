@@ -12,6 +12,11 @@ import EditorialImage from "@/components/ui/EditorialImage";
  *
  * Accessible dialog: labelled, focus-trapped, Escape closes, arrows navigate,
  * background scroll locked, focus returned on close.
+ *
+ * The open image is reflected in the URL as ?image=<slug> via replaceState, so
+ * a bride can send someone a link to the exact photograph she is looking at.
+ * replaceState rather than pushState deliberately: browsing a gallery should
+ * not bury the page she arrived from under thirty history entries.
  */
 export default function PortfolioLightbox({
   items,
@@ -28,6 +33,10 @@ export default function PortfolioLightbox({
   const closeRef = useRef<HTMLButtonElement>(null);
   const open = index !== null;
   const item = open ? items[index] : null;
+  const slug = item?.slug;
+
+  /** Where a horizontal drag started, for the swipe threshold below. */
+  const swipeRef = useRef<number | null>(null);
 
   const go = useCallback(
     (delta: number) => {
@@ -36,6 +45,20 @@ export default function PortfolioLightbox({
     },
     [index, items.length, onNavigate],
   );
+
+  // ── URL state ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const current = url.searchParams.get("image");
+    if (slug) {
+      if (current === slug) return;
+      url.searchParams.set("image", slug);
+    } else {
+      if (current === null) return;
+      url.searchParams.delete("image");
+    }
+    window.history.replaceState(window.history.state, "", url.toString());
+  }, [slug]);
 
   useEffect(() => {
     if (!open) return;
@@ -114,7 +137,23 @@ export default function PortfolioLightbox({
           </button>
         </div>
 
-        <div className="relative my-6 flex-1 overflow-hidden">
+        <div
+          className="relative my-6 flex-1 touch-pan-y overflow-hidden"
+          onPointerDown={(e) => {
+            swipeRef.current = e.clientX;
+          }}
+          onPointerUp={(e) => {
+            const from = swipeRef.current;
+            swipeRef.current = null;
+            if (from === null) return;
+            const dx = e.clientX - from;
+            // 40px, so a slightly imprecise tap is still a tap.
+            if (Math.abs(dx) >= 40) go(dx < 0 ? 1 : -1);
+          }}
+          onPointerCancel={() => {
+            swipeRef.current = null;
+          }}
+        >
           <EditorialImage
             image={{
               src: item.imageUrl,

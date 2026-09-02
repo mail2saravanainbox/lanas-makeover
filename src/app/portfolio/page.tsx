@@ -3,6 +3,8 @@ import { content } from "@/lib/content/provider";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
+import Link from "next/link";
+import { collections } from "@/content/collections";
 import JsonLd from "@/components/ui/JsonLd";
 import ClosingCTA from "@/components/sections/ClosingCTA";
 
@@ -40,6 +42,22 @@ export default async function PortfolioPage() {
           { name: "Portfolio", href: "/portfolio" },
         ]}
       />
+
+      <nav aria-label="Collections" className="shell mb-16">
+        <h2 className="eyebrow mb-6">Collections</h2>
+        <ul className="flex flex-wrap gap-x-7 gap-y-3">
+          {collections.map((c) => (
+            <li key={c.slug}>
+              <Link
+                href={`/portfolio/${c.slug}`}
+                className="link-wipe font-display text-xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
+              >
+                {c.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <section aria-label="Portfolio gallery" className="pb-[var(--s-12)] sm:pb-[var(--s-16)]">
         <PortfolioGrid items={items} />

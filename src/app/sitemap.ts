@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { content } from "@/lib/content/provider";
 import { absoluteUrl } from "@/lib/seo";
+import { collections } from "@/content/collections";
 
 /**
  * Dynamic sitemap (§46). Only published content is ever listed — the provider
@@ -10,8 +11,7 @@ import { absoluteUrl } from "@/lib/seo";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const provider = content();
 
-  const [portfolio, brides, posts, services] = await Promise.all([
-    provider.getPortfolio(),
+  const [brides, posts, services] = await Promise.all([
     provider.getBrides(),
     provider.getPosts(),
     provider.getServices(),
@@ -43,11 +43,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.75,
     })),
-    ...portfolio.map((i) => ({
-      url: absoluteUrl(`/portfolio/${i.slug}`),
-      lastModified: i.timestamp ? new Date(i.timestamp) : now,
+    // Collections, not photographs. A URL per image said nothing and diluted
+    // everything; a URL per room is a page worth indexing.
+    ...collections.map((c) => ({
+      url: absoluteUrl(`/portfolio/${c.slug}`),
+      lastModified: now,
       changeFrequency: "monthly" as const,
-      priority: 0.6,
+      priority: 0.8,
     })),
     ...brides.map((b) => ({
       url: absoluteUrl(`/brides/${b.slug}`),

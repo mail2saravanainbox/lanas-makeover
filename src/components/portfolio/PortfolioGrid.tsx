@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PortfolioCategory, PortfolioItem } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
@@ -47,6 +47,11 @@ const SPAN: Record<NonNullable<PortfolioItem["weight"]>, string> = {
 };
 
 /** Editorial annotation shown on hover — a caption, not a tooltip (§10). */
+/**
+ * `before-after` and `other` are deliberately absent from FILTERS above.
+ * A before/after needs consent per photograph and framing of its own; "other"
+ * is not a room, it is a drawer. Neither is offered as a public filter.
+ */
 const CATEGORY_ANNOTATION: Partial<Record<PortfolioCategory, string>> = {
   "tamil-bridal": "Tamil bridal",
   muhurtham: "Muhurtham",
@@ -86,6 +91,36 @@ export default function PortfolioGrid({
     () => (filter === "all" ? items : items.filter((i) => i.category === filter)),
     [items, filter],
   );
+
+  /**
+   * Arriving on ?image=<slug> opens that photograph directly — which is what
+   * makes the retired /portfolio/<slug> routes redirectable to something true
+   * rather than to the top of a gallery.
+   *
+   * This is a one-shot sync from genuinely external, client-only state (the
+   * URL), which is what an effect is for. The framework alternative,
+   * useSearchParams(), needs a Suspense boundary around this component on a
+   * statically rendered page — which would take the entire gallery out of the
+   * prerendered HTML. A deep-link convenience is not worth un-indexing the
+   * portfolio, so the rule is suppressed here rather than obeyed.
+   */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("image");
+    if (!slug) return;
+    const target = items.find((i) => i.slug === slug);
+    if (!target) return;
+
+    const index = items.indexOf(target);
+    // Widen to the full set first, so the index below is always resolved
+    // against exactly the list the lightbox receives.
+    setFilter("all");
+    // And make sure the image is actually in the grid behind the lightbox,
+    // so closing it does not leave the visitor above the thing they came for.
+    setShown((n) => Math.max(n, Math.ceil((index + 1) / PAGE) * PAGE));
+    setOpen(index);
+  }, [items]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const visible = filtered.slice(0, shown);
 
