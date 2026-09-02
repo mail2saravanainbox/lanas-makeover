@@ -205,7 +205,7 @@ export default async function JournalArticlePage({
           <ul className="grid gap-10 sm:grid-cols-2">
             {related.map((p) => (
               <li key={p.slug}>
-                <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
+                <Link href={`/journal/${p.slug}`} className="group block">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
                     <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] group-hover:scale-105">
                       <EditorialImage

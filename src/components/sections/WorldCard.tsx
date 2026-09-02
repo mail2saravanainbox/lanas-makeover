@@ -47,7 +47,6 @@ export default function WorldCard({
     <Link
       ref={ref}
       href={href}
-      data-cursor="view"
       onPointerMove={onMove}
       onPointerLeave={reset}
       className="group relative block [perspective:1400px]"

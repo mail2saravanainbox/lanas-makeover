@@ -61,7 +61,7 @@ export default async function BridesPage() {
             {brides.map((b, i) => (
               <li key={b.slug} className={i % 3 === 1 ? "lg:mt-16" : ""}>
                 <Reveal blur delay={(i % 3) * 120}>
-                  <Link href={`/brides/${b.slug}`} data-cursor="read" className="group block">
+                  <Link href={`/brides/${b.slug}`} className="group block">
                     <ParallaxFrame strength={0.4}>
                       <div
                         className="relative aspect-[3/4] w-full overflow-hidden"

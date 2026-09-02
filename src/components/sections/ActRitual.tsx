@@ -129,9 +129,6 @@ export default function ActRitual({
       // How far this frame still has to arrive: 1 = not yet, 0 = fully here.
       const d = clamp(Math.abs(exact - i));
       el.style.opacity = (1 - d).toFixed(4);
-      // The mask slides across the frame as it resolves, so the image comes in
-      // in clumps rather than as a flat fade — grain resolving into a picture.
-      el.style.maskPosition = `${(d * 100).toFixed(1)}% ${(d * 100).toFixed(1)}%`;
       el.style.transform = `scale(${(1 + d * 0.045).toFixed(3)})`;
     }
 
@@ -230,15 +227,6 @@ export default function ActRitual({
                   className="absolute inset-0"
                   style={{
                     opacity: i === 0 ? 1 : 0,
-                    // A luminance dissolve, not a crossfade. See
-                    // scripts/make-noise-mask.mjs.
-                    maskImage: "url('/masks/noise-512.png')",
-                    WebkitMaskImage: "url('/masks/noise-512.png')",
-                    maskMode: "luminance",
-                    maskSize: "200%",
-                    WebkitMaskSize: "200%",
-                    maskPosition: i === 0 ? "0% 0%" : "100% 100%",
-                    WebkitMaskPosition: i === 0 ? "0% 0%" : "100% 100%",
                     transition:
                       "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}

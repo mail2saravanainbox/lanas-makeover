@@ -6,7 +6,7 @@ import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import { cx, sectionEyebrow } from "@/lib/utils";
-import type { ImageRef, MediaTone, VideoSources } from "@/lib/types";
+import type { ImageRef, MediaTone } from "@/lib/types";
 
 /**
  * THE SILHOUETTE OF THE BRIDE (§19)
@@ -37,19 +37,14 @@ const DWELL = 1600;
 export default function HairSilhouette({
   index,
   images = PLATES,
-  clip,
 }: {
   index: number;
   images?: ImageRef[];
-  /** Footage for state 05, "Flowered". Absent by default. */
-  clip?: VideoSources;
 }) {
   const panelRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(0);
   /** Set by the first deliberate interaction, and never unset. */
   const touched = useRef(false);
-  const [nearby, setNearby] = useState(false);
   const swipeX = useRef<number | null>(null);
 
   // ── Auto-advance once, on arrival ───────────────────────────────────────
@@ -82,23 +77,6 @@ export default function HairSilhouette({
     };
   }, []);
 
-  // ── The clip only loads once the panel is roughly in reach ──────────────
-  useEffect(() => {
-    const el = panelRef.current;
-    if (!el || !clip) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setNearby(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "100% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [clip]);
-
   function select(next: number) {
     touched.current = true;
     setActive(Math.max(0, Math.min(LOOKS.length - 1, next)));
@@ -113,10 +91,6 @@ export default function HairSilhouette({
       select(active - 1);
     }
   }
-
-  /** State 05 is "Flowered" — the one the clip belongs to. */
-  const clipIndex = 4;
-  const showClip = Boolean(clip) && nearby && active === clipIndex;
 
   return (
     <section
@@ -162,22 +136,6 @@ export default function HairSilhouette({
             </div>
           ))}
 
-          {showClip && clip && (
-            <video
-              ref={videoRef}
-              aria-hidden="true"
-              muted
-              loop
-              autoPlay
-              playsInline
-              preload="none"
-              className="absolute inset-0 h-full w-full object-cover"
-            >
-              {clip.av1 && <source src={clip.av1} type='video/mp4; codecs="av01.0.05M.08"' />}
-              {clip.webm && <source src={clip.webm} type="video/webm" />}
-              <source src={clip.mp4} type="video/mp4" />
-            </video>
-          )}
 
           <p className="sr-only" aria-live="polite">
             Hair stage: {LOOKS[active].name}

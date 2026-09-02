@@ -32,7 +32,6 @@ export default function WhatsAppButton({ href }: { href: string | null }) {
       rel="noopener noreferrer"
       onClick={() => track("whatsapp_click", { placement: "floating" })}
       aria-label="Message Lana's Makeover on WhatsApp"
-      data-cursor="open"
       className={[
         "fixed bottom-5 right-5 z-[55] flex h-12 w-12 items-center justify-center rounded-full",
         "border border-ivory/15 bg-ink-2/85 text-ivory/85 backdrop-blur-xl",
