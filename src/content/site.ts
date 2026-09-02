@@ -142,7 +142,25 @@ export const siteSettings: SiteSettings = {
    *
    *   hair: { clip: { mp4: "/video/hair-jasmine.mp4", webm: "…", av1: "…" } }
    */
-  hair: {},
+  hair: {
+    /**
+     * Shown in place of the still for hair state 05, "Flowered" — a malligai
+     * charam on folded Kanchipuram silk. The state's note reads "Jasmine,
+     * measured in muzham. The clock starts here", and this is that: the
+     * jasmine itself, measured, before it goes into the braid.
+     *
+     * Same encode ladder and the same restraint as the hero — preload="none",
+     * loaded only once the panel is within a viewport, and never at all if the
+     * visitor never reaches state 05.
+     *
+     *   AV1 460 KB · WebM 933 KB · H.264 1.5 MB
+     */
+    clip: {
+      av1: "/video/hair-jasmine.av1.mp4",
+      webm: "/video/hair-jasmine.webm",
+      mp4: "/video/hair-jasmine.mp4",
+    },
+  },
 
   /**
    * Master honesty switches.
