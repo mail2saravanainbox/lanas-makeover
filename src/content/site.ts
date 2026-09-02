@@ -76,16 +76,70 @@ export const siteSettings: SiteSettings = {
   signatureTamil: "மல்லிகை",
 
   /**
-   * The hero's opening frame.
+   * ───────────────────────────────────────────────────────────────────────
+   *  THE HERO
+   * ───────────────────────────────────────────────────────────────────────
+   *  `poster` / `posterPortrait` are left undefined on purpose: the poster
+   *  resolves from Lana's portfolio through slots.ts, so it fills itself the
+   *  moment a featured bridal photograph is imported. Set them only to pin a
+   *  specific frame.
    *
-   * Left empty on purpose: the poster resolves from Lana's portfolio through
-   * slots.ts, so it fills itself the moment a featured bridal photograph is
-   * imported. Set `poster` only to pin a specific frame.
+   *  TODO(client): `video` stays undefined until Lana supplies footage. The
+   *  hero is complete without it — poster, or placeholder plate.
    *
-   * There is no video on this site, and no strand — by decision, not by
-   * omission. See the Hero component and Task 2.4.
+   *  When it exists, drop the files in /public/video and set:
+   *
+   *    video: {
+   *      landscape: {
+   *        av1:  "/video/hero-landscape.av1.mp4",
+   *        webm: "/video/hero-landscape.webm",
+   *        mp4:  "/video/hero-landscape.mp4",
+   *      },
+   *      portrait: { ...same three, hero-portrait.* },
+   *    }
+   *
+   *  ENCODE LADDER — scripts/encode-video.sh reproduces this exactly.
+   *    · 24 fps, no audio track at all (-an). It is muted by policy; shipping
+   *      an audio stream is bytes nobody will ever hear.
+   *    · landscape 1920x1080, portrait 1080x1920.
+   *    · H.264  CRF 23, +faststart (moov atom first, so it starts on the
+   *             first bytes rather than the last)
+   *    · VP9    CRF 31
+   *    · AV1    CRF 35
+   *    · 8 seconds or under. It loops; nobody watches it twice.
+   * ───────────────────────────────────────────────────────────────────────
    */
-  hero: {},
+  hero: {
+    /**
+     * TODO(client): the jasmine strand, if it is ever shot.
+     *
+     * Task 2.4 built the procedural mesh to specification — one rank of five
+     * to seven lanceolate petals, a tube below, transmission 0.25, blooms
+     * packed every 0.09 curve units — rendered it at the hero's camera, and
+     * REJECTED IT. It read as a beige stick carrying three star shapes and two
+     * cones. Nothing about it said malligai, and a charam is white, not warm.
+     *
+     * The whole WebGL layer went with it. It existed to carry a 420vh opening
+     * that no longer exists, and over a photographic hero it would have been
+     * 239 KB gzipped of decoration in front of the LCP element.
+     *
+     * If the strand is wanted, it is footage, not geometry: shoot a real
+     * charam at 120fps against black, key it, and export
+     *   strand-alpha.webm  (VP9 + alpha)
+     *   strand-alpha.mov   (HEVC + alpha, for Safari)
+     * then set:  strand: { webm: "/video/strand-alpha.webm", mov: "…mov" }
+     * With no asset, no strand renders. That is the current state.
+     */
+  },
+
+  /**
+   * TODO(client): optional. A few seconds of jasmine being threaded into the
+   * braid, shown in place of the still for state 05 of the hair sequence.
+   * Same encode ladder as the hero. Absent by default — the still is complete.
+   *
+   *   hair: { clip: { mp4: "/video/hair-jasmine.mp4", webm: "…", av1: "…" } }
+   */
+  hair: {},
 
   /**
    * Master honesty switches.

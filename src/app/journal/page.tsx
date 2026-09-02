@@ -47,7 +47,7 @@ export default async function JournalPage() {
         <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
           {/* Lead article */}
           <Reveal blur>
-            <Link href={`/journal/${lead.slug}`} className="group block">
+            <Link href={`/journal/${lead.slug}`} data-cursor="read" className="group block">
               <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
                 <div className="relative aspect-[16/10] w-full overflow-hidden">
                   <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]">
@@ -81,7 +81,7 @@ export default async function JournalPage() {
               {rest.map((p, i) => (
                 <li key={p.slug} className={i % 3 === 1 ? "lg:mt-14" : ""}>
                   <Reveal delay={(i % 3) * 120}>
-                    <Link href={`/journal/${p.slug}`} className="group block">
+                    <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
                       <div className="relative aspect-[4/3] w-full overflow-hidden">
                         <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
                           <EditorialImage

@@ -31,6 +31,7 @@ export default function FeaturedLooksList({ items }: { items: PortfolioItem[] })
           <Reveal blur delay={(i % 3) * 120}>
             <Link
               href={collectionHref(item)}
+              data-cursor="view"
               className="group block"
               aria-label={`View ${item.title}`}
             >

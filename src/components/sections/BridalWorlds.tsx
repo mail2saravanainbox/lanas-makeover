@@ -58,6 +58,7 @@ export default function BridalWorlds({
             <Reveal key={s.slug}>
               <Link
                 href={`/services/${s.slug}`}
+                data-cursor="view"
                 className="group relative block aspect-[16/10] w-full overflow-hidden sm:aspect-[16/7]"
               >
                 <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]">

@@ -3,6 +3,7 @@ import { content } from "@/lib/content/provider";
 import { getImageSlots, journalCover, serviceImage } from "@/lib/content/slots";
 import { pageMetadata, personSchema } from "@/lib/seo";
 import JsonLd from "@/components/ui/JsonLd";
+import BrandVeil from "@/components/ui/BrandVeil";
 
 import Hero from "@/components/sections/Hero";
 import ActBefore from "@/components/sections/ActBefore";
@@ -91,11 +92,18 @@ export default async function HomePage() {
     <>
       <JsonLd data={personSchema()} />
 
+      {/* Server-rendered so it is painted with the first frame, and removed
+          before that frame by its own guard script when it should be skipped.
+          Homepage only — it is an opening, not a loader. */}
+      <BrandVeil brand={settings.brandName} />
+
       {/* The opening — one screen, not four */}
       <Hero
         brand={settings.brandName}
         cta={settings.bookingCta}
-        poster={slots.heroPoster}
+        poster={settings.hero.poster ?? slots.heroPoster}
+        posterPortrait={settings.hero.posterPortrait ?? slots.heroPosterPortrait}
+        video={settings.hero.video}
       />
 
       <ActBefore index={n.before!} images={slots.beforeLayers} />
@@ -128,7 +136,7 @@ export default async function HomePage() {
         entries={timeline}
       />
 
-      <HairSilhouette index={n.silhouette!} images={slots.hair} />
+      <HairSilhouette index={n.silhouette!} images={slots.hair} clip={settings.hair?.clip} />
 
       <JournalTeaser index={n.journal!} posts={journal} />
 

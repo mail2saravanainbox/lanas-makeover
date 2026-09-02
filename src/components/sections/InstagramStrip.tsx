@@ -50,6 +50,7 @@ export default function InstagramStrip({
                 href={item.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-cursor="open"
                 className="group relative block aspect-square overflow-hidden"
               >
                 <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">

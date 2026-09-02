@@ -444,6 +444,15 @@ nav[aria-label="Primary"] [aria-current="page"]::before {
   transform-origin: left;
 }
 
+/* ── Custom cursor (desktop, fine pointer only) ─────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
 /* ── Scrollbar ──────────────────────────────────────────────────────────── */
 
 ::-webkit-scrollbar {
@@ -503,6 +512,84 @@ nav[aria-label="Primary"] [aria-current="page"]::before {
   [data-reveal-blur] {
     filter: none;
     transform: none;
+  }
+}
+
+/* ── The brand veil (Task 3.1) ──────────────────────────────────────────────
+   Ivory field, mark, wordmark, and a progress rail bound to real readiness.
+   The wipe is a clip-path travelling upward, so the page is revealed from the
+   bottom of the frame rather than faded through. ────────────────────────── */
+
+html.lm-veiled,
+html.lm-veiled body {
+  overflow: hidden;
+}
+
+/* HIDDEN BY DEFAULT, and shown only when the guard script has decided this
+   visitor should see it. This is the whole safety model:
+     · JavaScript disabled → the guard never runs → the veil never displays.
+       (The previous shape removed the node instead, which meant a no-JS
+       visitor got an ivory sheet over the entire site, permanently.)
+     · Repeat visit / reduced motion → the class is never added.
+   The node itself is never removed, so React hydration always finds the
+   markup it server-rendered. */
+#lm-veil {
+  display: none;
+}
+
+html.lm-veiled #lm-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  clip-path: inset(0 0 0 0);
+  transition: clip-path var(--d-slow) var(--ease-veil);
+  will-change: clip-path;
+}
+
+html.lm-veiled #lm-veil[data-veil="out"] {
+  clip-path: inset(0 0 100% 0);
+}
+
+.lm-veil__word {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-indent: 0.3em;
+  color: var(--color-ink);
+}
+
+.lm-veil__rail {
+  display: block;
+  width: min(9rem, 40vw);
+  height: 1px;
+  background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  overflow: hidden;
+}
+
+.lm-veil__line {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--color-bronze);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--d-base) var(--ease-silk);
+}
+
+/* Belt and braces: even if the guard somehow added the class, reduced motion
+   still means no veil. */
+@media (prefers-reduced-motion: reduce) {
+  html.lm-veiled #lm-veil {
+    display: none;
   }
 }
 

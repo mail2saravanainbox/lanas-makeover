@@ -19,6 +19,7 @@ export default function StoryLink({
   return (
     <Link
       href={`/brides/${slug}`}
+      data-cursor="view"
       aria-label={`Read the story: ${name}`}
       onClick={() => track("bride_story_view", { slug, placement: "home" })}
       className={`group block ${className ?? ""}`}

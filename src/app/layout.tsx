@@ -9,6 +9,7 @@ import { whatsappLink } from "@/content/site";
 import { localBusinessSchema, pageMetadata, seoConfig } from "@/lib/seo";
 
 import SmoothScroll from "@/components/ui/SmoothScroll";
+import Cursor from "@/components/ui/Cursor";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
@@ -90,7 +91,8 @@ export default async function RootLayout({
         <JsonLd data={localBusinessSchema()} />
 
         <SmoothScroll />
-        <PageTransition />
+        <Cursor />
+        <PageTransition brand={settings.brandName} />
 
         <Nav brand={settings.brandName} cta={settings.bookingCta} hasBrides={hasBrides} />
 

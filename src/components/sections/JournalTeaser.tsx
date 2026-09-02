@@ -42,7 +42,7 @@ export default function JournalTeaser({
           {featured.map((p, i) => (
             <li key={p.slug}>
               <Reveal delay={i * 130}>
-                <Link href={`/journal/${p.slug}`} className="group block">
+                <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
                     <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]">
                       <EditorialImage
