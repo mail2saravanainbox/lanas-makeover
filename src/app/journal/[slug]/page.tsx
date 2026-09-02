@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
+import { getImageSlots } from "@/lib/content/slots";
 import { absoluteUrl, articleSchema, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ArticleBody from "@/components/journal/ArticleBody";
@@ -56,8 +57,35 @@ export default async function JournalArticlePage({
   const post = await provider.getPost(slug);
   if (!post) notFound();
 
-  const all = await provider.getPosts();
-  const related = all.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const [all, settings] = await Promise.all([provider.getPosts(), provider.getSiteSettings()]);
+  const slots = getImageSlots();
+
+  /**
+   * A person, not a masthead. The content files record the author as the brand
+   * ("Lana's Makeover"); a byline reading "By Lana's Makeover" is a business
+   * writing about itself. Where the recorded author IS the brand, credit the
+   * artist. A genuinely different author is printed as given.
+   */
+  const byline =
+    post.author === settings.brandName || post.author === settings.artistName
+      ? settings.artistName
+      : post.author;
+
+  /**
+   * Related by SHARED TAG, most tags in common first — not simply "the next
+   * three posts". A reader who just finished a piece on jadai should be
+   * offered the other hair writing, not whatever published most recently.
+   * Falls back to recency only when nothing shares a tag.
+   */
+  const tags = new Set(post.tags);
+  const others = all.filter((p) => p.slug !== post.slug);
+  const related = others
+    .map((p) => ({ post: p, shared: p.tags.filter((t) => tags.has(t)).length }))
+    // Most tags in common wins; recency only breaks ties. Always two, so the
+    // block never looks half-built when nothing happens to share a tag.
+    .sort((a, b) => b.shared - a.shared || (a.post.publishedAt < b.post.publishedAt ? 1 : -1))
+    .slice(0, 2)
+    .map((x) => x.post);
 
   return (
     <>
@@ -114,10 +142,26 @@ export default async function JournalArticlePage({
           </Reveal>
 
           <Reveal delay={380}>
-            <p className="eyebrow mt-10">
-              <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time> ·{" "}
-              {post.readingMinutes} min read · {post.author}
-            </p>
+            {/* A byline with a face when there is a real photograph of Lana,
+                and a byline without one until then — never a stock portrait
+                standing in for the author. */}
+            <div className="mt-10 flex items-center gap-4">
+              {slots.artistPortrait && (
+                <span className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                  <EditorialImage
+                    image={slots.artistPortrait}
+                    className="h-full w-full"
+                    sizes="48px"
+                    decorative
+                  />
+                </span>
+              )}
+              <p className="eyebrow">
+                By {byline} ·{" "}
+                <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time> ·{" "}
+                {post.readingMinutes} min read
+              </p>
+            </div>
           </Reveal>
         </header>
 
@@ -158,7 +202,7 @@ export default async function JournalArticlePage({
           <h2 id="related-articles" className="display-sm mb-10 text-ivory">
             Keep reading
           </h2>
-          <ul className="grid gap-10 sm:grid-cols-3">
+          <ul className="grid gap-10 sm:grid-cols-2">
             {related.map((p) => (
               <li key={p.slug}>
                 <Link href={`/journal/${p.slug}`} data-cursor="read" className="group block">
@@ -167,7 +211,7 @@ export default async function JournalArticlePage({
                       <EditorialImage
                         image={p.cover}
                         className="h-full w-full"
-                        sizes="(max-width: 640px) 92vw, 31vw"
+                        sizes="(max-width: 640px) 92vw, 46vw"
                         decorative
                       />
                     </div>
@@ -182,6 +226,24 @@ export default async function JournalArticlePage({
           </ul>
         </section>
       )}
+
+      {/* The article ends, and the one thing a reader might want to do next is
+          right there rather than a scroll away in the footer. */}
+      <section aria-labelledby="journal-cta" className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
+        <Reveal>
+          <div className="flex flex-col gap-8 border-t border-ivory/12 pt-12 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="eyebrow mb-4">Enquiries</p>
+              <p id="journal-cta" className="display-sm max-w-[18ch] text-balance text-ivory">
+                Have a date in mind?
+              </p>
+            </div>
+            <Link href="/contact" className="btn shrink-0">
+              {settings.bookingCta}
+            </Link>
+          </div>
+        </Reveal>
+      </section>
     </>
   );
 }
