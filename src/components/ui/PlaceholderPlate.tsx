@@ -12,6 +12,12 @@ import { seeded } from "@/lib/utils";
  * presented in Lana's portfolio is a lie about her clientele. A plate is
  * honest, it is not ugly, and it disappears the instant `src` is set.
  *
+ * So it had better not be ugly. Each plate is built like a lit still life:
+ * a key light and a fill, a warm bloom, silk woven in two directions, zari
+ * catching the key, a soft form that reads as fabric or a turned shoulder but
+ * never as a face, and grain over the whole thing. Nothing here is a photo of
+ * anyone, and nothing here pretends to be.
+ *
  * Fully deterministic from `seed`, so server and client render identically.
  */
 
@@ -55,18 +61,44 @@ export default function PlaceholderPlate({
   const blobRotation = -22 + rand() * 44;
   const blobScale = 0.86 + rand() * 0.4;
   const blobY = 34 + rand() * 26;
+  const weave = 88 + rand() * 14;
+  const bloomX = 30 + rand() * 40;
+  const bloomY = 18 + rand() * 30;
+
+  /**
+   * Zari — the metallic thread through Kanchipuram silk. A handful of small
+   * specular flecks, brightest nearest the key light, so the surface has
+   * something for the light to catch instead of being a smooth ramp.
+   */
+  const flecks = Array.from({ length: 26 }, () => {
+    const x = rand() * 100;
+    const y = rand() * 140;
+    // Distance from the key light, normalised — nearer means brighter.
+    const d = Math.hypot(x - hx, y - hy * 1.4) / 120;
+    return {
+      x,
+      y,
+      r: 0.25 + rand() * 0.55,
+      o: Math.max(0.05, 0.42 - d * 0.34),
+    };
+  });
 
   const style: CSSProperties = {
     backgroundColor: ramp.deep,
     backgroundImage: [
       // primary light source — the "key light"
-      `radial-gradient(78% 62% at ${hx}% ${hy}%, ${ramp.light}55 0%, ${ramp.light}18 34%, transparent 68%)`,
+      `radial-gradient(78% 62% at ${hx}% ${hy}%, ${ramp.light}7d 0%, ${ramp.light}26 36%, transparent 70%)`,
       // secondary fill, lower and cooler
-      `radial-gradient(62% 70% at ${sx}% ${sy}%, ${ramp.mid}66 0%, transparent 62%)`,
-      // silk striations
-      `repeating-linear-gradient(${striation}deg, rgba(255,255,255,0.028) 0px, rgba(255,255,255,0.028) 1px, transparent 1px, transparent 7px)`,
+      `radial-gradient(62% 70% at ${sx}% ${sy}%, ${ramp.mid}82 0%, transparent 64%)`,
+      // warm bloom where the key light lands hardest
+      `radial-gradient(26% 20% at ${bloomX}% ${bloomY}%, ${ramp.light}3a 0%, transparent 70%)`,
+      // silk, woven: the warp …
+      `repeating-linear-gradient(${striation}deg, rgba(255,255,255,0.030) 0px, rgba(255,255,255,0.030) 1px, transparent 1px, transparent 7px)`,
+      // … and the weft, finer and fainter, which is what stops it reading as
+      // brushed metal and starts it reading as cloth
+      `repeating-linear-gradient(${weave}deg, rgba(0,0,0,0.045) 0px, rgba(0,0,0,0.045) 1px, transparent 1px, transparent 4px)`,
       // body gradient
-      `linear-gradient(${angle}deg, ${ramp.deep} 0%, ${ramp.mid}cc 52%, ${ramp.deep} 100%)`,
+      `linear-gradient(${angle}deg, ${ramp.deep} 0%, ${ramp.mid}e0 52%, ${ramp.deep} 100%)`,
     ].join(","),
   };
 
@@ -94,6 +126,21 @@ export default function PlaceholderPlate({
             <feGaussianBlur stdDeviation="7" />
           </filter>
         </defs>
+        {/* Zari flecks, under the blurred form so they read as being in the
+            weave rather than on top of it. */}
+        <g>
+          {flecks.map((f, i) => (
+            <circle
+              key={i}
+              cx={f.x}
+              cy={f.y}
+              r={f.r}
+              fill={ramp.light}
+              opacity={f.o.toFixed(3)}
+            />
+          ))}
+        </g>
+
         <g
           filter={`url(#pb-${seed})`}
           transform={`translate(50 ${blobY}) rotate(${blobRotation}) scale(${blobScale}) translate(-50 -${blobY})`}
@@ -113,7 +160,17 @@ export default function PlaceholderPlate({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 50% 42%, transparent 30%, rgba(0,0,0,0.28) 68%, rgba(0,0,0,0.62) 100%)",
+            "radial-gradient(120% 90% at 50% 42%, transparent 34%, rgba(0,0,0,0.24) 70%, rgba(0,0,0,0.58) 100%)",
+        }}
+      />
+
+      {/* Grain. Every real photograph has some; without it the plate reads as
+          a CSS gradient, which is exactly what it is. */}
+      <div
+        className="absolute inset-0 opacity-[0.055] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
         }}
       />
 

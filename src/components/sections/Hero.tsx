@@ -30,19 +30,28 @@ export default function Hero({
       data-hero=""
       className="relative isolate flex min-h-[100dvh] flex-col justify-end overflow-hidden"
     >
-      {/* ── The frame ──────────────────────────────────────────────────── */}
-      <EditorialImage
-        image={poster}
-        className="absolute inset-0 -z-10 h-full w-full"
-        sizes="100vw"
-        priority
-        decorative
-      />
+      {/* ── The frame ──────────────────────────────────────────────────────
+          The wrapper does the positioning. EditorialImage's plate carries its
+          own `relative`, so putting `absolute` on it via className is a
+          coin-flip on Tailwind's emit order — which is exactly how this
+          rendered 1280x0 the first time. */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10">
+        <EditorialImage
+          image={poster}
+          className="h-full w-full"
+          sizes="100vw"
+          priority
+          decorative
+        />
+      </div>
 
       {/* Bottom-heavy, so the type below sits on ink rather than on a face. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink via-ink/20 to-ink/60"
+        // Tuned to keep the type legible while letting the frame stay visible.
+        // The previous values were set for a photograph and turned a plate
+        // into a black rectangle.
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-ink/25 to-ink/85"
       />
 
       {/* ── The identity, in frame one ─────────────────────────────────── */}

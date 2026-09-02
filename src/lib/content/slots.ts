@@ -172,7 +172,7 @@ export function getImageSlots(): ImageSlots {
     hasRealPhotography,
 
     heroPoster:
-      poster("landscape") ?? plate("Bridal portrait — the opening frame", "bronze", 100),
+      poster("landscape") ?? plate("Bridal portrait — the opening frame", "champagne", 118),
     heroPosterPortrait: poster("portrait"),
 
     // The single strongest bridal frame, reserved for the opening reveal.
