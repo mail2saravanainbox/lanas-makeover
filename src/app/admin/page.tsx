@@ -21,11 +21,12 @@ export const dynamic = "force-dynamic";
  *  the live state of the content pipeline; it exposes no editing capability,
  *  no credentials, and no personal data.
  *
- *  There is no authentication here because there is nothing to protect yet —
- *  and shipping a fake login would be worse than shipping none. Before any
- *  mutating capability is added, put real auth in front of this route
- *  (middleware + NextAuth / Clerk / basic auth) and keep it disallowed in
- *  robots.txt, as it already is.
+ *  Gated by src/proxy.ts behind a single shared password (ADMIN_PASSWORD),
+ *  and disallowed in robots.txt. With no password configured the route is a
+ *  404 — an unconfigured secret must never mean an open door.
+ *
+ *  That gate is sized for a read-only page. The day /admin can WRITE
+ *  anything, replace it with real per-user authentication.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
