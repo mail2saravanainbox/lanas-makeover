@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
+import { serviceImage } from "@/lib/content/slots";
 import { absoluteUrl, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
@@ -66,6 +67,13 @@ export default async function BridalWorldPage({
   const items = all.filter((i) => i.category === service.category);
   const others = services.filter((s) => s.slug !== service.slug);
 
+  /**
+   * Resolve the hero image from the archive, exactly as /services does.
+   * Without this the index shows a photograph and the world you click through
+   * to shows a placeholder plate — the same service, two different images.
+   */
+  const image = serviceImage(service.category, service.image);
+
   return (
     <>
       <JsonLd
@@ -79,7 +87,7 @@ export default async function BridalWorldPage({
       {/* Full-bleed opening */}
       <header className="relative h-[80vh] min-h-[30rem] w-full overflow-hidden">
         <EditorialImage
-          image={service.image}
+          image={image}
           className="absolute inset-0 h-full w-full"
           sizes="100vw"
           priority

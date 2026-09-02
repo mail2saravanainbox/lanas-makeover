@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
-import { getImageSlots } from "@/lib/content/slots";
+import { getImageSlots, journalCover } from "@/lib/content/slots";
 import { absoluteUrl, articleSchema, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ArticleBody from "@/components/journal/ArticleBody";
@@ -59,6 +59,18 @@ export default async function JournalArticlePage({
 
   const [all, settings] = await Promise.all([provider.getPosts(), provider.getSiteSettings()]);
   const slots = getImageSlots();
+
+  /**
+   * Resolve the cover from the archive, exactly as /journal does. Without
+   * this the index shows a photograph and the article you click through to
+   * shows a placeholder plate — the same post, two different covers.
+   * journalCover is index-based, so it must be the post's index in the same
+   * ordered list the index page uses.
+   */
+  const cover = journalCover(
+    all.findIndex((x) => x.slug === post.slug),
+    post.cover,
+  );
 
   /**
    * A person, not a masthead. The content files record the author as the brand
@@ -169,7 +181,7 @@ export default async function JournalArticlePage({
           <Reveal blur>
             <div className="relative aspect-[16/9] w-full overflow-hidden">
               <EditorialImage
-                image={post.cover}
+                image={cover}
                 className="h-full w-full"
                 sizes="(max-width: 1280px) 96vw, 90vw"
                 priority

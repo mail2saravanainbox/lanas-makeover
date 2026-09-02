@@ -284,8 +284,36 @@ export function journalCover(index: number, fallback: ImageRef): ImageRef {
   return item ? toImageRef(item) : fallback;
 }
 
+/**
+ * Neighbouring categories, in preference order, for a service that has no
+ * photographs filed under its own.
+ *
+ * `bridal` is the one that matters: the muhurtham service is filed as
+ * `bridal`, but the import pipeline files Tamil work as `tamil-bridal` or
+ * `muhurtham` and almost never as plain `bridal` — so the muhurtham world
+ * showed a placeholder plate on /services and as a homepage panel while
+ * eleven perfectly good Tamil bridal frames sat unused.
+ *
+ * Every other slot in this file already falls back this way. This one did not.
+ */
+const SERVICE_NEIGHBOURS: Partial<Record<PortfolioCategory, PortfolioCategory[]>> = {
+  bridal: ["tamil-bridal", "muhurtham"],
+  muhurtham: ["tamil-bridal", "bridal"],
+  "tamil-bridal": ["muhurtham", "bridal"],
+  reception: ["tamil-bridal", "bridal"],
+  engagement: ["tamil-bridal", "bridal"],
+  hair: ["jadai"],
+  jadai: ["hair"],
+  editorial: ["tamil-bridal", "bridal"],
+  "behind-scenes": ["editorial"],
+  other: ["tamil-bridal", "bridal"],
+};
+
 /** Service / bridal-world imagery, matched to the world's own category. */
 export function serviceImage(category: PortfolioCategory, fallback: ImageRef): ImageRef {
-  const available = pool(category);
-  return available.length > 0 ? toImageRef(available[0]) : fallback;
+  for (const c of [category, ...(SERVICE_NEIGHBOURS[category] ?? [])]) {
+    const available = pool(c);
+    if (available.length > 0) return toImageRef(available[0]);
+  }
+  return fallback;
 }
