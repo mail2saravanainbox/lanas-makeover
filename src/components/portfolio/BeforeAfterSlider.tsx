@@ -55,6 +55,7 @@ export default function BeforeAfterSlider({
     <figure className="w-full">
       <div
         ref={ref}
+        data-cursor="drag"
         className="relative aspect-[4/5] w-full touch-pan-y select-none overflow-hidden sm:aspect-[3/2]"
         onPointerDown={(e) => {
           dragging.current = true;

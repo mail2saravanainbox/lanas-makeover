@@ -1,6 +1,7 @@
 import Link from "next/link";
-import type { ImageRef } from "@/lib/types";
-import EditorialImage from "@/components/ui/EditorialImage";
+import type { HeroMedia, ImageRef } from "@/lib/types";
+import HeroVideo from "@/components/ui/HeroVideo";
+import HeroScroll from "./HeroScroll";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -10,48 +11,56 @@ import EditorialImage from "@/components/ui/EditorialImage";
  *  through it. A visitor now learns whose site this is, what she does, where
  *  she is, and how to ask for a date — in the first frame, without scrolling.
  *
- *  A SERVER COMPONENT, and now a completely static one: a photograph, a
- *  scrim, four lines of type and a link. No video, no scroll transform, no
- *  client JavaScript of its own at all.
+ *  A SERVER COMPONENT. The most SEO-critical markup on the site ships as HTML;
+ *  the only client code here is the media loader and one scroll value.
+ *
+ *  Nothing moves but the frame itself: the media scales 6% and the scrim
+ *  deepens across the hero's own height. No pinning, no scroll-jacking, and
+ *  under reduced motion, no movement at all — `--p` is simply never written.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export default function Hero({
   brand,
   cta,
   poster,
+  posterPortrait,
+  video,
 }: {
   brand: string;
   cta: string;
   poster: ImageRef;
+  posterPortrait?: ImageRef | null;
+  video?: HeroMedia["video"];
 }) {
   return (
     <section
       aria-label="Introduction"
       data-hero=""
       className="relative isolate flex min-h-[100dvh] flex-col justify-end overflow-hidden"
+      style={{ ["--p" as string]: 0 }}
     >
+      <HeroScroll />
+
       {/* ── The frame ──────────────────────────────────────────────────────
-          The wrapper does the positioning. EditorialImage's plate carries its
-          own `relative`, so putting `absolute` on it via className is a
-          coin-flip on Tailwind's emit order — which is exactly how this
-          rendered 1280x0 the first time. */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <EditorialImage
-          image={poster}
-          className="h-full w-full"
-          sizes="100vw"
-          priority
-          decorative
-        />
+          The wrapper does the positioning, and HeroVideo's own children carry
+          only sizing. Putting `absolute` on EditorialImage via className is a
+          coin-flip on Tailwind's emit order against PlaceholderPlate's own
+          `relative` — which is exactly how this rendered 1280x0 once. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10"
+        style={{ transform: "scale(calc(1 + var(--p) * 0.06))" }}
+      >
+        <HeroVideo poster={poster} posterPortrait={posterPortrait} video={video} />
       </div>
 
       {/* Bottom-heavy, so the type below sits on ink rather than on a face. */}
       <div
         aria-hidden="true"
-        // Tuned to keep the type legible while letting the frame stay visible.
-        // The previous values were set for a photograph and turned a plate
-        // into a black rectangle.
+        // Kept from the fix: the original values were tuned for a photograph
+        // and turned a placeholder plate into a black rectangle.
         className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-ink/25 to-ink/85"
+        style={{ opacity: "calc(1 + var(--p) * 0.4)" }}
       />
 
       {/* ── The identity, in frame one ─────────────────────────────────── */}
@@ -78,6 +87,7 @@ export default function Hero({
       <div
         aria-hidden="true"
         className="pointer-events-none absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3"
+        style={{ opacity: "max(0, calc(1 - var(--p) * 6))" }}
       >
         <span className="text-[0.75rem] uppercase tracking-[0.24em] text-muted">Scroll</span>
         <span className="relative block h-12 w-px overflow-hidden bg-ivory/15">

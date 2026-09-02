@@ -175,7 +175,7 @@ export default async function BrideStoryPage({
           <ul className="grid gap-8 sm:grid-cols-2">
             {others.map((b) => (
               <li key={b.slug}>
-                <Link href={`/brides/${b.slug}`} className="group block">
+                <Link href={`/brides/${b.slug}`} data-cursor="read" className="group block">
                   <div className="relative aspect-[16/10] w-full overflow-hidden">
                     <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
                       <EditorialImage

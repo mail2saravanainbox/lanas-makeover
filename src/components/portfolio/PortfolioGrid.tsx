@@ -191,6 +191,7 @@ export default function PortfolioGrid({
                   <ParallaxFrame strength={0.4}>
                     <button
                       type="button"
+                      data-cursor="view"
                       onClick={() => {
                         setOpen(filtered.indexOf(item));
                         track("portfolio_view", { slug: item.slug, category: item.category });

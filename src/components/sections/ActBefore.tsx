@@ -24,9 +24,42 @@ export default function ActBefore({
 }) {
   return (
     <section
+      data-wipe-target=""
       className="section-dark relative overflow-hidden py-[var(--s-12)] sm:py-[var(--s-16)]"
       aria-labelledby="act-before-title"
+      /**
+       * --wipe DEFAULTS TO 1, meaning "fully revealed".
+       *
+       * That direction matters: under reduced motion, with JavaScript off, or
+       * if the scheduler never runs, nothing ever writes this and the overlay
+       * masks itself out completely. The failure mode is no effect — never a
+       * black sheet nobody can clear.
+       */
+      style={{ ["--wipe" as string]: 1 }}
     >
+      {/* The flower's trailing edge, as a soft diagonal. A mask slide rather
+          than an animated clip-path: same read, one composited layer. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-20 bg-ink motion-reduce:hidden"
+        style={{
+          /**
+           * Black covers, transparent reveals. The mask is 2.6x the element,
+           * so the visible window is ~38% of the gradient and slides from
+           * [0,38] (all black — covered) to [62,100] (all transparent — gone)
+           * as --wipe goes 0 → 1. The ramp between 38% and 62% is the soft
+           * diagonal edge.
+           */
+          maskImage: "linear-gradient(105deg, #000 0 38%, transparent 62% 100%)",
+          WebkitMaskImage: "linear-gradient(105deg, #000 0 38%, transparent 62% 100%)",
+          maskSize: "260% 100%",
+          WebkitMaskSize: "260% 100%",
+          maskPosition: "calc(var(--wipe) * 100%) 0",
+          WebkitMaskPosition: "calc(var(--wipe) * 100%) 0",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+        }}
+      />
       {/* Oversized ghost word — depth cue, not decoration */}
       <span
         aria-hidden="true"
