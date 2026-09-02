@@ -16,7 +16,6 @@ import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import PageTransition from "@/components/ui/PageTransition";
 import AnalyticsScripts from "@/components/ui/Analytics";
 import JsonLd from "@/components/ui/JsonLd";
-import StoryCanvas from "@/components/3d/StoryCanvas";
 
 /**
  * FONT SUBSET
@@ -92,7 +91,6 @@ export default async function RootLayout({
         <JsonLd data={localBusinessSchema()} />
 
         <SmoothScroll />
-        <StoryCanvas />
         <Cursor />
         <PageTransition brand={settings.brandName} />
 

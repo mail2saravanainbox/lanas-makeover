@@ -121,13 +121,6 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
         </Reveal>
       </div>
 
-      {/* Jasmine drifts through this act in the WebGL layer */}
-      <div
-        data-scene="heritage-jasmine"
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[4%] top-[42%] aspect-square w-[min(22vmin,13rem)]"
-      />
-
       <div ref={trackRef} className="relative h-[320vh]">
         <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
           {MATERIALS.map((m, i) => {

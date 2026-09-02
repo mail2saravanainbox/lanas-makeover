@@ -50,8 +50,14 @@ interface NavigatorWithMemory extends Navigator {
 /**
  * Decides — once, on mount — whether this device gets the WebGL layer.
  *
- * Everything degrades gracefully: when `allow3D` is false the DOM sections are
- * already complete and premium on their own. WebGL only ever *enhances*.
+ * ⚠ CURRENTLY UNREFERENCED. Task 2.4 removed the WebGL layer entirely, so
+ *   nothing asks this question any more. Kept because the redesign brief names
+ *   it as part of the architecture that stays, and because `reducedMotion`,
+ *   `coarsePointer` and `lowPower` are useful signals independent of 3D — the
+ *   video hero makes similar decisions with its own logic today.
+ *
+ *   If no caller appears, delete it. A hook advertising `allow3D` in a
+ *   codebase with no 3D is worse than no hook.
  */
 export function useDeviceCapability(): DeviceCapability {
   const [cap, setCap] = useState<DeviceCapability>(INITIAL);

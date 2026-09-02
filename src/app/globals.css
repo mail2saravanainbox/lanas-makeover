@@ -594,9 +594,9 @@ html.lm-veiled #lm-veil[data-veil="out"] {
 }
 
 /* ── Document layering ──────────────────────────────────────────────────────
-   The StoryCanvas is a fixed surface at z-0. Page content sits above it at
-   z-10. Sections that want the WebGL layer to show through simply stay
-   transparent; every other section paints its own opaque background.
+   Page content sits at z-10 above the document ground. Kept after the WebGL
+   layer was removed because the veil, the cursor and the lightbox all still
+   stack against it.
    ─────────────────────────────────────────────────────────────────────────── */
 
 .page-content {

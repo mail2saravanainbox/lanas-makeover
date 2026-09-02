@@ -68,6 +68,18 @@ export interface HeroMedia {
     landscape: VideoSources;
     portrait?: VideoSources;
   };
+  /**
+   * The jasmine strand, as MATTED FOOTAGE rather than geometry. See Task 2.4
+   * in the redesign notes and the comment in site.ts: the procedural mesh was
+   * built, rendered and rejected.
+   *
+   * Alpha video has no single cross-browser format, hence two:
+   *   webm  VP9 with alpha  — Chrome, Firefox, Edge
+   *   mov   HEVC with alpha — Safari
+   * Absent by default. With no asset, no strand renders and the hero simply
+   * ends in its gradient.
+   */
+  strand?: { webm: string; mov: string };
 }
 
 export type PortfolioCategory =

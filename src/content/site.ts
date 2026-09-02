@@ -110,7 +110,28 @@ export const siteSettings: SiteSettings = {
    *    · 8 seconds or under. It loops; nobody watches it twice.
    * ───────────────────────────────────────────────────────────────────────
    */
-  hero: {},
+  hero: {
+    /**
+     * TODO(client): the jasmine strand, if it is ever shot.
+     *
+     * Task 2.4 built the procedural mesh to specification — one rank of five
+     * to seven lanceolate petals, a tube below, transmission 0.25, blooms
+     * packed every 0.09 curve units — rendered it at the hero's camera, and
+     * REJECTED IT. It read as a beige stick carrying three star shapes and two
+     * cones. Nothing about it said malligai, and a charam is white, not warm.
+     *
+     * The whole WebGL layer went with it. It existed to carry a 420vh opening
+     * that no longer exists, and over a photographic hero it would have been
+     * 239 KB gzipped of decoration in front of the LCP element.
+     *
+     * If the strand is wanted, it is footage, not geometry: shoot a real
+     * charam at 120fps against black, key it, and export
+     *   strand-alpha.webm  (VP9 + alpha)
+     *   strand-alpha.mov   (HEVC + alpha, for Safari)
+     * then set:  strand: { webm: "/video/strand-alpha.webm", mov: "…mov" }
+     * With no asset, no strand renders. That is the current state.
+     */
+  },
 
   /**
    * Master honesty switches.

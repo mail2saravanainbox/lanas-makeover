@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useDeviceCapability } from "@/components/ui/useDeviceCapability";
 import { clamp, cx } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 import type { ImageRef, MediaTone } from "@/lib/types";
@@ -80,7 +79,6 @@ const STAGES: Stage[] = [
 const PLATES: ImageRef[] = STAGES.map((s) => ({ alt: s.name, tone: s.tone, seed: s.seed }));
 
 export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) {
-  const cap = useDeviceCapability();
   const trackRef = useRef<HTMLDivElement>(null);
   const plateRefs = useRef<Array<HTMLDivElement | null>>([]);
   const barRef = useRef<HTMLDivElement>(null);
@@ -108,8 +106,6 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
     setActive((prev) => (prev === index ? prev : index));
   });
 
-  const has3D = cap.ready && cap.allow3D && !cap.coarsePointer && !cap.lowPower;
-
   return (
     <section aria-labelledby="ritual-title" className="section-dark relative">
       {/* Header travels past first, then the track pins */}
@@ -126,14 +122,11 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
       </div>
 
       {/* ── The track ─────────────────────────────────────────────────────── */}
-      <div ref={trackRef} data-scene="transformation-track" className="relative h-[500vh]">
+      <div ref={trackRef} className="relative h-[500vh]">
         <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
-          {/* Anchor the WebGL plane binds to */}
-          <div data-scene="transformation" className="absolute inset-0" />
-
-          {/* 2D stage plates — the WebGL understudy */}
-          {!has3D && (
-            <div className="absolute inset-0" aria-hidden="true">
+          {/* The stage plates. These ARE the section now — there is no
+              WebGL understudy, because there is no WebGL. */}
+          <div className="absolute inset-0" aria-hidden="true">
               {STAGES.map((s, i) => (
                 <div
                   key={s.index}
@@ -155,9 +148,8 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
                   />
                 </div>
               ))}
-              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
-            </div>
-          )}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
+          </div>
 
           {/* Readable content, always present */}
           <div className="shell relative z-10 grid w-full items-end gap-10 pb-16 sm:pb-24 lg:grid-cols-[auto_1fr] lg:items-center">
