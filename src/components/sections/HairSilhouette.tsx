@@ -1,20 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
-import { clamp, cx, sectionEyebrow } from "@/lib/utils";
-import { useScrollProgress } from "@/lib/motion/scheduler";
-import type { ImageRef, MediaTone } from "@/lib/types";
+import { cx, sectionEyebrow } from "@/lib/utils";
+import type { ImageRef, MediaTone, VideoSources } from "@/lib/types";
 
 /**
  * THE SILHOUETTE OF THE BRIDE (§19)
  *
- * Hair gets its own act. Scrolling the track advances the silhouette through
- * six states; no fake 3D head, no CG hair — real photography is the plan, and
- * placeholder plates hold the composition until it arrives.
+ * Hair gets its own act. It used to be a 380vh scroll track — six states
+ * costing nearly four viewports, and no way to look at state 03 without
+ * scrolling past 01 and 02.
+ *
+ * It is a stepper now. One screen, six real buttons, and an auto-advance that
+ * plays the sequence once on arrival and stops the moment anyone touches it.
+ * No fake 3D head, no CG hair — real photography is the plan, and placeholder
+ * plates hold the composition until it arrives.
  */
 const LOOKS: Array<{ name: string; note: string; tone: MediaTone; seed: number }> = [
   { name: "Open", note: "Nothing set. The natural fall of the hair.", tone: "ink", seed: 801 },
@@ -27,110 +31,207 @@ const LOOKS: Array<{ name: string; note: string; tone: MediaTone; seed: number }
 
 const PLATES: ImageRef[] = LOOKS.map((l) => ({ alt: `${l.name} bridal hair`, tone: l.tone, seed: l.seed }));
 
+/** Long enough to read the state name, short enough not to feel stuck. */
+const DWELL = 1600;
+
 export default function HairSilhouette({
   index,
   images = PLATES,
+  clip,
 }: {
   index: number;
   images?: ImageRef[];
+  /** Footage for state 05, "Flowered". Absent by default. */
+  clip?: VideoSources;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const frameRefs = useRef<Array<HTMLDivElement | null>>([]);
-  /**
-   * Six states across a 380vh track — so six re-renders for the whole
-   * section, not one per scroll frame. The crossfade between them is written
-   * straight to the DOM below.
-   */
+  const panelRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(0);
+  /** Set by the first deliberate interaction, and never unset. */
+  const touched = useRef(false);
+  const [nearby, setNearby] = useState(false);
+  const swipeX = useRef<number | null>(null);
 
-  useScrollProgress(trackRef, ({ p }) => {
-    const exact = p * (LOOKS.length - 1);
+  // ── Auto-advance once, on arrival ───────────────────────────────────────
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    for (let i = 0; i < LOOKS.length; i++) {
-      const el = frameRefs.current[i];
-      if (!el) continue;
-      const d = Math.abs(exact - i);
-      el.style.opacity = clamp(1 - d * 1.15).toFixed(4);
-      el.style.transform = `scale(${(1 + d * 0.06).toFixed(3)}) translateY(${((exact - i) * 3).toFixed(2)}%)`;
+    let timer = 0;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        io.disconnect();
+        const step = () => {
+          if (touched.current) return;
+          setActive((prev) => {
+            if (prev >= LOOKS.length - 1) return prev;
+            timer = window.setTimeout(step, DWELL);
+            return prev + 1;
+          });
+        };
+        timer = window.setTimeout(step, DWELL);
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  // ── The clip only loads once the panel is roughly in reach ──────────────
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el || !clip) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setNearby(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [clip]);
+
+  function select(next: number) {
+    touched.current = true;
+    setActive(Math.max(0, Math.min(LOOKS.length - 1, next)));
+  }
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      select(active + 1);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      select(active - 1);
     }
+  }
 
-    const index = Math.round(exact);
-    setActive((prev) => (prev === index ? prev : index));
-  });
+  /** State 05 is "Flowered" — the one the clip belongs to. */
+  const clipIndex = 4;
+  const showClip = Boolean(clip) && nearby && active === clipIndex;
 
   return (
-    <section aria-labelledby="hair-title" className="section-dark relative">
-      <div ref={trackRef} className="relative h-[380vh]">
-        <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
-          <div className="shell grid w-full items-center gap-10 lg:grid-cols-[1fr_0.95fr] lg:gap-20">
-            <div className="order-2 lg:order-1">
-              <Reveal>
-                <p className="eyebrow mb-8">{sectionEyebrow(index, "The silhouette")}</p>
-              </Reveal>
-              <SplitLines
-                as="h2"
-                id="hair-title"
-                className="display-md text-ivory"
-                lines={["The silhouette", "of the bride."]}
+    <section
+      ref={panelRef}
+      aria-labelledby="hair-title"
+      className="section-dark relative flex min-h-[100dvh] items-center py-[var(--s-8)]"
+      onKeyDown={onKeyDown}
+    >
+      <div className="shell grid w-full items-center gap-10 lg:grid-cols-[1fr_0.95fr] lg:gap-20">
+        {/* Phone puts the picture first; desktop reads left to right. */}
+        <div
+          className="relative order-1 aspect-[4/5] w-full touch-pan-y overflow-hidden lg:order-2 lg:aspect-auto lg:h-[70vh]"
+          onPointerDown={(e) => {
+            swipeX.current = e.clientX;
+          }}
+          onPointerUp={(e) => {
+            const from = swipeX.current;
+            swipeX.current = null;
+            if (from === null) return;
+            const dx = e.clientX - from;
+            if (Math.abs(dx) >= 40) select(active + (dx < 0 ? 1 : -1));
+          }}
+          onPointerCancel={() => {
+            swipeX.current = null;
+          }}
+        >
+          {LOOKS.map((l, i) => (
+            <div
+              key={l.name}
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                opacity: i === active ? 1 : 0,
+                transition: "opacity var(--d-base) var(--ease-silk)",
+              }}
+            >
+              <EditorialImage
+                image={images[i] ?? PLATES[i]}
+                className="h-full w-full"
+                sizes="(max-width: 1024px) 92vw, 45vw"
+                decorative
               />
-
-              <p className="body-lg mt-8 max-w-md">
-                From the back of a wedding hall nobody can see a lip line. What they can see is a
-                silhouette — and that is built, not styled.
-              </p>
-
-              <ol className="mt-10 flex flex-wrap gap-x-6 gap-y-3">
-                {LOOKS.map((l, i) => (
-                  <li key={l.name}>
-                    <span
-                      className={cx(
-                        "text-[0.8rem] uppercase tracking-[0.24em] transition-colors duration-[var(--d-base)]",
-                        i === active ? "text-champagne" : "text-inactive",
-                      )}
-                    >
-                      {l.name}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-
-              <p key={active} className="body-base mt-8 max-w-md" style={{ animation: "hair-in var(--d-slow) var(--ease-silk) both" }}>
-                {LOOKS[active].note}
-              </p>
-
-              <Link href="/hair" className="btn btn-ghost mt-10">
-                Bridal hair
-              </Link>
             </div>
+          ))}
 
-            <div className="relative order-1 aspect-[4/5] w-full overflow-hidden lg:order-2 lg:h-[70vh] lg:aspect-auto">
-              {LOOKS.map((l, i) => (
-                <div
-                  key={l.name}
-                  ref={(el) => {
-                    frameRefs.current[i] = el;
-                  }}
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{
-                    opacity: i === 0 ? 1 : 0,
-                    transition:
-                      "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
-                  }}
+          {showClip && clip && (
+            <video
+              ref={videoRef}
+              aria-hidden="true"
+              muted
+              loop
+              autoPlay
+              playsInline
+              preload="none"
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              {clip.av1 && <source src={clip.av1} type='video/mp4; codecs="av01.0.05M.08"' />}
+              {clip.webm && <source src={clip.webm} type="video/webm" />}
+              <source src={clip.mp4} type="video/mp4" />
+            </video>
+          )}
+
+          <p className="sr-only" aria-live="polite">
+            Hair stage: {LOOKS[active].name}
+          </p>
+        </div>
+
+        <div className="order-2 lg:order-1">
+          <Reveal>
+            <p className="eyebrow mb-8">{sectionEyebrow(index, "The silhouette")}</p>
+          </Reveal>
+          <SplitLines
+            as="h2"
+            id="hair-title"
+            className="display-md text-ivory"
+            lines={["The silhouette", "of the bride."]}
+          />
+
+          <p className="body-lg measure-note mt-8">
+            From the back of a wedding hall nobody can see a lip line. What they can see is a
+            silhouette — and that is built, not styled.
+          </p>
+
+          <ol className="mt-10 flex flex-wrap gap-x-3 gap-y-2">
+            {LOOKS.map((l, i) => (
+              <li key={l.name}>
+                <button
+                  type="button"
+                  onClick={() => select(i)}
+                  aria-pressed={i === active}
+                  className={cx(
+                    "flex min-h-11 items-baseline gap-2 px-2 text-[0.8rem] uppercase tracking-[0.24em] transition-colors duration-[var(--d-base)]",
+                    i === active ? "text-champagne" : "text-inactive hover:text-ivory",
+                  )}
                 >
-                  <EditorialImage
-                    image={images[i] ?? PLATES[i]}
-                    className="h-full w-full"
-                    sizes="(max-width: 1024px) 92vw, 45vw"
-                    decorative
-                  />
-                </div>
-              ))}
-              <p className="sr-only" aria-live="polite">
-                Hair stage: {LOOKS[active].name}
-              </p>
-            </div>
-          </div>
+                  <span className="font-mono text-[0.75rem]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span>{l.name}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+
+          <p
+            key={active}
+            className="body-base measure-note mt-8"
+            style={{ animation: "hair-in var(--d-slow) var(--ease-silk) both" }}
+          >
+            {LOOKS[active].note}
+          </p>
+
+          <Link href="/hair" className="btn btn-ghost mt-10">
+            Bridal hair
+          </Link>
         </div>
       </div>
 

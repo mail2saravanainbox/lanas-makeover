@@ -45,7 +45,7 @@ const MATERIALS: Material[] = [
   {
     name: "Silk",
     line: "Woven in three parts, joined at the border.",
-    note: "Kanchipuram holds its own weight — which is why it photographs like architecture and drapes like nothing else.",
+    note: "Kanchipuram holds its own weight — which is why it photographs like architecture.",
     tone: "bronze",
     seed: 601,
     brideTone: "rose",
@@ -216,8 +216,7 @@ export default function ActHeritage({
         />
         <Reveal delay={280}>
           <p className="body-lg mt-8 max-w-xl">
-            They are the conditions the work has to survive — and the reason a Tamil bridal face
-            is built differently from any other.
+            They are the conditions the work has to survive.
           </p>
         </Reveal>
       </div>

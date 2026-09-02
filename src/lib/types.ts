@@ -241,10 +241,11 @@ export interface SiteSettings {
   philosophy: string;
   experience: string;
   bookingCta: string;
-  secondaryCta: string;
   /** One word of Tamil, rendered once per page. See site.ts. */
   signatureTamil: string;
   hero: HeroMedia;
+  /** Optional footage for the hair sequence. See site.ts. */
+  hair?: { clip?: VideoSources };
   /** Marks demo copy so the UI can be honest about what is placeholder. */
   contentIsPlaceholder: boolean;
   showPlaceholderBadges: boolean;

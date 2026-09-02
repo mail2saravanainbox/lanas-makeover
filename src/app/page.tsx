@@ -136,7 +136,7 @@ export default async function HomePage() {
         entries={timeline}
       />
 
-      <HairSilhouette index={n.silhouette!} images={slots.hair} />
+      <HairSilhouette index={n.silhouette!} images={slots.hair} clip={settings.hair?.clip} />
 
       <JournalTeaser index={n.journal!} posts={journal} />
 

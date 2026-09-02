@@ -63,7 +63,6 @@ export const siteSettings: SiteSettings = {
   experience: "Bridal & party transformation makeup · Natural, HD & South Indian bridal",
 
   bookingCta: "Check Your Date",
-  secondaryCta: "Start Your Story",
 
   /**
    * மல்லிகை — malligai, the jasmine. One word, rendered once per page beside
@@ -132,6 +131,15 @@ export const siteSettings: SiteSettings = {
      * With no asset, no strand renders. That is the current state.
      */
   },
+
+  /**
+   * TODO(client): optional. A few seconds of jasmine being threaded into the
+   * braid, shown in place of the still for state 05 of the hair sequence.
+   * Same encode ladder as the hero. Absent by default — the still is complete.
+   *
+   *   hair: { clip: { mp4: "/video/hair-jasmine.mp4", webm: "…", av1: "…" } }
+   */
+  hair: {},
 
   /**
    * Master honesty switches.

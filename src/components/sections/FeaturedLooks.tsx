@@ -94,7 +94,7 @@ export default function FeaturedLooks({
         <Reveal>
           <div className="mt-20 text-center">
             <Link href="/portfolio" className="btn">
-              The full portfolio
+              See the work
             </Link>
           </div>
         </Reveal>

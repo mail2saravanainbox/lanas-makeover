@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { whatsappLink } from "@/content/site";
 import { sectionEyebrow } from "@/lib/utils";
 import type { SiteSettings } from "@/lib/types";
 import Reveal from "@/components/ui/Reveal";
@@ -14,6 +14,7 @@ export default function ClosingCTA({
   index?: number;
   settings: SiteSettings;
 }) {
+  const whatsapp = whatsappLink();
   return (
     <section className="relative overflow-hidden bg-ivory py-28 text-ink sm:py-40 surface-ivory" aria-labelledby="cta-title">
       <KolamGrid
@@ -47,12 +48,19 @@ export default function ClosingCTA({
               >
                 {settings.bookingCta}
               </BookingLink>
-              <Link
-                href="/portfolio"
-                className="btn btn-ghost !border-ink/25 !text-ink hover:!text-ink"
-              >
-                {settings.secondaryCta}
-              </Link>
+              {/* The second button used to be "Start Your Story" → /portfolio,
+                  which is neither starting anything nor a story. One primary
+                  door, and the real alternative when a number exists. */}
+              {whatsapp && (
+                <a
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost !border-ink/25 !text-ink hover:!text-ink"
+                >
+                  Ask on WhatsApp
+                </a>
+              )}
             </div>
           </Reveal>
         </div>

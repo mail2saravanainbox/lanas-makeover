@@ -96,11 +96,12 @@ export default function ActArtist({
             <p className="eyebrow mb-10">{sectionEyebrow(index, "The artist & her morning")}</p>
           </Reveal>
 
+          {/* Her name, not a slogan about hands. */}
           <SplitLines
             as="h2"
             id="artist-title"
-            className="display-md text-ivory"
-            lines={["The hands behind", "the transformation."]}
+            className="display-lg text-ivory"
+            lines={[settings.artistName]}
           />
 
           <div className="mt-12 space-y-6">
@@ -123,9 +124,9 @@ export default function ActArtist({
               </div>
               <div>
                 <dt className="eyebrow mb-3">Travel</dt>
-                <dd className="body-base !text-ivory/80">
-                  Available across Tamil Nadu and beyond
-                </dd>
+                {/* TODO(client): confirm beyond-state travel before widening
+                    this again. "and beyond" was a claim nobody had made. */}
+                <dd className="body-base !text-ivory/80">Available across Tamil Nadu</dd>
               </div>
               <div>
                 <dt className="eyebrow mb-3">Instagram</dt>

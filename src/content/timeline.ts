@@ -37,7 +37,9 @@ export const timeline: TimelineEntry[] = [
   {
     time: "The silk",
     title: "The saree is draped.",
-    note: "Nine yards that has to fall correctly, and stay fallen, for twelve hours.",
+    // TODO(client): "nine yards" is a register-specific claim — a madisar, not
+    // every Tamil bridal saree. Confirm before naming a length again.
+    note: "Silk that has to fall correctly, and stay fallen, for twelve hours.",
   },
   {
     time: "The gold",
