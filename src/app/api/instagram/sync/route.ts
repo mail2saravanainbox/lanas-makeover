@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import type { PortfolioItem, SyncSummary } from "@/lib/types";
 import { fetchAllMedia, InstagramApiError, readCredentials } from "@/lib/instagram/client";
 import { hasChanged, mergeCurated, normalizeMedia } from "@/lib/instagram/normalize";
-import { readStore, writeStore } from "@/lib/instagram/store";
+import { readStore, storeIsDurable, writeStore } from "@/lib/instagram/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,8 +36,7 @@ export const dynamic = "force-dynamic";
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-function authorised(request: Request): boolean {
-  const secret = process.env.INSTAGRAM_SYNC_SECRET;
+function bearerMatches(request: Request, secret: string | undefined): boolean {
   if (!secret) return false;
 
   const header = request.headers.get("authorization") ?? "";
@@ -51,15 +50,32 @@ function authorised(request: Request): boolean {
   }
 }
 
-export async function POST(request: Request): Promise<Response> {
-  const startedAt = new Date().toISOString();
+function authorised(request: Request): boolean {
+  return bearerMatches(request, process.env.INSTAGRAM_SYNC_SECRET);
+}
 
-  if (!authorised(request)) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorised. Send Authorization: Bearer <INSTAGRAM_SYNC_SECRET>." },
-      { status: 401 },
-    );
-  }
+/**
+ * Vercel Cron sends a GET with `Authorization: Bearer $CRON_SECRET` and cannot
+ * be given custom headers, so the scheduled run authenticates on CRON_SECRET.
+ * INSTAGRAM_SYNC_SECRET is still accepted, for a manual GET.
+ */
+function authorisedCron(request: Request): boolean {
+  return (
+    bearerMatches(request, process.env.CRON_SECRET) ||
+    bearerMatches(request, process.env.INSTAGRAM_SYNC_SECRET)
+  );
+}
+
+/**
+ * The sync itself, with NO authorisation of its own.
+ *
+ * Each entry point authorises once, on its own secret, and then calls this.
+ * POST used to be the sync AND its own auth check, so the cron GET delegating
+ * to POST was re-checked against INSTAGRAM_SYNC_SECRET and a perfectly valid
+ * CRON_SECRET was rejected.
+ */
+async function runSync(): Promise<Response> {
+  const startedAt = new Date().toISOString();
 
   const creds = readCredentials();
   if (!creds) {
@@ -147,13 +163,30 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-/** Non-secret status probe. Never reveals credentials. */
-export async function GET(): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
+  if (!authorised(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Unauthorised. Send Authorization: Bearer <INSTAGRAM_SYNC_SECRET>." },
+      { status: 401 },
+    );
+  }
+  return runSync();
+}
+
+/**
+ * Authorised GET runs the sync — that is the scheduled path (see vercel.json).
+ * Unauthorised GET is the non-secret status probe it has always been, and
+ * never reveals credentials.
+ */
+export async function GET(request: Request): Promise<Response> {
+  if (authorisedCron(request)) return runSync();
+
   const store = await readStore();
   return NextResponse.json({
     configured: Boolean(readCredentials()),
     syncSecretSet: Boolean(process.env.INSTAGRAM_SYNC_SECRET),
     contentSource: process.env.CONTENT_SOURCE ?? "local",
+    storeIsDurable: storeIsDurable(),
     itemsStored: store.items.length,
     itemsPublished: store.items.filter((i) => i.published).length,
     lastSyncedAt: store.syncedAt,

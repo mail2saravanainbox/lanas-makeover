@@ -3,7 +3,7 @@ import Link from "next/link";
 import { content, currentContentSource } from "@/lib/content/provider";
 import { pageMetadata } from "@/lib/seo";
 import { readCredentials } from "@/lib/instagram/client";
-import { readStore } from "@/lib/instagram/store";
+import { readStore, storeIsDurable } from "@/lib/instagram/store";
 
 export const metadata: Metadata = pageMetadata({
   title: "Admin",
@@ -69,6 +69,7 @@ export default async function AdminPage() {
 
   const igConfigured = Boolean(readCredentials());
   const store = await readStore();
+  const durable = storeIsDurable();
   const source = currentContentSource();
 
   return (
@@ -97,6 +98,11 @@ export default async function AdminPage() {
               label="Sync secret"
               value={process.env.INSTAGRAM_SYNC_SECRET ? "set" : "not set"}
               good={Boolean(process.env.INSTAGRAM_SYNC_SECRET)}
+            />
+            <Row
+              label="Synced media store"
+              value={durable ? "Vercel KV (durable)" : "memory only — lost on redeploy"}
+              good={durable}
             />
             <Row label="Last Instagram sync" value={store.syncedAt ?? "never"} />
             <Row label="Media in store" value={String(store.items.length)} />

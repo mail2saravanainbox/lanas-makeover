@@ -20,6 +20,7 @@ import HairSilhouette from "@/components/sections/HairSilhouette";
 import Atelier from "@/components/sections/Atelier";
 import JournalTeaser from "@/components/sections/JournalTeaser";
 import Testimonials from "@/components/sections/Testimonials";
+import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
 import ClosingCTA from "@/components/sections/ClosingCTA";
 
@@ -51,6 +52,10 @@ export default async function HomePage() {
     provider.getTimeline(),
     provider.getPortfolio({ featured: true, limit: 6 }),
   ]);
+
+  // The strip reads the store through the provider — never a live Meta call at
+  // render time. Renders nothing until there are six curated posts.
+  const latest = await provider.getPortfolio({ limit: 6 });
 
   // Each world shows work from its own category; each article a different image.
   const worlds = services.slice(0, 6).map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
@@ -116,6 +121,10 @@ export default async function HomePage() {
 
       {/* Hidden entirely until real testimonials exist */}
       <Testimonials items={testimonials} />
+
+      {/* Placed with Testimonials, which is where Task 2.6's section 09 lands.
+          When the homepage is renumbered, these two move together. */}
+      <InstagramStrip items={latest} settings={settings} />
 
       {/* ACT VIII — the final mirror */}
       <FinalMirror brand={settings.brandName} cta={settings.bookingCta} image={slots.finalMirror} />

@@ -154,6 +154,13 @@ export interface Testimonial {
   weddingType?: string;
   location?: string;
   image?: ImageRef;
+  /**
+   * A permissioned screenshot of the message she actually sent — a WhatsApp
+   * thread, an Instagram DM. To this audience that is far more credible than
+   * typed text, because typed text is what a designer writes.
+   * ⚠ Never publish one without the sender's explicit permission.
+   */
+  screenshot?: ImageRef;
   published: boolean;
 }
 

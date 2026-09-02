@@ -179,6 +179,21 @@ InstagramContentProvider → PortfolioGrid / lightbox / detail pages
 * **Deletion is safe.** Removing a post on Instagram does not silently empty
   the website; the record is retained and reported.
 
+### Durability and the daily sync
+
+The synced-media store is **Vercel KV** when `KV_REST_API_URL` and
+`KV_REST_API_TOKEN` are set, and memory-only when they are not. It previously
+wrote a JSON file to the OS temp directory, which on serverless was worse than
+useless — each instance had its own filesystem, so a sync on one box was
+invisible to every other and the whole thing evaporated on redeploy. `/admin`
+now reports which of the two is in force.
+
+`vercel.json` schedules a daily sync at 03:00 UTC. Vercel Cron issues a **GET**
+and cannot send custom headers, so the scheduled run authenticates on
+`CRON_SECRET` (`Authorization: Bearer $CRON_SECRET`, set automatically by
+Vercel from the project env var). Without `CRON_SECRET` the scheduled request
+is just the public status probe and syncs nothing.
+
 ### Running a sync
 
 ```bash

@@ -1,21 +1,22 @@
 import "server-only";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import os from "node:os";
 import type { PortfolioItem } from "@/lib/types";
 
 /**
  * Synced-media store.
  *
- * Deliberately small and swappable. Two layers:
+ * Three layers, in order of preference:
  *   1. a module-level cache (survives warm serverless invocations)
- *   2. a JSON file in the OS temp dir (survives across invocations on one box)
+ *   2. Vercel KV, when configured — DURABLE and shared across every instance
+ *   3. nothing: an empty store, honestly empty
  *
- * ⚠ PRODUCTION NOTE: serverless filesystems are ephemeral and not shared
- *   between instances. Before relying on Instagram as the live content source,
- *   swap `readDisk`/`writeDisk` for durable storage — Vercel KV / Postgres /
- *   Blob, or your CMS. That is the only change required; every caller and every
- *   component stays exactly as it is.
+ * The OS temp file this used to write is gone. On serverless it was worse than
+ * useless: each instance had its own filesystem, so a sync on one box was
+ * invisible to every other, and the whole thing evaporated on redeploy. The
+ * store looked persistent and was not.
+ *
+ * With no KV configured the store is memory-only, which is correct behaviour
+ * for local development and honest behaviour in production — the admin page
+ * reports the sync time it actually has.
  */
 
 interface StoreShape {
@@ -23,42 +24,56 @@ interface StoreShape {
   syncedAt: string | null;
 }
 
-const FILE = path.join(os.tmpdir(), "lanas-makeover-instagram-cache.json");
+const KEY = "instagram:store";
 const EMPTY: StoreShape = { items: [], syncedAt: null };
 
 let memory: StoreShape | null = null;
 
-async function readDisk(): Promise<StoreShape> {
+function kvConfigured(): boolean {
+  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+}
+
+async function readKv(): Promise<StoreShape> {
+  if (!kvConfigured()) return EMPTY;
   try {
-    const raw = await fs.readFile(FILE, "utf8");
-    const parsed = JSON.parse(raw) as StoreShape;
-    if (!Array.isArray(parsed.items)) return EMPTY;
-    return parsed;
-  } catch {
+    const { kv } = await import("@vercel/kv");
+    const stored = await kv.get<StoreShape>(KEY);
+    if (!stored || !Array.isArray(stored.items)) return EMPTY;
+    return stored;
+  } catch (err) {
+    console.error("[instagram] kv read failed", err);
     return EMPTY;
   }
 }
 
-async function writeDisk(data: StoreShape): Promise<void> {
+async function writeKv(data: StoreShape): Promise<void> {
+  if (!kvConfigured()) return;
   try {
-    await fs.writeFile(FILE, JSON.stringify(data), "utf8");
-  } catch {
-    // Read-only filesystem — the memory cache still serves this instance.
+    const { kv } = await import("@vercel/kv");
+    await kv.set(KEY, data);
+  } catch (err) {
+    // The memory cache still serves this instance; the next sync retries.
+    console.error("[instagram] kv write failed", err);
   }
 }
 
 export async function readStore(): Promise<StoreShape> {
   if (memory) return memory;
-  memory = await readDisk();
+  memory = await readKv();
   return memory;
 }
 
 export async function writeStore(items: PortfolioItem[], syncedAt: string): Promise<void> {
   memory = { items, syncedAt };
-  await writeDisk(memory);
+  await writeKv(memory);
 }
 
 /** Used by tests and by the admin "reset" affordance. */
 export function clearMemoryCache(): void {
   memory = null;
+}
+
+/** Whether synced media survives a redeploy. Surfaced on /admin. */
+export function storeIsDurable(): boolean {
+  return kvConfigured();
 }
