@@ -3,10 +3,16 @@ import type { BlogPost } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
-import { formatDate } from "@/lib/utils";
+import { formatDate, sectionEyebrow } from "@/lib/utils";
 
 /** THE LANA JOURNAL (§23) — homepage teaser */
-export default function JournalTeaser({ posts }: { posts: BlogPost[] }) {
+export default function JournalTeaser({
+  index,
+  posts,
+}: {
+  index: number;
+  posts: BlogPost[];
+}) {
   if (posts.length === 0) return null;
   const featured = posts.slice(0, 3);
 
@@ -16,7 +22,7 @@ export default function JournalTeaser({ posts }: { posts: BlogPost[] }) {
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
             <Reveal>
-              <p className="eyebrow mb-8">11 — The journal</p>
+              <p className="eyebrow mb-8">{sectionEyebrow(index, "The journal")}</p>
             </Reveal>
             <SplitLines
               as="h2"

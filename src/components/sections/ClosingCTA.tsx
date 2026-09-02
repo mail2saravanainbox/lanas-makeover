@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { sectionEyebrow } from "@/lib/utils";
 import type { SiteSettings } from "@/lib/types";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
@@ -6,7 +7,13 @@ import KolamGrid from "./KolamGrid";
 import BookingLink from "./BookingLink";
 
 /** YOUR STORY STARTS HERE (§27) */
-export default function ClosingCTA({ settings }: { settings: SiteSettings }) {
+export default function ClosingCTA({
+  index = 11,
+  settings,
+}: {
+  index?: number;
+  settings: SiteSettings;
+}) {
   return (
     <section className="relative overflow-hidden bg-ivory py-28 text-ink sm:py-40 surface-ivory" aria-labelledby="cta-title">
       <KolamGrid
@@ -17,7 +24,7 @@ export default function ClosingCTA({ settings }: { settings: SiteSettings }) {
       <div className="shell relative grid gap-14 lg:grid-cols-[1.2fr_1fr] lg:items-end">
         <div>
           <Reveal>
-            <p className="eyebrow mb-8 !text-muted-ivory">15 — Check your date</p>
+            <p className="eyebrow mb-8 !text-muted-ivory">{sectionEyebrow(index, "Check your date")}</p>
           </Reveal>
           <SplitLines
             as="h2"

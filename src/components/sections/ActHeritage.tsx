@@ -6,7 +6,7 @@ import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import KolamGrid from "./KolamGrid";
-import { clamp, norm } from "@/lib/utils";
+import { clamp, norm, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 
 /**
@@ -69,7 +69,13 @@ const MATERIALS: Material[] = [
 /** Each material owns an equal share of the track. */
 const SPAN = 1 / MATERIALS.length;
 
-export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
+export default function ActHeritage({
+  index,
+  images = [],
+}: {
+  index: number;
+  images?: ImageRef[];
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
   /**
@@ -105,7 +111,7 @@ export default function ActHeritage({ images = [] }: { images?: ImageRef[] }) {
 
       <div className="shell relative z-10 pb-16 pt-[var(--s-12)] sm:pt-[var(--s-16)]">
         <Reveal>
-          <p className="eyebrow mb-8">06 — The Tamil soul</p>
+          <p className="eyebrow mb-8">{sectionEyebrow(index, "Silk · Gold · Jasmine")}</p>
         </Reveal>
         <SplitLines
           as="h2"

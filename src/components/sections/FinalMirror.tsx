@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
-import { clamp } from "@/lib/utils";
+import { clamp, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 import { track } from "@/lib/analytics";
 
@@ -31,10 +31,12 @@ function window4(p: number, a: number, b: number, c: number, d: number): number 
 const PLATE: ImageRef = { alt: "The final look", tone: "bronze", seed: 999 };
 
 export default function FinalMirror({
+  index,
   brand,
   cta,
   image = PLATE,
 }: {
+  index: number;
   brand: string;
   cta: string;
   image?: ImageRef;
@@ -62,10 +64,12 @@ export default function FinalMirror({
   useScrollProgress(trackRef, ({ p }) => {
     if (reduced) return;
 
+    // Rescaled for a 200vh track: the same three beats, proportionally wider
+    // windows, so each line still has room to land at the new speed.
     const l = [
-      window4(p, 0.04, 0.14, 0.26, 0.34),
-      window4(p, 0.36, 0.44, 0.54, 0.61),
-      window4(p, 0.63, 0.7, 0.78, 0.84),
+      window4(p, 0.04, 0.12, 0.24, 0.3),
+      window4(p, 0.32, 0.4, 0.5, 0.58),
+      window4(p, 0.6, 0.67, 0.75, 0.82),
     ];
     const end = clamp((p - 0.84) / 0.1);
     const portrait = clamp((p - 0.02) / 0.2) * (1 - clamp((p - 0.8) / 0.12) * 0.55);
@@ -87,17 +91,21 @@ export default function FinalMirror({
       endRef.current.style.transform = `translateY(calc(-50% + ${((1 - end) * 24).toFixed(1)}px))`;
     }
 
-    const next = p < 0.35 ? 0 : p < 0.62 ? 1 : p < 0.84 ? 2 : 3;
+    const next = p < 0.31 ? 0 : p < 0.59 ? 1 : p < 0.84 ? 2 : 3;
     setBeat((prev) => (prev === next ? prev : next));
   }, [reduced]);
 
   return (
     <section aria-labelledby="mirror-title" className="section-dark relative">
       <h2 id="mirror-title" className="sr-only">
-        The final mirror
+        The mirror
       </h2>
 
-      <div ref={trackRef} className="relative h-[340vh]">
+      <p className="shell eyebrow absolute inset-x-0 top-[calc(var(--nav-h)+2rem)] z-20">
+        {sectionEyebrow(index, "The mirror")}
+      </p>
+
+      <div ref={trackRef} className="relative h-[200vh]">
         <div className="sticky top-0 flex h-[100dvh] items-center justify-center overflow-hidden">
           {/* The portrait, held behind everything */}
           <div

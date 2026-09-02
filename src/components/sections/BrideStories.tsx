@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { sectionEyebrow } from "@/lib/utils";
 import type { BrideStory, SiteSettings } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
@@ -8,9 +9,11 @@ import StoryLink from "./StoryLink";
 
 /** ACT V — THE WOMEN (§17) */
 export default function BrideStories({
+  index,
   brides,
   settings,
 }: {
+  index: number;
   brides: BrideStory[];
   settings: SiteSettings;
 }) {
@@ -20,7 +23,7 @@ export default function BrideStories({
     <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="brides-title">
       <div className="shell">
         <Reveal>
-          <p className="eyebrow mb-8">08 — The women</p>
+          <p className="eyebrow mb-8">{sectionEyebrow(index, "Lana brides")}</p>
         </Reveal>
         <SplitLines
           as="h2"

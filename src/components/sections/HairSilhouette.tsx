@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
-import { clamp, cx } from "@/lib/utils";
+import { clamp, cx, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 import type { ImageRef, MediaTone } from "@/lib/types";
 
@@ -27,7 +27,13 @@ const LOOKS: Array<{ name: string; note: string; tone: MediaTone; seed: number }
 
 const PLATES: ImageRef[] = LOOKS.map((l) => ({ alt: `${l.name} bridal hair`, tone: l.tone, seed: l.seed }));
 
-export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[] }) {
+export default function HairSilhouette({
+  index,
+  images = PLATES,
+}: {
+  index: number;
+  images?: ImageRef[];
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const frameRefs = useRef<Array<HTMLDivElement | null>>([]);
   /**
@@ -59,7 +65,7 @@ export default function HairSilhouette({ images = PLATES }: { images?: ImageRef[
           <div className="shell grid w-full items-center gap-10 lg:grid-cols-[1fr_0.95fr] lg:gap-20">
             <div className="order-2 lg:order-1">
               <Reveal>
-                <p className="eyebrow mb-8">The silhouette</p>
+                <p className="eyebrow mb-8">{sectionEyebrow(index, "The silhouette")}</p>
               </Reveal>
               <SplitLines
                 as="h2"

@@ -45,3 +45,18 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * A numbered section eyebrow: `04 — The ritual`.
+ *
+ * The index is PASSED IN, never written into the component. Sections used to
+ * carry their own hard-coded numbers, which is how the homepage ended up
+ * running 01, 02, 04, 06, 07, 08, 08, 09, 10, 11, 12, 15 — two sections
+ * claiming 08, and four numbers that belonged to sections since deleted.
+ */
+export function sectionEyebrow(index: number | undefined, label: string): string {
+  // Undefined where the component is reused OFF the homepage — /about shows
+  // testimonials too, and "09 —" there would be a number pointing at nothing.
+  if (index === undefined) return label;
+  return `${String(index).padStart(2, "0")} — ${label}`;
+}

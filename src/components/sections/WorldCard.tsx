@@ -74,16 +74,6 @@ export default function WorldCard({
           {/* Legibility scrim — always, never conditional */}
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent opacity-90 transition-opacity duration-[var(--d-base)] group-hover:opacity-75" />
 
-          {/* Sheen sweep on hover */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -translate-x-full opacity-0 transition-all duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-full group-hover:opacity-100"
-            style={{
-              background:
-                "linear-gradient(105deg, transparent 35%, rgba(242,237,228,0.10) 50%, transparent 65%)",
-            }}
-          />
-
           <span className="absolute right-5 top-5 font-mono text-[0.75rem] tracking-[0.24em] text-ivory/55">
             {String(index).padStart(2, "0")}
           </span>
@@ -93,9 +83,9 @@ export default function WorldCard({
             <h3 className="font-display text-3xl leading-none text-ivory transition-transform duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1">
               {name}
             </h3>
-            <p className="body-base mt-3 max-h-0 overflow-hidden opacity-0 transition-all duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-32 group-hover:opacity-100 group-focus-visible:max-h-32 group-focus-visible:opacity-100">
-              {summary}
-            </p>
+            {/* Always visible. Hiding the one sentence that explains the
+                ceremony behind a hover meant it did not exist on any phone. */}
+            <p className="body-base mt-3">{summary}</p>
           </div>
         </div>
       </div>

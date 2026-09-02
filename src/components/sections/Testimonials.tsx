@@ -1,3 +1,4 @@
+import { sectionEyebrow } from "@/lib/utils";
 import type { Testimonial } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
@@ -13,14 +14,21 @@ import SplitLines from "@/components/ui/SplitLines";
  * For this audience that reads as evidence in a way typed text cannot, since
  * typed text is exactly what a designer would have written.
  */
-export default function Testimonials({ items }: { items: Testimonial[] }) {
+export default function Testimonials({
+  index,
+  items,
+}: {
+  /** Omitted off the homepage — see sectionEyebrow. */
+  index?: number;
+  items: Testimonial[];
+}) {
   if (items.length === 0) return null;
 
   return (
     <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="testimonials-title">
       <div className="shell">
         <Reveal>
-          <p className="eyebrow mb-8">12 — In their words</p>
+          <p className="eyebrow mb-8">{sectionEyebrow(index, "In their words")}</p>
         </Reveal>
         <SplitLines
           as="h2"

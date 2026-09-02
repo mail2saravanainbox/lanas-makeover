@@ -1,30 +1,47 @@
 import Link from "next/link";
-import type { ImageRef, SiteSettings } from "@/lib/types";
+import { sectionEyebrow } from "@/lib/utils";
+import type { ImageRef, SiteSettings, TimelineEntry } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 
 /**
- * ACT II — THE ARTIST (§6)
- * Every word here comes from `content/site.ts`. Nothing is invented in markup.
- */
-/**
+ * THE ARTIST AND HER MORNING
+ *
+ * MorningTimeline used to be its own section, three further down the page,
+ * describing the hours of a wedding morning while the artist who works them
+ * was introduced somewhere else entirely. They are one subject and they are
+ * now one section: she is on the left and sticky, her morning runs down the
+ * right.
+ *
+ * Every word comes from content/site.ts and content/timeline.ts. Nothing is
+ * invented in markup.
+ *
  * §21 — when there is no genuine photograph OF LANA, this renders type rather
  * than a stand-in. A bridal portrait from the portfolio is a photograph of a
  * client, not of the artist, and presenting one here would misrepresent her.
  */
 export default function ActArtist({
+  index,
   settings,
   portrait = null,
+  working = null,
+  entries = [],
 }: {
+  index: number;
   settings: SiteSettings;
   portrait?: ImageRef | null;
+  working?: ImageRef | null;
+  entries?: TimelineEntry[];
 }) {
   return (
     <section className="section-dark relative overflow-hidden py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="artist-title">
       <div className="shell grid items-start gap-16 lg:grid-cols-[0.85fr_1fr] lg:gap-24">
-        <ParallaxFrame className="relative order-2 lg:order-1" strength={0.7}>
+        <ParallaxFrame
+          className="relative order-2 lg:order-1 lg:sticky lg:top-[calc(var(--nav-h)+2rem)]"
+          strength={0.7}
+        >
           <Reveal blur>
             <div
               className="relative aspect-[4/5] w-full"
@@ -50,6 +67,20 @@ export default function ActArtist({
             </div>
           </Reveal>
 
+          {/* Her hands at work — the slot the deleted Atelier section held.
+              A photograph OF the work, where the portrait above is of her. */}
+          {working && (
+            <Reveal delay={160}>
+              <div className="relative mt-6 aspect-[3/2] w-full overflow-hidden">
+                <EditorialImage
+                  image={working}
+                  className="h-full w-full"
+                  sizes="(max-width: 1024px) 90vw, 38vw"
+                />
+              </div>
+            </Reveal>
+          )}
+
           <Reveal delay={240}>
             <figure className="mt-8 border-l border-ivory/15 pl-6">
               <blockquote className="italic-serif text-xl leading-relaxed text-champagne">
@@ -62,7 +93,7 @@ export default function ActArtist({
 
         <div className="order-1 lg:order-2 lg:pt-10">
           <Reveal>
-            <p className="eyebrow mb-10">02 — The artist</p>
+            <p className="eyebrow mb-10">{sectionEyebrow(index, "The artist & her morning")}</p>
           </Reveal>
 
           <SplitLines
@@ -117,6 +148,40 @@ export default function ActArtist({
               Read her story
             </Link>
           </Reveal>
+
+          {/* ── Her morning ─────────────────────────────────────────────── */}
+          {entries.length > 0 && (
+            <div className="mt-[var(--s-12)] border-t border-ivory/12 pt-[var(--s-8)]">
+              <Reveal>
+                <h3 id="morning-title" className="display-sm text-ivory">
+                  Her morning.
+                </h3>
+                <p className="body-base measure-note mt-4">
+                  The wedding is a public event. The morning before it is not — it is the last
+                  few hours in which she is only herself. The order is fixed; the hours are
+                  not, because every morning is timed backwards from the muhurtham itself.
+                </p>
+              </Reveal>
+
+              <ol className="relative mt-10 border-l border-ivory/12 pl-8 sm:pl-12">
+                {entries.map((e, i) => (
+                  <li key={`${e.time}-${i}`} className="relative pb-12 last:pb-0">
+                    <Reveal delay={i * 90}>
+                      <span
+                        aria-hidden="true"
+                        className="absolute -left-[calc(2rem+3.5px)] top-2 block h-[7px] w-[7px] rounded-full bg-champagne sm:-left-[calc(3rem+3.5px)]"
+                      />
+                      <p className="text-[0.75rem] uppercase tracking-[0.28em] text-champagne/80">
+                        {e.time}
+                      </p>
+                      <h4 className="display-sm mt-3 text-ivory">{e.title}</h4>
+                      {e.note && <p className="body-base measure-note mt-3">{e.note}</p>}
+                    </Reveal>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
       </div>
     </section>

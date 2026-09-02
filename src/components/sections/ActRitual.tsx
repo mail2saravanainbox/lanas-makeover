@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { clamp, cx } from "@/lib/utils";
+import { clamp, cx, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 import type { ImageRef, MediaTone } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
@@ -78,7 +78,13 @@ const STAGES: Stage[] = [
 
 const PLATES: ImageRef[] = STAGES.map((s) => ({ alt: s.name, tone: s.tone, seed: s.seed }));
 
-export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) {
+export default function ActRitual({
+  index,
+  images = PLATES,
+}: {
+  index: number;
+  images?: ImageRef[];
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const plateRefs = useRef<Array<HTMLDivElement | null>>([]);
   const barRef = useRef<HTMLDivElement>(null);
@@ -110,7 +116,7 @@ export default function ActRitual({ images = PLATES }: { images?: ImageRef[] }) 
     <section aria-labelledby="ritual-title" className="section-dark relative">
       {/* Header travels past first, then the track pins */}
       <div className="shell relative z-20 pb-20 pt-28 text-center sm:pt-40">
-        <p className="eyebrow mb-8">04 — The bridal ritual</p>
+        <p className="eyebrow mb-8">{sectionEyebrow(index, "The ritual")}</p>
         <h2 id="ritual-title" className="display-md mx-auto max-w-[16ch] text-balance text-ivory">
           Face. Skin. Eyes. Hair.
           <br />

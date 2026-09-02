@@ -1,5 +1,7 @@
 import Link from "next/link";
-import type { PortfolioItem } from "@/lib/types";
+import { collectionForCategory } from "@/content/collections";
+import { sectionEyebrow } from "@/lib/utils";
+import type { PortfolioCategory, PortfolioItem } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -15,14 +17,30 @@ import SplitLines from "@/components/ui/SplitLines";
  * section shows the former and never pretends to be the latter — no names, no
  * dates, no invented narrative.
  */
-export default function FeaturedLooks({ items }: { items: PortfolioItem[] }) {
+/**
+ * A featured look now points at its COLLECTION with the lightbox pre-opened,
+ * because Task 3.3 retired the per-image routes. Falls back to the archive
+ * index for a category with no room of its own.
+ */
+function collectionHref(item: { slug: string; category: PortfolioCategory }): string {
+  const c = collectionForCategory(item.category);
+  return c ? `/portfolio/${c.slug}?image=${item.slug}` : "/portfolio";
+}
+
+export default function FeaturedLooks({
+  index,
+  items,
+}: {
+  index: number;
+  items: PortfolioItem[];
+}) {
   if (items.length === 0) return null;
 
   return (
     <section className="section-dark relative py-[var(--s-12)] sm:py-[var(--s-16)]" aria-labelledby="looks-title">
       <div className="shell">
         <Reveal>
-          <p className="eyebrow mb-8">08 — The work</p>
+          <p className="eyebrow mb-8">{sectionEyebrow(index, "Lana brides")}</p>
         </Reveal>
         <SplitLines
           as="h2"
@@ -31,12 +49,14 @@ export default function FeaturedLooks({ items }: { items: PortfolioItem[] }) {
           lines={["Featured", "bridal looks."]}
         />
 
+        {/* One row of three. Six in a staggered field was a portfolio page
+            pretending to be a homepage section. */}
         <ul className="mt-16 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, i) => (
-            <li key={item.id} className={i % 3 === 1 ? "lg:mt-14" : ""}>
+          {items.slice(0, 3).map((item, i) => (
+            <li key={item.id}>
               <Reveal blur delay={(i % 3) * 120}>
                 <Link
-                  href={`/portfolio/${item.slug}`}
+                  href={collectionHref(item)}
                   data-cursor="view"
                   className="group block"
                   aria-label={`View ${item.title}`}

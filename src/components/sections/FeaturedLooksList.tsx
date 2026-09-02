@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { PortfolioItem } from "@/lib/types";
+import { collectionForCategory } from "@/content/collections";
+import type { PortfolioCategory, PortfolioItem } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -8,6 +9,16 @@ import Reveal from "@/components/ui/Reveal";
  * The /brides index when no permissioned bride story has been published yet.
  * Real work, neutral titles, no invented identity (§15, §16).
  */
+/**
+ * A featured look now points at its COLLECTION with the lightbox pre-opened,
+ * because Task 3.3 retired the per-image routes. Falls back to the archive
+ * index for a category with no room of its own.
+ */
+function collectionHref(item: { slug: string; category: PortfolioCategory }): string {
+  const c = collectionForCategory(item.category);
+  return c ? `/portfolio/${c.slug}?image=${item.slug}` : "/portfolio";
+}
+
 export default function FeaturedLooksList({ items }: { items: PortfolioItem[] }) {
   if (items.length === 0) {
     return <p className="body-lg py-16 text-center">The first stories are being written.</p>;
@@ -19,7 +30,7 @@ export default function FeaturedLooksList({ items }: { items: PortfolioItem[] })
         <li key={item.id} className={i % 3 === 1 ? "lg:mt-16" : ""}>
           <Reveal blur delay={(i % 3) * 120}>
             <Link
-              href={`/portfolio/${item.slug}`}
+              href={collectionHref(item)}
               data-cursor="view"
               className="group block"
               aria-label={`View ${item.title}`}

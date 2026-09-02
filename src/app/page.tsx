@@ -7,22 +7,19 @@ import BrandVeil from "@/components/ui/BrandVeil";
 
 import Hero from "@/components/sections/Hero";
 import ActBefore from "@/components/sections/ActBefore";
-import ActArtist from "@/components/sections/ActArtist";
-import SilkTransition from "@/components/sections/SilkTransition";
 import ActRitual from "@/components/sections/ActRitual";
-import ActHeritage from "@/components/sections/ActHeritage";
-import BridalWorlds from "@/components/sections/BridalWorlds";
 import BrideStories from "@/components/sections/BrideStories";
 import FeaturedLooks from "@/components/sections/FeaturedLooks";
-import MorningTimeline from "@/components/sections/MorningTimeline";
-import DetailArt from "@/components/sections/DetailArt";
+import ActHeritage from "@/components/sections/ActHeritage";
+import BridalWorlds from "@/components/sections/BridalWorlds";
+import ActArtist from "@/components/sections/ActArtist";
 import HairSilhouette from "@/components/sections/HairSilhouette";
-import Atelier from "@/components/sections/Atelier";
 import JournalTeaser from "@/components/sections/JournalTeaser";
 import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
 import ClosingCTA from "@/components/sections/ClosingCTA";
+import SectionMark from "@/components/ui/SectionMark";
 
 export const metadata: Metadata = pageMetadata({ path: "/" });
 
@@ -30,11 +27,13 @@ export const metadata: Metadata = pageMetadata({ path: "/" });
  * ═══════════════════════════════════════════════════════════════════════════
  *  THE HOMEPAGE IS A FILM, NOT A BROCHURE
  * ═══════════════════════════════════════════════════════════════════════════
- *  Nine acts, in narrative order. Not hero → about → services → gallery.
+ *  Eleven numbered sections, in narrative order — not hero → about →
+ *  services → gallery. The numbers are COMPUTED from the composition below,
+ *  never written into the components, so re-ordering the page cannot leave
+ *  the eyebrows lying.
  *
- *  Every act is a self-contained component reading from the ContentProvider,
- *  and every act is complete without WebGL. The canvas behind the page adds
- *  depth to three of them; it never carries the story on its own.
+ *  Every act is a self-contained component reading from the ContentProvider.
+ *  There is no WebGL behind any of them — see Task 2.4.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export default async function HomePage() {
@@ -50,15 +49,43 @@ export default async function HomePage() {
     provider.getPosts(),
     provider.getTestimonials(),
     provider.getTimeline(),
-    provider.getPortfolio({ featured: true, limit: 6 }),
+    provider.getPortfolio({ featured: true, limit: 3 }),
   ]);
 
   // The strip reads the store through the provider — never a live Meta call at
   // render time. Renders nothing until there are six curated posts.
   const latest = await provider.getPortfolio({ limit: 6 });
 
+  /**
+   * THE NUMBERS ARE COMPUTED FROM WHAT ACTUALLY RENDERS.
+   *
+   * Several sections return null on empty content — no bride stories, no
+   * published looks, no testimonials — so numbering them by position gave a
+   * homepage that read 01, 02, 04, 05, 06, 07, 08, 10, 11. A visitor cannot
+   * see the sections that are missing; they can only see that two numbers
+   * are. This assigns the sequence over the sections that survive.
+   */
+  const renders = {
+    before: true,
+    ritual: true,
+    brides: brides.length > 0 || featured.length > 0,
+    heritage: true,
+    ceremonies: services.length > 0,
+    artist: true,
+    silhouette: true,
+    journal: posts.length > 0,
+    voices: testimonials.length > 0,
+    mirror: true,
+    cta: true,
+  };
+
+  let counter = 0;
+  const n = Object.fromEntries(
+    Object.entries(renders).map(([key, shown]) => [key, shown ? ++counter : undefined]),
+  ) as Record<keyof typeof renders, number | undefined>;
+
   // Each world shows work from its own category; each article a different image.
-  const worlds = services.slice(0, 6).map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
+  const worlds = services.map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
   const journal = posts.map((p, i) => ({ ...p, cover: journalCover(i, p.cover) }));
 
   return (
@@ -79,59 +106,54 @@ export default async function HomePage() {
         video={settings.hero.video}
       />
 
-      {/* ACT I — before the bride */}
-      <ActBefore images={slots.beforeLayers} />
+      <ActBefore index={n.before!} images={slots.beforeLayers} />
 
-      {/* ACT II — the artist */}
-      <ActArtist settings={settings} portrait={slots.artistPortrait} />
+      <ActRitual index={n.ritual!} images={slots.transformation} />
 
-      {/* Silk — the camera passes through the cloth */}
-      <SilkTransition line="Then the silk. Then the gold. Then the morning." />
+      <SectionMark />
 
-      {/* ACT III — the ritual */}
-      <ActRitual images={slots.transformation} />
-
-      {/* ACT IV — the heritage */}
-      <ActHeritage images={slots.heritage} />
-
-      {/* The worlds */}
-      <BridalWorlds services={worlds} />
-
-      {/* ACT V — the women. Real stories when they exist (§17); until then,
-          featured bridal looks — genuine work, no invented identity (§16). */}
+      {/* 03 — whichever of the two the archive can actually fill. Bride
+          stories when they exist; the featured work when they do not; and
+          nothing at all when neither does. Both render null when empty, so
+          the number is never orphaned. */}
       {brides.length > 0 ? (
-        <BrideStories brides={brides.slice(0, 3)} settings={settings} />
+        <BrideStories index={n.brides!} brides={brides.slice(0, 3)} settings={settings} />
       ) : (
-        <FeaturedLooks items={featured} />
+        <FeaturedLooks index={n.brides!} items={featured} />
       )}
 
-      {/* Her morning */}
-      <MorningTimeline entries={timeline} />
+      <ActHeritage index={n.heritage!} images={slots.heritage} />
 
-      {/* The detail */}
-      <DetailArt images={slots.detail} />
+      <BridalWorlds index={n.ceremonies!} services={worlds} />
 
-      {/* The silhouette */}
-      <HairSilhouette images={slots.hair} />
+      <SectionMark />
 
-      {/* The atelier */}
-      <Atelier images={slots.atelier} />
+      <ActArtist
+        index={n.artist!}
+        settings={settings}
+        portrait={slots.artistPortrait}
+        working={slots.atelier[2] ?? null}
+        entries={timeline}
+      />
 
-      {/* ACT VII — the journal */}
-      <JournalTeaser posts={journal} />
+      <HairSilhouette index={n.silhouette!} images={slots.hair} />
 
-      {/* Hidden entirely until real testimonials exist */}
-      <Testimonials items={testimonials} />
+      <JournalTeaser index={n.journal!} posts={journal} />
 
-      {/* Placed with Testimonials, which is where Task 2.6's section 09 lands.
-          When the homepage is renumbered, these two move together. */}
+      <Testimonials index={n.voices} items={testimonials} />
+
       <InstagramStrip items={latest} settings={settings} />
 
-      {/* ACT VIII — the final mirror */}
-      <FinalMirror brand={settings.brandName} cta={settings.bookingCta} image={slots.finalMirror} />
+      <SectionMark />
 
-      {/* ACT IX — your story */}
-      <ClosingCTA settings={settings} />
+      <FinalMirror
+        index={n.mirror!}
+        brand={settings.brandName}
+        cta={settings.bookingCta}
+        image={slots.finalMirror}
+      />
+
+      <ClosingCTA index={n.cta!} settings={settings} />
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { sectionEyebrow } from "@/lib/utils";
 import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
@@ -14,7 +15,13 @@ const PLATES: [ImageRef, ImageRef, ImageRef] = [
   { alt: "Close detail", tone: "champagne", seed: 903 },
 ];
 
-export default function ActBefore({ images = PLATES }: { images?: [ImageRef, ImageRef, ImageRef] }) {
+export default function ActBefore({
+  index,
+  images = PLATES,
+}: {
+  index: number;
+  images?: [ImageRef, ImageRef, ImageRef];
+}) {
   return (
     <section
       data-wipe-target=""
@@ -64,7 +71,7 @@ export default function ActBefore({ images = PLATES }: { images?: [ImageRef, Ima
       <div className="shell relative grid items-center gap-16 lg:grid-cols-[1fr_0.9fr] lg:gap-24">
         <div>
           <Reveal>
-            <p className="eyebrow mb-10">01 — Before the bride</p>
+            <p className="eyebrow mb-10">{sectionEyebrow(index, "Before the bride")}</p>
           </Reveal>
 
           <SplitLines
