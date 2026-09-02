@@ -309,6 +309,11 @@ const SERVICE_NEIGHBOURS: Partial<Record<PortfolioCategory, PortfolioCategory[]>
   other: ["tamil-bridal", "bridal"],
 };
 
+/** The fallback chain for a category, for callers that need the same order. */
+export function serviceNeighbours(category: PortfolioCategory): PortfolioCategory[] {
+  return SERVICE_NEIGHBOURS[category] ?? [];
+}
+
 /** Service / bridal-world imagery, matched to the world's own category. */
 export function serviceImage(category: PortfolioCategory, fallback: ImageRef): ImageRef {
   for (const c of [category, ...(SERVICE_NEIGHBOURS[category] ?? [])]) {

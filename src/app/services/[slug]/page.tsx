@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
-import { serviceImage } from "@/lib/content/slots";
+import { serviceImage, serviceNeighbours } from "@/lib/content/slots";
 import { absoluteUrl, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
@@ -64,7 +64,21 @@ export default async function BridalWorldPage({
     provider.getSiteSettings(),
   ]);
 
-  const items = all.filter((i) => i.category === service.category);
+  /**
+   * The work shown under a service. Falls back to neighbouring categories the
+   * same way its hero image does — muhurtham is filed as `bridal`, and there
+   * are no plain `bridal` photographs, so this grid was empty on the two
+   * services that needed it most.
+   */
+  const items = (() => {
+    const own = all.filter((i) => i.category === service.category);
+    if (own.length > 0) return own;
+    for (const c of serviceNeighbours(service.category)) {
+      const near = all.filter((i) => i.category === c);
+      if (near.length > 0) return near;
+    }
+    return [];
+  })();
   const others = services.filter((s) => s.slug !== service.slug);
 
   /**

@@ -97,7 +97,12 @@ export default async function JournalArticlePage({
     // block never looks half-built when nothing happens to share a tag.
     .sort((a, b) => b.shared - a.shared || (a.post.publishedAt < b.post.publishedAt ? 1 : -1))
     .slice(0, 2)
-    .map((x) => x.post);
+    // Resolve their covers as well — the "Keep reading" cards were showing
+    // placeholder plates next to a cover that had resolved to a photograph.
+    .map((x) => ({
+      ...x.post,
+      cover: journalCover(all.findIndex((y) => y.slug === x.post.slug), x.post.cover),
+    }));
 
   return (
     <>
