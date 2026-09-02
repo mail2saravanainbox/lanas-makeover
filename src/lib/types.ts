@@ -187,6 +187,8 @@ export interface SiteSettings {
   experience: string;
   bookingCta: string;
   secondaryCta: string;
+  /** One word of Tamil, rendered once per page. See site.ts. */
+  signatureTamil: string;
   /** Marks demo copy so the UI can be honest about what is placeholder. */
   contentIsPlaceholder: boolean;
   showPlaceholderBadges: boolean;

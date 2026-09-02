@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cx } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import MobileNav from "./MobileNav";
+import JasmineMark from "./JasmineMark";
 import { onScrollY } from "@/lib/motion/scheduler";
 
 export interface NavLink {
@@ -87,8 +88,9 @@ export default function Nav({
         >
           <Link
             href="/"
-            className="font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-[1.05rem]"
+            className="group flex items-center gap-3 font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-[1.05rem]"
           >
+            <JasmineMark className="h-5 w-5 shrink-0 text-champagne/70 transition-colors duration-[var(--d-base)] group-hover:text-champagne" />
             {brand}
           </Link>
 

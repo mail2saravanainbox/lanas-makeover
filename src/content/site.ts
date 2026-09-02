@@ -66,6 +66,17 @@ export const siteSettings: SiteSettings = {
   secondaryCta: "Start Your Story",
 
   /**
+   * மல்லிகை — malligai, the jasmine. One word, rendered once per page beside
+   * the mark in the footer. It is a signature, not a translation: the site is
+   * in English and stays in English.
+   *
+   * TODO(client): confirm this is the word Lana wants, and that this spelling
+   * is how she would write it. A misjudged word in someone's own script is
+   * worse than no word at all.
+   */
+  signatureTamil: "மல்லிகை",
+
+  /**
    * Master honesty switches.
    *  contentIsPlaceholder → shows the demo-content notice in /admin + footer.
    *  showPlaceholderBadges → tags placeholder imagery in the UI so nothing

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Cormorant_Garamond, Inter, Noto_Serif_Tamil } from "next/font/google";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 
 import "./globals.css";
@@ -45,6 +45,19 @@ const sans = Inter({
   variable: "--font-inter",
 });
 
+/**
+ * One weight, one subset, and deliberately NOT preloaded: this face renders a
+ * single word in the footer. Preloading it would put a Tamil font on the
+ * critical path of every page for an ornament below the fold.
+ */
+const tamil = Noto_Serif_Tamil({
+  subsets: ["tamil"],
+  weight: ["400"],
+  display: "swap",
+  preload: false,
+  variable: "--font-noto-tamil",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(seoConfig.siteUrl),
   ...pageMetadata({ path: "/" }),
@@ -74,7 +87,7 @@ export default async function RootLayout({
   const hasBrides = (await content().getBrides()).length > 0;
 
   return (
-    <html lang="en-IN" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en-IN" className={`${display.variable} ${sans.variable} ${tamil.variable}`}>
       <body className="grain antialiased">
         <JsonLd data={localBusinessSchema()} />
 

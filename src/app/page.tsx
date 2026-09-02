@@ -3,6 +3,7 @@ import { content } from "@/lib/content/provider";
 import { getImageSlots, journalCover, serviceImage } from "@/lib/content/slots";
 import { pageMetadata, personSchema } from "@/lib/seo";
 import JsonLd from "@/components/ui/JsonLd";
+import BrandVeil from "@/components/ui/BrandVeil";
 
 import HeroCinematic from "@/components/sections/HeroCinematic";
 import ActBefore from "@/components/sections/ActBefore";
@@ -58,6 +59,11 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={personSchema()} />
+
+      {/* Server-rendered so it is painted with the first frame, and removed
+          before that frame by its own guard script when it should be skipped.
+          Homepage only — it is an opening, not a loader. */}
+      <BrandVeil brand={settings.brandName} />
 
       {/* ACT 0 — the opening */}
       <HeroCinematic

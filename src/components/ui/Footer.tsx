@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
+import JasmineMark from "./JasmineMark";
 
 const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string }> }> = [
   {
@@ -79,6 +80,16 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             <p className="font-display text-2xl uppercase tracking-[0.3em] text-ivory">
               {settings.brandName}
             </p>
+
+            {/* The mark and the one word of Tamil on the site. A signature,
+                not a translation — see settings.signatureTamil. */}
+            <p className="mt-4 flex items-center gap-3 text-champagne/70">
+              <JasmineMark className="h-5 w-5 shrink-0" />
+              <span lang="ta" className="signature-tamil">
+                {settings.signatureTamil}
+              </span>
+            </p>
+
             <p className="body-base mt-3 max-w-sm">{settings.location} · Travel available</p>
           </div>
 
