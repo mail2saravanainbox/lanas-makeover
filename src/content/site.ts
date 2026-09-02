@@ -111,25 +111,28 @@ export const siteSettings: SiteSettings = {
    */
   hero: {
     /**
-     * TODO(client): the jasmine strand, if it is ever shot.
+     * Stand-in footage, same status as the photography: licensed stock, not
+     * Lana's work. Encoded by scripts/encode-video.sh to the ladder below —
+     * 24fps, no audio track, +faststart, 1920x1080.
      *
-     * Task 2.4 built the procedural mesh to specification — one rank of five
-     * to seven lanceolate petals, a tube below, transmission 0.25, blooms
-     * packed every 0.09 curve units — rendered it at the hero's camera, and
-     * REJECTED IT. It read as a beige stick carrying three star shapes and two
-     * cones. Nothing about it said malligai, and a charam is white, not warm.
+     *   AV1  421 KB · WebM 645 KB · H.264 1.3 MB
      *
-     * The whole WebGL layer went with it. It existed to carry a 420vh opening
-     * that no longer exists, and over a photographic hero it would have been
-     * 239 KB gzipped of decoration in front of the LCP element.
+     * The browser takes the first it can decode. HeroVideo will not fetch any
+     * of them until the poster has painted and the main thread is idle, and
+     * refuses entirely under reduced motion, Save-Data, or a connection the
+     * browser reports as slower than 4g.
      *
-     * If the strand is wanted, it is footage, not geometry: shoot a real
-     * charam at 120fps against black, key it, and export
-     *   strand-alpha.webm  (VP9 + alpha)
-     *   strand-alpha.mov   (HEVC + alpha, for Safari)
-     * then set:  strand: { webm: "/video/strand-alpha.webm", mov: "…mov" }
-     * With no asset, no strand renders. That is the current state.
+     * No `portrait` encode: the source is a landscape close-up composed with
+     * the bride left of centre, and a 9:16 crop cuts her face. HeroVideo falls
+     * back to the landscape file on portrait viewports, which is correct here.
      */
+    video: {
+      landscape: {
+        av1: "/video/hero-landscape.av1.mp4",
+        webm: "/video/hero-landscape.webm",
+        mp4: "/video/hero-landscape.mp4",
+      },
+    },
   },
 
   /**
