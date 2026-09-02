@@ -209,7 +209,9 @@ test("the ritual reaches stage eight and reports it", async ({ page }) => {
         await page.waitForTimeout(500);
         return page.locator('[aria-live="polite"]').first().textContent();
       },
-      { timeout: 15_000 },
+      // Raised from 15s: the page now carries 55 photographs and two video
+      // encodes, and layout takes longer to settle under parallel test load.
+      { timeout: 25_000 },
     )
     .toMatch(/Stage 08: The Bride/);
 
