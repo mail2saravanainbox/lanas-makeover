@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "import:portfolio": "node scripts/import-portfolio.mjs",
-    "test": "playwright test"
+    "test": "playwright test",
+    "comp:import": "node scripts/import-comp.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

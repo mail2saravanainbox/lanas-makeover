@@ -41,7 +41,12 @@ import process from "node:process";
 import sharp from "sharp";
 
 const ROOT = process.cwd();
-const INCOMING = path.join(ROOT, "content", "incoming");
+/**
+ * The source folder. Overridable so the comp branch can point the SAME
+ * pipeline at content/comp/ — a presentation must exercise the real code path,
+ * or it is not showing the client anything true about how the site behaves.
+ */
+const INCOMING = path.join(ROOT, process.env.PORTFOLIO_INCOMING ?? path.join("content", "incoming"));
 const OUT_DIR = path.join(ROOT, "public", "portfolio");
 const DATA_FILE = path.join(ROOT, "src", "content", "portfolio", "portfolio.json");
 

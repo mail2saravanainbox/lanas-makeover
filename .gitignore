@@ -58,3 +58,5 @@ Protofolio image*
 /playwright-report
 /blob-report
 /.playwright
+content/comp/*
+!content/comp/README.md

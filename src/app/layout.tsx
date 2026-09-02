@@ -11,6 +11,7 @@ import { localBusinessSchema, pageMetadata, seoConfig } from "@/lib/seo";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
+import CompBanner from "@/components/ui/CompBanner";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import PageTransition from "@/components/ui/PageTransition";
 import AnalyticsScripts from "@/components/ui/Analytics";
@@ -89,6 +90,7 @@ export default async function RootLayout({
       <body className="grain antialiased">
         <JsonLd data={localBusinessSchema()} />
 
+        <CompBanner />
         <SmoothScroll />
         <PageTransition />
 

@@ -79,6 +79,13 @@ interface PageMetaInput {
 }
 
 /** Build page metadata consistently. Used by every route. */
+/**
+ * COMP BUILD: every route is noindex, no exceptions. A presentation comp in
+ * a search index is a stock photograph of someone else's bride ranking for
+ * Lana's name.
+ */
+const COMP_ROBOTS = { index: false, follow: false } as const;
+
 export function pageMetadata({
   title,
   description,
@@ -88,6 +95,7 @@ export function pageMetadata({
   publishedTime,
   modifiedTime,
   tags,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   noIndex,
 }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);
@@ -106,9 +114,9 @@ export function pageMetadata({
     title: title ?? seoConfig.defaultTitle,
     description: desc,
     alternates: { canonical: url },
-    robots: noIndex
-      ? { index: false, follow: false, nocache: true }
-      : { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+    // COMP BUILD: the `noIndex` argument is ignored — nothing here is
+    // indexable, whatever the caller asked for.
+    robots: { ...COMP_ROBOTS, nocache: true },
     openGraph: {
       type,
       url,
