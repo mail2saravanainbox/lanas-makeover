@@ -128,3 +128,82 @@ test("at 390px the header fits the viewport and still shows the CTA", async ({ p
   );
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+/* ── Phase 2 ─────────────────────────────────────────────────────────────── */
+
+test("the homepage numbers its sections contiguously from 01", async ({ page }) => {
+  await page.goto("/");
+
+  const numbered = await page.evaluate(() => {
+    const footer = document.querySelector("footer");
+    return [...document.querySelectorAll<HTMLElement>(".eyebrow")]
+      .filter((el) => !footer?.contains(el))
+      .map((el) => el.textContent?.trim() ?? "")
+      .filter((t) => /^\d{2} — /.test(t));
+  });
+
+  expect(numbered.length, "at least eight numbered sections").toBeGreaterThanOrEqual(8);
+
+  const values = numbered.map((t) => Number(t.slice(0, 2)));
+  // No gaps: sections that render nothing (no brides, no testimonials) must
+  // not leave a hole in the sequence.
+  expect(values).toEqual(values.map((_, i) => i + 1));
+  expect(new Set(values).size, "no duplicates").toBe(values.length);
+});
+
+test("no WebGL canvas exists, before or after scrolling", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("canvas")).toHaveCount(0);
+
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
+  await page.waitForTimeout(800);
+  await expect(page.locator("canvas")).toHaveCount(0);
+
+  // And the Three.js runtime is not among the scripts the page pulled.
+  const three = await page.evaluate(() =>
+    [...document.querySelectorAll("script[src]")].some((s) =>
+      /three|react-three/i.test((s as HTMLScriptElement).src),
+    ),
+  );
+  expect(three).toBe(false);
+});
+
+test("the ritual reaches stage eight and reports it", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+  // Measure only once layout has settled — the track's offset moves while
+  // fonts and images land, and a stale offset scrolls to the wrong stage.
+  await page.waitForTimeout(1000);
+
+  const track = await page.evaluate(() => {
+    const el = [...document.querySelectorAll("section")].find((s) =>
+      s.getAttribute("aria-labelledby") === "ritual-title",
+    );
+    if (!el) return null;
+    const inner = el.querySelector<HTMLElement>("div[class*='300vh']");
+    if (!inner) return null;
+    const r = inner.getBoundingClientRect();
+    return { top: Math.round(r.top + window.scrollY), height: Math.round(r.height) };
+  });
+  expect(track, "the 300vh ritual track").not.toBeNull();
+
+  // Land at the very bottom of the track — stage eight.
+  await page.evaluate(
+    (t) => window.scrollTo(0, t.top + t.height - window.innerHeight),
+    track!,
+  );
+  await page.waitForTimeout(1500);
+
+  // The aria-live region is the actual contract here: it is what a screen
+  // reader is told, and it is unambiguous where matching body copy is not.
+  await expect(page.locator('[aria-live="polite"]').first()).toHaveText(/Stage 08: The Bride/);
+
+  const fired = await page.evaluate(() =>
+    ((window as unknown as { dataLayer: Array<{ event?: string }> }).dataLayer ?? []).some(
+      (e) => e.event === "ritual_complete",
+    ),
+  );
+  expect(fired, "ritual_complete on the dataLayer").toBe(true);
+});
