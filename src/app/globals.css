@@ -473,6 +473,39 @@ nav[aria-label="Primary"] [aria-current="page"]::before {
   transform-origin: left;
 }
 
+/* ── Touch targets ─────────────────────────────────────────────────────────
+   Inline text links measure 20–29px tall, which fails WCAG 2.5.8's 24px
+   minimum on the smaller ones. A ::before with negative inset expands the
+   TOUCHABLE area without moving a single pixel of layout — padding would push
+   the wiping underline away from its text.
+
+   Coarse pointers only: a mouse does not need it, and the extra box would
+   overlap neighbouring links on a dense desktop footer.
+
+   [aria-current] is excluded because ::before there is the silk-red dot on the
+   active nav link. ───────────────────────────────────────────────────────── */
+
+@media (pointer: coarse) {
+  /* Real box height first — a pseudo-element hit area loses to any sibling
+     that overlaps and paints later, which is exactly what happens in a dense
+     footer list. Padding is not subtle, but it is not conditional either. */
+  .link-wipe {
+    padding-block: 0.3rem 0.5rem;
+  }
+
+  /* Keep the wiping underline against the text, not at the padding edge. */
+  .link-wipe::after {
+    bottom: 0.3rem;
+  }
+
+  /* And widen the target sideways, where padding would disturb inline flow. */
+  .link-wipe:not([aria-current="page"])::before {
+    content: "";
+    position: absolute;
+    inset: -0.15rem -0.3rem;
+  }
+}
+
 /* ── Custom cursor (desktop, fine pointer only) ─────────────────────────── */
 
 @media (hover: hover) and (pointer: fine) {

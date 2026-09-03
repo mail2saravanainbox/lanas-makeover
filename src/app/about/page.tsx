@@ -47,7 +47,10 @@ export default async function AboutPage() {
         ]}
       />
 
-      <section className="shell relative pb-24">
+      {/* overflow-hidden: the kolam is 34rem wide and offset -right-[6%],
+          which pushed the DOCUMENT 24px wider than the viewport at 390 and
+          61px at 1024 — a decorative element causing a horizontal scroll. */}
+      <section className="shell relative overflow-hidden pb-24">
         <KolamGrid
           className="pointer-events-none absolute -right-[6%] top-0 h-[34rem] w-[34rem] text-champagne/[0.05]"
           cells={6}

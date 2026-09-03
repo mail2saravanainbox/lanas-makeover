@@ -246,7 +246,7 @@ export default function ActHeritage({
   }, []);
 
   return (
-    <section aria-labelledby="heritage-title" className="section-dark relative">
+    <section aria-labelledby="heritage-title" className="section-dark relative overflow-hidden">
       <KolamGrid
         className="pointer-events-none absolute right-[4%] top-[6%] z-10 h-[30rem] w-[30rem] text-champagne/[0.09]"
         cells={7}
