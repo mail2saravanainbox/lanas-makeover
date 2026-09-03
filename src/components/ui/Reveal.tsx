@@ -13,6 +13,7 @@ export default function Reveal({
   children,
   delay = 0,
   blur = false,
+  mask = false,
   className,
   once = true,
 }: {
@@ -20,11 +21,13 @@ export default function Reveal({
   /** ms */
   delay?: number;
   blur?: boolean;
+  /** Clip-path wipe from the bottom edge, for imagery. */
+  mask?: boolean;
   className?: string;
   once?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const attr = blur ? "data-reveal-blur" : "data-reveal";
+  const attr = mask ? "data-reveal-mask" : blur ? "data-reveal-blur" : "data-reveal";
 
   useEffect(() => {
     const el = ref.current;

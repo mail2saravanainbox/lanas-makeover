@@ -124,6 +124,25 @@ export default function PortfolioGrid({
 
   const visible = filtered.slice(0, shown);
 
+  /**
+   * THE BRUSH'S LIGHT SWEEP (§03 — cursor interaction with images).
+   *
+   * A soft highlight follows the brush across a tile, as if the bristles were
+   * catching the light on the print. ONE delegated pointermove for the whole
+   * grid rather than a listener per tile, writing two custom properties on the
+   * hovered tile; the gradient itself is CSS, so nothing re-renders and the
+   * compositor does the work.
+   *
+   * The face is never distorted — this is light on a surface, not displacement.
+   */
+  function sweep(e: React.PointerEvent<HTMLUListElement>) {
+    const tile = (e.target as Element | null)?.closest<HTMLElement>("[data-tile]");
+    if (!tile) return;
+    const r = tile.getBoundingClientRect();
+    tile.style.setProperty("--mx", `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+    tile.style.setProperty("--my", `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+  }
+
   const availableFilters = useMemo(
     () => FILTERS.filter((f) => f.key === "all" || items.some((i) => i.category === f.key)),
     [items],
@@ -179,7 +198,7 @@ export default function PortfolioGrid({
       )}
 
       <div className="shell">
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5">
+        <ul onPointerMove={sweep} className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5">
           {visible.map((item, i) => {
             const weight = item.weight ?? "standard";
             // Editorial rhythm: nudge every third item down a little.
@@ -193,10 +212,14 @@ export default function PortfolioGrid({
                     every tile renders at zero height. Latent since the grid was
                     written; invisible until the portfolio had its first
                     published item. */}
-                <Reveal blur delay={(i % 3) * 110} className="h-full">
+                {/* A masked reveal rather than a blur: the print arrives from
+                    the bottom edge like a photograph being laid down, which
+                    reads as intentional where a blur reads as loading. */}
+                <Reveal mask delay={(i % 3) * 110} className="h-full">
                   <ParallaxFrame strength={0.4} className="h-full">
                     <button
                       type="button"
+                      data-tile=""
                       data-cursor="view"
                       onClick={() => {
                         setOpen(filtered.indexOf(item));
@@ -223,6 +246,16 @@ export default function PortfolioGrid({
                           badgeLabel="Placeholder"
                         />
                       </div>
+
+                      {/* The brush's light, following the bristle tip. */}
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[var(--d-base)] group-hover:opacity-100 motion-reduce:hidden"
+                        style={{
+                          background:
+                            "radial-gradient(22rem 22rem at var(--mx,50%) var(--my,50%), rgba(247,243,233,0.20) 0%, rgba(247,243,233,0.07) 34%, transparent 68%)",
+                        }}
+                      />
 
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent opacity-0 transition-opacity duration-[var(--d-base)] group-hover:opacity-100 group-focus-visible:opacity-100" />
 

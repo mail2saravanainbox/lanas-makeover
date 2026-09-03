@@ -285,7 +285,11 @@ test.describe("the brush cursor", () => {
 
     await page.goto("/");
     await page.mouse.move(600, 400);
-    await page.waitForTimeout(400);
+    // Poll rather than sleep: the brush mounts a frame after the first
+    // pointermove, and a fixed wait loses that race under parallel load.
+    await expect
+      .poll(async () => page.locator('svg path[fill*="bristle"]').count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
 
     const state = await page.evaluate(() => {
       const svg = document.querySelector('[aria-hidden="true"] svg path[fill*="bristle"]');
@@ -310,11 +314,15 @@ test.describe("the brush cursor", () => {
       () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
     );
     await page.mouse.move(1000, 700);
-    await page.waitForTimeout(500);
-    const after = await page.evaluate(
-      () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
-    );
-    expect(after).not.toBe(before);
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(
+            () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
+          ),
+        { timeout: 10_000 },
+      )
+      .not.toBe(before);
   });
 
   test("does not exist under reduced motion", async ({ page }) => {

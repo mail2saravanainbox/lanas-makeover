@@ -332,6 +332,35 @@
   transform: none;
 }
 
+/* Masked image reveal — the print laid down from its bottom edge.
+   Used by portfolio tiles, where a blur read as "still loading" and this
+   reads as a deliberate arrival. */
+/**
+ * THE CLIP GOES ON THE CHILD, NOT THE OBSERVED ELEMENT.
+ *
+ * Chromium applies an element's own clip-path when computing intersection, so
+ * clipping the observed element to `inset(0 0 100%)` gave it an intersection
+ * ratio of exactly 0 — the observer could never see it, so it was never
+ * revealed, so it stayed clipped. A reveal that hides itself from the thing
+ * that reveals it. Measured with a fresh IntersectionObserver: ratio 0 on an
+ * element 628px tall and fully on screen.
+ */
+[data-reveal-mask] > * {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path calc(var(--d-slow) * 1.2) var(--ease-silk);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal-mask="in"] > * {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal-mask] > * {
+    clip-path: none !important;
+  }
+}
+
 /* Line-by-line masked headline reveal */
 .line-mask {
   display: block;

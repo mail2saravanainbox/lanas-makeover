@@ -38,7 +38,16 @@ export default function ActBefore({
       style={{ ["--wipe" as string]: 1 }}
     >
       {/* The flower's trailing edge, as a soft diagonal. A mask slide rather
-          than an animated clip-path: same read, one composited layer. */}
+          than an animated clip-path: same read, one composited layer.
+
+          §04 wants this edge to BE a strand of jasmine. I built that twice —
+          as the brand's five-petal mark tiled down a waving line, at two
+          scales — and rejected both. Small, the petals are texture nobody
+          reads as jasmine; large, they are black silhouettes stamped on a
+          photograph, which looks like stickers. Same verdict as the 3D strand
+          in Task 2.4, for the same reason: jasmine is a photographic subject,
+          not a vector shape. It needs macro footage. Until then this is a
+          clean diagonal, which is honest about being a transition. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-20 bg-ink motion-reduce:hidden"
@@ -60,6 +69,7 @@ export default function ActBefore({
           WebkitMaskRepeat: "no-repeat",
         }}
       />
+
       {/* Oversized ghost word — depth cue, not decoration */}
       <span
         aria-hidden="true"
