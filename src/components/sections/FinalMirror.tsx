@@ -83,7 +83,9 @@ export default function FinalMirror({
       const el = lineRefs.current[i];
       if (!el) continue;
       el.style.opacity = l[i].toFixed(4);
-      el.style.filter = `blur(${((1 - l[i]) * 10).toFixed(1)}px)`;
+      // 5px, not 10. §15 asks for "very subtle movement" and calls restraint
+      // the effect; a 10px blur is a transition announcing itself.
+      el.style.filter = `blur(${((1 - l[i]) * 5).toFixed(1)}px)`;
     }
 
     if (endRef.current) {

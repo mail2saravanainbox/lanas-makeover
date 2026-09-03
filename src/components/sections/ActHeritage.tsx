@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { ImageRef, MediaTone } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
@@ -75,6 +76,33 @@ const MATERIALS: Material[] = [
  * One material. Holds its close-up, then opens an aperture onto the bride
  * wearing it when the panel arrives in view.
  */
+/**
+ * §06 asks each material to behave like the material it is, before it
+ * resolves into the bride:
+ *
+ *   SILK  a slow, wide, soft sheen travelling across the weave — the way
+ *         light moves over Kanchipuram when the fold shifts
+ *   GOLD  a narrower, warmer, faster specular — jewellery does not glow, it
+ *         catches and releases
+ *   JASMINE  nothing. Flowers are not reflective, and a sweep over petals
+ *         would be an effect applied to a material that does not do it.
+ *
+ * Both are one composited gradient on soft-light at very low opacity. They
+ * animate only while the panel is on screen, and not at all under reduced
+ * motion.
+ */
+const SHEEN: Record<string, { duration: string; band: string } | null> = {
+  Silk: {
+    duration: "7.5s",
+    band: "linear-gradient(104deg, transparent 34%, rgba(255,247,232,0.30) 50%, transparent 66%)",
+  },
+  Gold: {
+    duration: "5s",
+    band: "linear-gradient(104deg, transparent 43%, rgba(255,226,163,0.52) 50%, transparent 57%)",
+  },
+  Jasmine: null,
+};
+
 function Panel({
   material,
   closeUp,
@@ -115,6 +143,7 @@ function Panel({
 
   // Reduced motion is open by definition — derived, not set in an effect.
   const p = open || reduced ? 1 : 0;
+  const sheen = reduced ? null : SHEEN[material.name];
 
   return (
     <section
@@ -159,6 +188,18 @@ function Panel({
           }}
         >
           <EditorialImage image={closeUp} className="h-full w-full" sizes="100vw" decorative />
+
+          {/* The light moving across the material. */}
+          {sheen && (
+            <span
+              className="pointer-events-none absolute inset-0 mix-blend-soft-light motion-reduce:hidden"
+              style={{
+                backgroundImage: sheen.band,
+                backgroundSize: "260% 100%",
+                animation: `lm-sheen ${sheen.duration} var(--ease-silk) infinite`,
+              }}
+            />
+          )}
         </div>
       )}
 
@@ -170,6 +211,13 @@ function Panel({
           {material.line}
         </p>
         <p className="body-base measure-note mt-5">{material.note}</p>
+
+        {/* §06: "This should connect directly to JADAI." */}
+        {material.name === "Jasmine" && (
+          <Link href="/hair" className="btn btn-ghost mt-8">
+            The jadai
+          </Link>
+        )}
       </div>
     </section>
   );
@@ -232,6 +280,14 @@ export default function ActHeritage({
           reduced={reduced}
         />
       ))}
+
+      <style>{`
+        @keyframes lm-sheen {
+          0%   { background-position: 130% 0; }
+          55%  { background-position: -30% 0; }
+          100% { background-position: -30% 0; }
+        }
+      `}</style>
 
       {/* The resolution of the sequence */}
       <div className="shell relative z-10 py-24 text-center sm:py-32">
