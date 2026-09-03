@@ -447,8 +447,8 @@ nav[aria-label="Primary"] [aria-current="page"]::before {
 /* ── Custom cursor (desktop, fine pointer only) ─────────────────────────── */
 
 @media (hover: hover) and (pointer: fine) {
-  html.has-custom-cursor,
-  html.has-custom-cursor * {
+  html.has-brush-cursor,
+  html.has-brush-cursor * {
     cursor: none !important;
   }
 }

@@ -152,12 +152,31 @@ test("the homepage numbers its sections contiguously from 01", async ({ page }) 
 });
 
 test("no WebGL canvas exists, before or after scrolling", async ({ page }) => {
+  /**
+   * Asserts WEBGL specifically, not the absence of <canvas>. The brush
+   * cursor's powder trail is a legitimate 2D canvas; the thing Task 2.4
+   * removed and this guards is a WebGL context and the Three.js runtime.
+   */
+  const webglCanvases = () =>
+    page.evaluate(
+      () =>
+        [...document.querySelectorAll("canvas")].filter((c) => {
+          // Reading the context type is the only reliable way to tell them
+          // apart, and getContext returns the EXISTING context if there is one.
+          try {
+            return !!(c.getContext("webgl2") || c.getContext("webgl"));
+          } catch {
+            return false;
+          }
+        }).length,
+    );
+
   await page.goto("/");
-  await expect(page.locator("canvas")).toHaveCount(0);
+  expect(await webglCanvases()).toBe(0);
 
   await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
   await page.waitForTimeout(800);
-  await expect(page.locator("canvas")).toHaveCount(0);
+  expect(await webglCanvases()).toBe(0);
 
   // And the Three.js runtime is not among the scripts the page pulled.
   const three = await page.evaluate(() =>
@@ -258,4 +277,53 @@ test("portfolio grid tiles have a size", async ({ page }) => {
 
   expect(boxes.length, "tiles rendered").toBeGreaterThan(0);
   expect(boxes.filter((b) => b.h === 0), "tiles with zero height").toHaveLength(0);
+});
+
+test.describe("the brush cursor", () => {
+  test("is a brush, follows the pointer, and never blocks a click", async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop fine-pointer only");
+
+    await page.goto("/");
+    await page.mouse.move(600, 400);
+    await page.waitForTimeout(400);
+
+    const state = await page.evaluate(() => {
+      const svg = document.querySelector('[aria-hidden="true"] svg path[fill*="bristle"]');
+      const layer = svg?.closest('[aria-hidden="true"]') as HTMLElement | null;
+      return {
+        bristles: !!svg,
+        ariaHidden: layer?.getAttribute("aria-hidden"),
+        pointerEvents: layer ? getComputedStyle(layer).pointerEvents : null,
+        realCursor: getComputedStyle(document.body).cursor,
+      };
+    });
+
+    expect(state.bristles, "the brush's bristle path is rendered").toBe(true);
+    // Decorative, and never in the way of a real click.
+    expect(state.ariaHidden).toBe("true");
+    expect(state.pointerEvents).toBe("none");
+    // The native pointer is only hidden once the brush is actually running.
+    expect(state.realCursor).toBe("none");
+
+    // It moves with the pointer.
+    const before = await page.evaluate(
+      () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
+    );
+    await page.mouse.move(1000, 700);
+    await page.waitForTimeout(500);
+    const after = await page.evaluate(
+      () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
+    );
+    expect(after).not.toBe(before);
+  });
+
+  test("does not exist under reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.mouse.move(600, 400);
+    await page.waitForTimeout(400);
+    // No brush, and the real pointer is left alone.
+    expect(await page.locator('svg path[fill*="bristle"]').count()).toBe(0);
+    expect(await page.evaluate(() => getComputedStyle(document.body).cursor)).not.toBe("none");
+  });
 });

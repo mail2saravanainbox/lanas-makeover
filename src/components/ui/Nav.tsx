@@ -117,6 +117,7 @@ export default function Nav({
           <div className="flex items-center gap-3">
             <Link
               href="/contact"
+              data-cursor="open"
               onClick={() => track("booking_click", { placement: "nav" })}
               className="btn inline-flex !px-4 !py-2.5 !text-[0.75rem] sm:!px-6 sm:!py-3"
             >

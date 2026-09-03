@@ -1,4 +1,4 @@
-import Link from "next/link";
+import MagneticCta from "@/components/ui/MagneticCta";
 import type { HeroMedia, ImageRef } from "@/lib/types";
 import HeroVideo from "@/components/ui/HeroVideo";
 import HeroScroll from "./HeroScroll";
@@ -78,9 +78,9 @@ export default function Hero({
           Before she becomes a bride&hellip;
         </p>
 
-        <Link href="/contact" className="btn mt-9">
+        <MagneticCta href="/contact" placement="hero" className="btn mt-9">
           {cta}
-        </Link>
+        </MagneticCta>
       </div>
 
       {/* Scroll cue — the same 48px line device as before. */}

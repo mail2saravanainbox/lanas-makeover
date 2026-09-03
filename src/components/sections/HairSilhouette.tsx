@@ -128,6 +128,7 @@ export default function HairSilhouette({
       <div className="shell grid w-full items-center gap-10 lg:grid-cols-[1fr_0.95fr] lg:gap-20">
         {/* Phone puts the picture first; desktop reads left to right. */}
         <div
+          data-cursor="sweep"
           className="relative order-1 aspect-[4/5] w-full touch-pan-y overflow-hidden lg:order-2 lg:aspect-auto lg:h-[70vh]"
           onPointerDown={(e) => {
             swipeX.current = e.clientX;
