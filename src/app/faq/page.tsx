@@ -15,13 +15,18 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function FaqPage() {
   const provider = content();
-  const [faqs, settings] = await Promise.all([provider.getFaqs(), provider.getSiteSettings()]);
+  const [faqs, settings] = await Promise.all([
+    provider.getFaqs(),
+    provider.getSiteSettings(),
+  ]);
 
   return (
     <>
       <JsonLd
         data={[
-          faqSchema(faqs.map((f) => ({ question: f.question, answer: f.answer }))),
+          faqSchema(
+            faqs.map((f) => ({ question: f.question, answer: f.answer })),
+          ),
           breadcrumbSchema([
             { name: "Home", path: "/" },
             { name: "FAQ", path: "/faq" },
@@ -39,30 +44,31 @@ export default async function FaqPage() {
       />
 
       <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
+        {/* Exactly ONE grouping element between <dl> and <dt>/<dd>: the spec
+            allows a single wrapper, and Reveal already renders a <div>. An
+            extra <div> around it put all 16 terms outside a valid list. */}
         <dl className="max-w-3xl divide-y divide-ivory/10 border-y border-ivory/10">
           {faqs.map((f, i) => (
-            <div key={f.id} className="py-9">
-              <Reveal delay={i * 60}>
-                <dt className="display-sm text-ivory">{f.question}</dt>
-                <dd className="body-base mt-4 max-w-2xl">
-                  {/* ⟨…⟩ marks an answer awaiting Lana's confirmation. */}
-                  {f.answer.split(/(⟨[^⟩]*⟩)/).map((part, j) =>
-                    part.startsWith("⟨") ? (
-                      settings.showPlaceholderBadges ? (
-                        <span
-                          key={j}
-                          className="ml-2 rounded-full border border-champagne/25 px-2 py-0.5 text-[0.75rem] uppercase tracking-[0.18em] text-champagne/70"
-                        >
-                          To confirm
-                        </span>
-                      ) : null
-                    ) : (
-                      <span key={j}>{part}</span>
-                    ),
-                  )}
-                </dd>
-              </Reveal>
-            </div>
+            <Reveal key={f.id} delay={i * 60} className="block py-9">
+              <dt className="display-sm text-ivory">{f.question}</dt>
+              <dd className="body-base mt-4 max-w-2xl">
+                {/* ⟨…⟩ marks an answer awaiting Lana's confirmation. */}
+                {f.answer.split(/(⟨[^⟩]*⟩)/).map((part, j) =>
+                  part.startsWith("⟨") ? (
+                    settings.showPlaceholderBadges ? (
+                      <span
+                        key={j}
+                        className="ml-2 rounded-full border border-champagne/25 px-2 py-0.5 text-[0.75rem] uppercase tracking-[0.18em] text-champagne/70"
+                      >
+                        To confirm
+                      </span>
+                    ) : null
+                  ) : (
+                    <span key={j}>{part}</span>
+                  ),
+                )}
+              </dd>
+            </Reveal>
           ))}
         </dl>
       </div>

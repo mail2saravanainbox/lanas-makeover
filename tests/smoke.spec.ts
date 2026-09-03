@@ -22,9 +22,13 @@ test.describe("the homepage introduces itself in frame one", () => {
 
     // The wordmark, in the header — not the one further down the hero.
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "Lana's Makeover" })).toBeVisible();
+    await expect(
+      header.getByRole("link", { name: "Lana's Makeover" }),
+    ).toBeVisible();
 
-    await expect(header.getByRole("link", { name: "Check Your Date" })).toBeVisible();
+    await expect(
+      header.getByRole("link", { name: "Check Your Date" }),
+    ).toBeVisible();
 
     if (isDesktop(page)) {
       const nav = page.getByRole("navigation", { name: "Primary" });
@@ -36,7 +40,9 @@ test.describe("the homepage introduces itself in frame one", () => {
     }
   });
 
-  test("three Tab presses reach a nav link or the booking CTA", async ({ page }) => {
+  test("three Tab presses reach a nav link or the booking CTA", async ({
+    page,
+  }) => {
     await page.goto("/");
     await page.locator("header").waitFor();
 
@@ -53,9 +59,19 @@ test.describe("the homepage introduces itself in frame one", () => {
     });
 
     expect(focused, "something should have focus").not.toBeNull();
-    expect(focused!.inHeader, `focus landed on ${JSON.stringify(focused)}`).toBe(true);
+    expect(
+      focused!.inHeader,
+      `focus landed on ${JSON.stringify(focused)}`,
+    ).toBe(true);
 
-    const reachable = ["/contact", "/portfolio", "/services", "/journal", "/about", "/"];
+    const reachable = [
+      "/contact",
+      "/portfolio",
+      "/services",
+      "/journal",
+      "/about",
+      "/",
+    ];
     expect(reachable).toContain(focused!.href);
   });
 });
@@ -102,7 +118,9 @@ test.describe("prefers-reduced-motion", () => {
   });
 });
 
-test("at 390px the header fits the viewport and still shows the CTA", async ({ page }) => {
+test("at 390px the header fits the viewport and still shows the CTA", async ({
+  page,
+}) => {
   test.skip(isDesktop(page), "phone-width layout only");
 
   await page.goto("/");
@@ -124,14 +142,18 @@ test("at 390px the header fits the viewport and still shows the CTA", async ({ p
 
   // No horizontal scroll anywhere on the page.
   const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    () =>
+      document.documentElement.scrollWidth -
+      document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
 });
 
 /* ── Phase 2 ─────────────────────────────────────────────────────────────── */
 
-test("the homepage numbers its sections contiguously from 01", async ({ page }) => {
+test("the homepage numbers its sections contiguously from 01", async ({
+  page,
+}) => {
   await page.goto("/");
 
   const numbered = await page.evaluate(() => {
@@ -142,7 +164,10 @@ test("the homepage numbers its sections contiguously from 01", async ({ page }) 
       .filter((t) => /^\d{2} — /.test(t));
   });
 
-  expect(numbered.length, "at least eight numbered sections").toBeGreaterThanOrEqual(8);
+  expect(
+    numbered.length,
+    "at least eight numbered sections",
+  ).toBeGreaterThanOrEqual(8);
 
   const values = numbered.map((t) => Number(t.slice(0, 2)));
   // No gaps: sections that render nothing (no brides, no testimonials) must
@@ -197,14 +222,17 @@ test("the ritual reaches stage eight and reports it", async ({ page }) => {
   await page.waitForTimeout(1000);
 
   const track = await page.evaluate(() => {
-    const el = [...document.querySelectorAll("section")].find((s) =>
-      s.getAttribute("aria-labelledby") === "ritual-title",
+    const el = [...document.querySelectorAll("section")].find(
+      (s) => s.getAttribute("aria-labelledby") === "ritual-title",
     );
     if (!el) return null;
     const inner = el.querySelector<HTMLElement>("div[class*='300vh']");
     if (!inner) return null;
     const r = inner.getBoundingClientRect();
-    return { top: Math.round(r.top + window.scrollY), height: Math.round(r.height) };
+    return {
+      top: Math.round(r.top + window.scrollY),
+      height: Math.round(r.height),
+    };
   });
   expect(track, "the 300vh ritual track").not.toBeNull();
 
@@ -235,9 +263,10 @@ test("the ritual reaches stage eight and reports it", async ({ page }) => {
     .toMatch(/Stage 08: The Bride/);
 
   const fired = await page.evaluate(() =>
-    ((window as unknown as { dataLayer: Array<{ event?: string }> }).dataLayer ?? []).some(
-      (e) => e.event === "ritual_complete",
-    ),
+    (
+      (window as unknown as { dataLayer: Array<{ event?: string }> })
+        .dataLayer ?? []
+    ).some((e) => e.event === "ritual_complete"),
   );
   expect(fired, "ritual_complete on the dataLayer").toBe(true);
 });
@@ -249,7 +278,10 @@ test("the hero's frame actually has a size", async ({ page }) => {
   // classes, no height — because PlaceholderPlate's own `relative` beat the
   // `absolute` passed in via className. Nothing in the DOM looked wrong; the
   // hero was simply an empty black rectangle on the live site.
-  const box = await page.locator("[data-hero] [data-placeholder], [data-hero] img").first().boundingBox();
+  const box = await page
+    .locator("[data-hero] [data-placeholder], [data-hero] img")
+    .first()
+    .boundingBox();
   expect(box, "the hero frame is in the DOM").not.toBeNull();
   expect(box!.width).toBeGreaterThan(200);
   expect(box!.height).toBeGreaterThan(200);
@@ -276,23 +308,35 @@ test("portfolio grid tiles have a size", async ({ page }) => {
   );
 
   expect(boxes.length, "tiles rendered").toBeGreaterThan(0);
-  expect(boxes.filter((b) => b.h === 0), "tiles with zero height").toHaveLength(0);
+  expect(
+    boxes.filter((b) => b.h === 0),
+    "tiles with zero height",
+  ).toHaveLength(0);
 });
 
 test.describe("the brush cursor", () => {
-  test("is a brush, follows the pointer, and never blocks a click", async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop fine-pointer only");
+  test("is a brush, follows the pointer, and never blocks a click", async ({
+    page,
+  }) => {
+    test.skip(
+      (page.viewportSize()?.width ?? 0) < 1024,
+      "desktop fine-pointer only",
+    );
 
     await page.goto("/");
     await page.mouse.move(600, 400);
     // Poll rather than sleep: the brush mounts a frame after the first
     // pointermove, and a fixed wait loses that race under parallel load.
     await expect
-      .poll(async () => page.locator('svg [data-brush="bristles"]').count(), { timeout: 10_000 })
+      .poll(async () => page.locator('svg [data-brush="bristles"]').count(), {
+        timeout: 10_000,
+      })
       .toBeGreaterThan(0);
 
     const state = await page.evaluate(() => {
-      const svg = document.querySelector('[aria-hidden="true"] svg [data-brush="bristles"]');
+      const svg = document.querySelector(
+        '[aria-hidden="true"] svg [data-brush="bristles"]',
+      );
       const layer = svg?.closest('[aria-hidden="true"]') as HTMLElement | null;
       return {
         bristles: !!svg,
@@ -311,14 +355,22 @@ test.describe("the brush cursor", () => {
 
     // It moves with the pointer.
     const before = await page.evaluate(
-      () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
+      () =>
+        (
+          document.querySelector('[aria-hidden="true"] svg')
+            ?.parentElement as HTMLElement
+        )?.style.transform,
     );
     await page.mouse.move(1000, 700);
     await expect
       .poll(
         async () =>
           page.evaluate(
-            () => (document.querySelector('[aria-hidden="true"] svg')?.parentElement as HTMLElement)?.style.transform,
+            () =>
+              (
+                document.querySelector('[aria-hidden="true"] svg')
+                  ?.parentElement as HTMLElement
+              )?.style.transform,
           ),
         { timeout: 10_000 },
       )
@@ -332,6 +384,44 @@ test.describe("the brush cursor", () => {
     await page.waitForTimeout(400);
     // No brush, and the real pointer is left alone.
     expect(await page.locator('svg [data-brush="bristles"]').count()).toBe(0);
-    expect(await page.evaluate(() => getComputedStyle(document.body).cursor)).not.toBe("none");
+    expect(
+      await page.evaluate(() => getComputedStyle(document.body).cursor),
+    ).not.toBe("none");
   });
+});
+
+/**
+ * The eight ritual frames are stacked full-bleed in one sticky container that
+ * sits ~1,800px below the fold — close enough that the browser fetched all
+ * eight on first paint, about 1 MB for a section that shows one at a time.
+ * Only the active frame and its neighbours are mounted; the set grows as the
+ * reader scrolls and never shrinks.
+ */
+test("the ritual loads two frames up front and all eight by the end", async ({
+  page,
+}) => {
+  const fetched = new Set<string>();
+  page.on("response", (r) => {
+    const m = /url=([^&]+)/.exec(r.url());
+    if (!/_next\/image/.test(r.url()) || !m) return;
+    const name = decodeURIComponent(m[1]).split("/").pop() ?? "";
+    if (name.startsWith("ritual-")) fetched.add(name);
+  });
+
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(800);
+  // Two, not eight: the whole point of the deferral.
+  expect(fetched.size).toBeLessThanOrEqual(3);
+
+  const height = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  for (let y = 0; y < height; y += 400) {
+    await page.evaluate((v) => window.scrollTo(0, v), y);
+    await page.waitForTimeout(60);
+  }
+
+  // Every frame arrives by the time the reader has been through the section,
+  // so no stage is ever blank.
+  await expect.poll(() => fetched.size, { timeout: 15_000 }).toBe(8);
 });

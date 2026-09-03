@@ -6,7 +6,7 @@ import JsonLd from "@/components/ui/JsonLd";
 import { bridal as config } from "@/content/disciplines";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Bridal Makeup & Hair — Muhurtham, Reception, Engagement",
+  title: "Bridal Makeup & Hair, Trichy",
   description: "South Indian bridal makeup and hair by Lana's Makeover, Trichy. Muhurtham, reception and engagement looks in natural, HD and traditional registers.",
   path: "/bridal",
 });

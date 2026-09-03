@@ -26,7 +26,7 @@ export const posts: BlogPost[] = [
     readingMinutes: 6,
     published: true,
     seo: {
-      title: "Natural vs HD Bridal Makeup — How to Choose | Lana's Makeover",
+      title: "Natural vs HD Bridal Makeup",
       description:
         "A practical guide to choosing between natural and HD bridal makeup for a South Indian wedding, and why the answer usually depends on the light rather than the look.",
     },
@@ -79,7 +79,7 @@ The right register is the one that survives your particular day — not the one 
     readingMinutes: 5,
     published: true,
     seo: {
-      title: "Bridal Skin Preparation — The 30 Days Before the Wedding",
+      title: "Bridal Skin Prep: The 30 Days Before",
       description:
         "What actually helps bridal skin in the month before a South Indian wedding, and the common last-minute decisions that cause problems on the morning.",
     },
@@ -124,7 +124,7 @@ If you have a known allergy or a sensitivity — to a fragrance, a latex sponge,
     readingMinutes: 5,
     published: true,
     seo: {
-      title: "South Indian Bridal Hair & The Jadai — A Short Guide",
+      title: "South Indian Bridal Hair & the Jadai",
       description:
         "How traditional South Indian bridal hair is structured, what the jadai has to carry, and what to plan for if your hair is fine or short.",
     },
@@ -169,7 +169,7 @@ If your ceremony runs long, plan a second string. It is a small cost and it is v
     readingMinutes: 4,
     published: true,
     seo: {
-      title: "Muhurtham Morning Timeline — Planning the Bridal Getting-Ready",
+      title: "Muhurtham Morning Timeline",
       description:
         "A practical guide to timing a South Indian bridal getting-ready, and the three things that most often cause a muhurtham morning to run late.",
     },

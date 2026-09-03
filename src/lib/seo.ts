@@ -43,7 +43,7 @@ export const seoConfig = {
   defaultTitle: `${siteSettings.brandName} — Tamil Bridal Makeup & Hair Artist, Trichy`,
   titleTemplate: `%s — ${siteSettings.brandName}`,
   defaultDescription:
-    "Tamil bridal makeup and hair artist based in Trichy. Natural, HD and South Indian bridal looks; jadai and bridal hair styling; engagement, reception and occasion makeup. Travel available.",
+    "Tamil bridal makeup and hair artist in Trichy. Natural, HD and South Indian bridal looks, jadai and bridal hair, engagement and reception makeup.",
   locale: "en_IN",
   /**
    * Descriptive only. These describe what the business genuinely does; they are

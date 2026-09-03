@@ -111,6 +111,19 @@ export default function ActRitual({
    */
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(false);
+  /**
+   * WHICH FRAMES HAVE EVER BEEN NEEDED.
+   *
+   * All eight frames are stacked full-bleed in one sticky container 1,839px
+   * below the fold — close enough that the browser fetched every one on first
+   * paint, about 1 MB for a section that shows one frame at a time.
+   *
+   * Only the active frame and its neighbours are given an image. The set only
+   * ever GROWS: once a frame has been mounted it stays, so scrubbing back and
+   * forth never re-fetches and a tap straight to stage 8 on mobile does not
+   * land on an empty frame.
+   */
+  const [seen, setSeen] = useState<number[]>([0, 1]);
 
   useEffect(() => {
     const t = window.setTimeout(
@@ -139,6 +152,13 @@ export default function ActRitual({
 
     const index = Math.round(exact);
     setActive((prev) => (prev === index ? prev : index));
+    setSeen((prev) =>
+      [index - 1, index, index + 1].every((i) => i < 0 || i >= STAGES.length || prev.includes(i))
+        ? prev
+        : [...new Set([...prev, index - 1, index, index + 1])].filter(
+            (i) => i >= 0 && i < STAGES.length,
+          ),
+    );
 
     if (index === STAGES.length - 1 && !reachedEnd.current) {
       reachedEnd.current = true;
@@ -243,12 +263,14 @@ export default function ActRitual({
                       "opacity var(--d-fast) linear, transform var(--d-base) var(--ease-silk)",
                   }}
                 >
-                  <EditorialImage
-                    image={images[i] ?? PLATES[i]}
-                    className="h-full w-full"
-                    sizes="100vw"
-                    decorative
-                  />
+                  {seen.includes(i) && (
+                    <EditorialImage
+                      image={images[i] ?? PLATES[i]}
+                      className="h-full w-full"
+                      sizes="100vw"
+                      decorative
+                    />
+                  )}
                 </div>
               ))}
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
