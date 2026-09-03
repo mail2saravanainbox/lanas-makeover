@@ -288,11 +288,11 @@ test.describe("the brush cursor", () => {
     // Poll rather than sleep: the brush mounts a frame after the first
     // pointermove, and a fixed wait loses that race under parallel load.
     await expect
-      .poll(async () => page.locator('svg path[fill*="bristle"]').count(), { timeout: 10_000 })
+      .poll(async () => page.locator('svg [data-brush="bristles"]').count(), { timeout: 10_000 })
       .toBeGreaterThan(0);
 
     const state = await page.evaluate(() => {
-      const svg = document.querySelector('[aria-hidden="true"] svg path[fill*="bristle"]');
+      const svg = document.querySelector('[aria-hidden="true"] svg [data-brush="bristles"]');
       const layer = svg?.closest('[aria-hidden="true"]') as HTMLElement | null;
       return {
         bristles: !!svg,
@@ -331,7 +331,7 @@ test.describe("the brush cursor", () => {
     await page.mouse.move(600, 400);
     await page.waitForTimeout(400);
     // No brush, and the real pointer is left alone.
-    expect(await page.locator('svg path[fill*="bristle"]').count()).toBe(0);
+    expect(await page.locator('svg [data-brush="bristles"]').count()).toBe(0);
     expect(await page.evaluate(() => getComputedStyle(document.body).cursor)).not.toBe("none");
   });
 });

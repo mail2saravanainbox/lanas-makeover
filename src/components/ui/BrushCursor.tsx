@@ -40,8 +40,8 @@ const LABELS: Record<string, string> = {
   open: "Open",
 };
 
-/** How far the brush leans while at rest, in degrees. */
-const REST_ANGLE = -34;
+/** The art is drawn on its own diagonal, so rest is no rotation. */
+const REST_ANGLE = 0;
 
 interface Dab {
   x: number;
@@ -196,59 +196,58 @@ export default function BrushCursor() {
 
       {/* The brush. Tip at (12,56) in its own coordinates, which is the
           transform origin, so the bristle point sits exactly on the pointer. */}
+      {/* The brush. A blush powder head up-left, lavender ferrule, two-tone
+          charcoal handle down-right — drawn on its own diagonal, so the lean
+          below is a real lean rather than a correction. The HEAD is the
+          hotspot: the pointer sits where the bristles touch. */}
       <div
         ref={brushRef}
         className="absolute left-0 top-0 will-change-transform"
-        style={{ transformOrigin: "15px 65px", marginLeft: -15, marginTop: -65 }}
+        style={{ transformOrigin: "6px 6px", marginLeft: -6, marginTop: -6 }}
       >
-        <svg width="30" height="66" viewBox="0 0 30 66" fill="none">
+        <svg width="42" height="42" viewBox="0 0 48 48" fill="none">
           <defs>
-            <linearGradient id="lm-bristle" x1="15" y1="36" x2="15" y2="65"
-              gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FBF7EE" />
-              <stop offset="0.45" stopColor="#EBDCC2" />
-              <stop offset="1" stopColor="#C9AE89" />
-            </linearGradient>
-            <linearGradient id="lm-handle" x1="10" y1="4" x2="21" y2="32"
-              gradientUnits="userSpaceOnUse">
-              <stop stopColor="#3A2C20" />
-              <stop offset="0.5" stopColor="#1C1510" />
-              <stop offset="1" stopColor="#0E0A07" />
-            </linearGradient>
-            <linearGradient id="lm-ferrule" x1="10" y1="29" x2="20" y2="38"
-              gradientUnits="userSpaceOnUse">
-              <stop stopColor="#EBD9B8" />
-              <stop offset="0.45" stopColor="#A07A4E" />
-              <stop offset="1" stopColor="#E4D0AC" />
-            </linearGradient>
-            {/* Reads on ivory surfaces and over photographs alike. */}
-            <filter id="lm-shadow" x="-60%" y="-20%" width="220%" height="150%">
-              <feDropShadow dx="0.6" dy="1.2" stdDeviation="1.3"
-                floodColor="#000" floodOpacity="0.42" />
+            <filter id="lm-brush-shadow" x="-30%" y="-30%" width="180%" height="180%">
+              <feDropShadow dx="0.8" dy="1.4" stdDeviation="1.2"
+                floodColor="#2A2033" floodOpacity="0.34" />
             </filter>
           </defs>
 
-          <g filter="url(#lm-shadow)">
-            {/* handle — tapered, matte, with a rim light so it survives a
-                dark hero instead of disappearing into it */}
-            <path d="M10.6 30 L12.1 6.4 C12.2 4 17.8 4 17.9 6.4 L19.4 30 Z"
-              fill="url(#lm-handle)" />
-            <path d="M12.3 7 L13.4 29.4 L14.4 29.4 L13.3 7 Z"
-              fill="#E0CDB2" fillOpacity="0.22" />
+          <g filter="url(#lm-brush-shadow)">
+            {/* handle — lighter upper-right face */}
+            <path
+              d="M32.2 20.8 L44.6 39.4 C46.6 42.4 42.4 46.6 39.4 44.6 L20.8 32.2 Z"
+              fill="#3B3348"
+            />
+            {/* handle — shadow face along the lower-left edge */}
+            <path
+              d="M26.4 26.4 L41.9 44.9 C40.9 45.1 39.9 44.9 39.4 44.6 L20.8 32.2 Z"
+              fill="#272033"
+            />
 
-            {/* ferrule — the one metallic note */}
-            <rect x="10.2" y="29.2" width="9.6" height="8" rx="1.3"
-              fill="url(#lm-ferrule)" />
-            <rect x="10.2" y="31.4" width="9.6" height="0.9"
-              fill="#0E0A07" fillOpacity="0.22" />
+            {/* ferrule */}
+            <path d="M28.7 17.3 L32.2 20.8 L20.8 32.2 L17.3 28.7 Z" fill="#EDE8F2" />
+            <path d="M30.5 19.1 L32.2 20.8 L20.8 32.2 L19.1 30.5 Z" fill="#DED8E7" />
 
-            {/* bristles — full at the ferrule, soft to the point that IS the
-                pointer. Two overlaid shapes so the edge reads as hair rather
-                than as a filled triangle. */}
-            <path d="M10.5 36.6 C9.2 45 10.6 53.6 15 64.8 C19.4 53.6 20.8 45 19.5 36.6 Z"
-              fill="url(#lm-bristle)" />
-            <path d="M12.4 36.8 C11.7 45 12.7 53 15 60.6 C17.3 53 18.3 45 17.6 36.8 Z"
-              fill="#FFFDF8" fillOpacity="0.28" />
+            {/* bristles — soft powder head. data-brush is a stable test hook:
+                the tests used to select on a gradient id, which vanished the
+                moment the art was redrawn. */}
+            <path
+              data-brush="bristles"
+              d="M28.7 17.3 C30.2 8 24 1.4 15 2.5 C6 3.6 1.4 10 3.5 18 C5.1 24.6 11 30.6 17.3 28.7 Z"
+              fill="#F8CCC2"
+            />
+            {/* the shaded side of the head */}
+            <path
+              d="M17.3 28.7 C11 30.6 5.1 24.6 3.5 18 C2 11.6 5 6 10.2 3.4 C6.4 8 5.2 14 7.1 19.6 C8.9 25 12.9 28.2 17.3 28.7 Z"
+              fill="#F2B0A4"
+            />
+            {/* fan lines — the bristles reading as hair, not as a blob */}
+            <g stroke="#F0A99C" strokeWidth="1.7" strokeLinecap="round">
+              <path d="M24.6 20.8 L17.4 9.9" />
+              <path d="M22.4 23.2 L12.2 14.6" />
+              <path d="M20.4 25.4 L9.6 20.3" />
+            </g>
           </g>
         </svg>
       </div>
@@ -259,8 +258,10 @@ export default function BrushCursor() {
         ref={labelRef}
         className="absolute left-0 top-0 whitespace-nowrap rounded-full bg-ivory px-3 py-1 text-[0.75rem] font-medium uppercase tracking-[0.22em] text-ink will-change-transform"
         style={{
-          marginLeft: 18,
-          marginTop: 6,
+          // Up and right of the head, clear of the handle — which now runs
+          // down-right and had the label sitting on top of it.
+          marginLeft: 34,
+          marginTop: -12,
           opacity: label ? 1 : 0,
           transition: "opacity var(--d-fast) var(--ease-silk)",
         }}
