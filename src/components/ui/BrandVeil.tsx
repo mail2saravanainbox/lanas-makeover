@@ -1,4 +1,5 @@
 import JasmineMark from "./JasmineMark";
+import veil from "@/content/veil-blur.json";
 import BrandVeilRunner from "./BrandVeilRunner";
 
 /**
@@ -9,10 +10,12 @@ import BrandVeilRunner from "./BrandVeilRunner";
  *  page actually becomes ready, then lifting upward to reveal it — the way a
  *  drape is lifted rather than a curtain dropped.
  *
- *  The silk is drawn in CSS (see globals.css), not photographed. A
- *  full-viewport silk JPEG would be a download sitting in front of the page it
- *  is supposed to be covering; this paints on the first frame at no network
- *  cost at all.
+ *  The silk is a PHOTOGRAPH — see scripts/build-veil.mjs for why the CSS
+ *  version was abandoned. It cannot be a thing the visitor waits for, though,
+ *  because waiting is precisely what it exists to cover: so a 20px blur of the
+ *  same photograph is inlined as a data URI and painted underneath it. The
+ *  first frame is silk at zero network cost; the real fabric resolves on top
+ *  whenever it lands, and on a fast connection the blur is never seen.
  *
  *  Three things make this a veil rather than a fake loading screen:
  *
@@ -68,7 +71,26 @@ const GUARD = `(function(){
 export default function BrandVeil({ brand }: { brand: string }) {
   return (
     <>
-      <div id="lm-veil" aria-hidden="true" data-veil="in">
+      {/* Fetched at the highest priority the browser will give an image, so
+          it is in flight from the first bytes of the document rather than
+          from whenever the stylesheet resolves. */}
+      <link rel="preload" as="image" href={veil.src} fetchPriority="high" />
+
+      <div
+        id="lm-veil"
+        aria-hidden="true"
+        data-veil="in"
+        style={
+          {
+            "--veil-img": `url(${veil.src})`,
+            "--veil-blur": `url(${veil.blurDataURL})`,
+          } as React.CSSProperties
+        }
+      >
+        {/* The photograph. A child rather than a background layer so it can be
+            scaled while it settles without ever ceasing to cover. */}
+        <span className="lm-veil__silk" />
+
         <div className="lm-veil__mark">
           <JasmineMark className="h-8 w-8" />
         </div>
