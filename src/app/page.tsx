@@ -8,7 +8,6 @@ import Hero from "@/components/sections/Hero";
 import ActBefore from "@/components/sections/ActBefore";
 import ActRitual from "@/components/sections/ActRitual";
 import BrideStories from "@/components/sections/BrideStories";
-import ActHeritage from "@/components/sections/ActHeritage";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import ActArtist from "@/components/sections/ActArtist";
 import HairSilhouette from "@/components/sections/HairSilhouette";
@@ -91,7 +90,6 @@ export default async function HomePage() {
     // §9 — present only when a genuine, permissioned pair exists. The section
     // returns null otherwise, so the number is never orphaned.
     transformation: transformation.length > 0,
-    heritage: true,
     ceremonies: services.length > 0,
     artist: true,
     silhouette: true,
@@ -149,8 +147,6 @@ export default async function HomePage() {
       <Transformation index={n.transformation} items={transformation} />
 
       <SectionMark />
-
-      <ActHeritage index={n.heritage!} images={slots.heritage} details={slots.detail} />
 
       <BridalWorlds index={n.ceremonies!} services={worlds} />
 

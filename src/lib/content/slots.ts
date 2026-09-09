@@ -7,9 +7,9 @@ import { siteSettings } from "@/content/site";
  * ─────────────────────────────────────────────────────────────────────────────
  *  IMAGE SLOTS
  * ─────────────────────────────────────────────────────────────────────────────
- *  Named positions in the story — the hero, the five transformation stages, the
- *  hair sequence, the detail close-ups — each resolved to one of Lana's actual
- *  photographs when one exists, and to the placeholder plate when it does not.
+ *  Named positions in the story — the hero, the transformation stages, the hair
+ *  sequence, the atelier — each resolved to one of Lana's actual photographs
+ *  when one exists, and to the placeholder plate when it does not.
  *
  *  Sections receive an `images` prop and keep their own plates as defaults, so
  *  the layout is identical either way. Dropping photographs into
@@ -68,25 +68,6 @@ function pick(
   });
 }
 
-/**
- * One category preference per slot, so a sequence can move deliberately
- * through different kinds of work rather than drawing all six frames from the
- * same pool. Distinct photographs wherever the archive allows it.
- */
-function pickOrdered(
-  preferences: PortfolioCategory[][],
-  fallbacks: ImageRef[],
-): ImageRef[] {
-  const used = new Set<string>();
-  return fallbacks.map((fallback, index) => {
-    const available = pool(preferences[index] ?? []);
-    const fresh = available.find((i) => !used.has(i.id)) ?? available[0];
-    if (!fresh) return fallback;
-    used.add(fresh.id);
-    return toImageRef(fresh);
-  });
-}
-
 function one(
   category: PortfolioCategory | PortfolioCategory[],
   fallback: ImageRef,
@@ -112,9 +93,7 @@ export interface ImageSlots {
   /** null → the About/Artist sections render a typography treatment (§21). */
   artistPortrait: ImageRef | null;
   transformation: ImageRef[];
-  heritage: ImageRef[];
   hair: ImageRef[];
-  detail: ImageRef[];
   atelier: ImageRef[];
   finalMirror: ImageRef;
 }
@@ -211,29 +190,6 @@ export function getImageSlots(): ImageSlots {
      */
     transformation: ritualFrames(),
 
-    /**
-     * MATERIAL → BRIDE, interleaved: [silk close-up, silk worn, gold close-up,
-     * gold worn, jasmine close-up, jasmine worn]. Close-ups prefer detail and
-     * hair work; the resolutions prefer finished bridal frames.
-     */
-    heritage: pickOrdered(
-      [
-        ["editorial", "bridal"],
-        ["tamil-bridal", "muhurtham", "bridal"],
-        ["editorial", "bridal"],
-        ["tamil-bridal", "muhurtham", "bridal"],
-        ["jadai", "hair"],
-        ["tamil-bridal", "muhurtham", "bridal"],
-      ],
-      [
-        plate("Kanchipuram silk", "bronze", 601),
-        plate("Silk, worn", "rose", 611),
-        plate("Temple gold", "champagne", 602),
-        plate("Gold, worn", "bronze", 612),
-        plate("Jasmine", "olive", 603),
-        plate("Jasmine in her hair", "ivory", 613),
-      ],
-    ),
 
     // The silhouette sequence
     hair: pick(
@@ -248,19 +204,6 @@ export function getImageSlots(): ImageSlots {
       ],
     ),
 
-    // The art of the detail
-    detail: pick(
-      ["editorial", "bridal", "hair"],
-      [
-        plate("Skin", "ivory", 701),
-        plate("Eyes", "ink", 702),
-        plate("Lips", "rose", 703),
-        plate("Hair", "bronze", 704),
-        plate("Draping", "champagne", 705),
-        plate("Jewellery", "bronze", 706),
-      ],
-      2,
-    ),
 
     // The atelier
     atelier: pick(
