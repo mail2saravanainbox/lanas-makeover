@@ -8,7 +8,6 @@ import Hero from "@/components/sections/Hero";
 import ActBefore from "@/components/sections/ActBefore";
 import ActRitual from "@/components/sections/ActRitual";
 import BrideStories from "@/components/sections/BrideStories";
-import FeaturedLooks from "@/components/sections/FeaturedLooks";
 import ActHeritage from "@/components/sections/ActHeritage";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import ActArtist from "@/components/sections/ActArtist";
@@ -44,14 +43,13 @@ export default async function HomePage() {
   // Lana's photographs where they exist, plates where they don't (§31).
   const slots = getImageSlots();
 
-  const [settings, services, brides, posts, testimonials, timeline, featured] = await Promise.all([
+  const [settings, services, brides, posts, testimonials, timeline] = await Promise.all([
     provider.getSiteSettings(),
     provider.getServices(),
     provider.getBrides(),
     provider.getPosts(),
     provider.getTestimonials(),
     provider.getTimeline(),
-    provider.getPortfolio({ featured: true, limit: 3 }),
   ]);
 
   // The strip reads the store through the provider — never a live Meta call at
@@ -89,7 +87,7 @@ export default async function HomePage() {
    * a re-ordering of the first two minutes, not a rewrite of the film.
    */
   const renders = {
-    brides: brides.length > 0 || featured.length > 0,
+    brides: brides.length > 0,
     before: true,
     ritual: true,
     // §9 — present only when a genuine, permissioned pair exists. The section
@@ -129,17 +127,24 @@ export default async function HomePage() {
         video={settings.hero.video}
       />
 
-      {/* 01 — THE PROOF, FIRST. Whichever of the two the archive can actually
-          fill: bride stories when they exist, the featured work when they do
-          not, and nothing at all when neither does. Both render null when
-          empty, so the number is never orphaned. */}
-      {brides.length > 0 ? (
-        <BrideStories index={n.brides!} brides={brides.slice(0, 3)} settings={settings} />
-      ) : (
-        <FeaturedLooks index={n.brides!} items={featured} />
-      )}
+      {/* ── THE PROOF ──────────────────────────────────────────────────────
+          Bride stories only. The featured-work teaser that used to stand in
+          for them here has been removed: it was three photographs from the
+          archive, and the archive already has a page of its own that does the
+          job better. On a phone it was a screen and a half of scrolling to
+          reach a link to /portfolio that the nav, the hero and the footer all
+          offer anyway.
 
-      <SectionMark />
+          Bride stories are NOT that. They are narrative — a named bride, her
+          ceremony, her words — and when real ones exist they earn a place on
+          the homepage that a gallery excerpt never did. Renders null while
+          there are none, so the section numbering closes over the gap. */}
+      {brides.length > 0 && (
+        <>
+          <BrideStories index={n.brides!} brides={brides.slice(0, 3)} settings={settings} />
+          <SectionMark />
+        </>
+      )}
 
       <ActBefore index={n.before!} images={slots.beforeLayers} />
 
