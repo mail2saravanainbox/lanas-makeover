@@ -4,6 +4,8 @@ import { content, currentContentSource } from "@/lib/content/provider";
 import { pageMetadata } from "@/lib/seo";
 import { readCredentials } from "@/lib/instagram/client";
 import { readStore, storeIsDurable } from "@/lib/instagram/store";
+import { countEnquiries, listEnquiries, storeIsConfigured } from "@/lib/enquiries";
+import EnquiryList from "@/components/admin/EnquiryList";
 
 export const metadata: Metadata = pageMetadata({
   title: "Admin",
@@ -17,16 +19,26 @@ export const dynamic = "force-dynamic";
  * ═══════════════════════════════════════════════════════════════════════════
  *  /admin — CMS PREPARATION SURFACE (§41)
  * ═══════════════════════════════════════════════════════════════════════════
- *  Deliberately READ-ONLY. It shows the shape of the eventual dashboard and
- *  the live state of the content pipeline; it exposes no editing capability,
- *  no credentials, and no personal data.
+ *  Deliberately READ-ONLY. It shows the shape of the eventual dashboard, the
+ *  live state of the content pipeline, and the enquiries the studio has
+ *  received. It exposes no editing capability and no credentials.
  *
  *  Gated by src/proxy.ts behind a single shared password (ADMIN_PASSWORD),
  *  and disallowed in robots.txt. With no password configured the route is a
  *  404 — an unconfigured secret must never mean an open door.
  *
- *  That gate is sized for a read-only page. The day /admin can WRITE
- *  anything, replace it with real per-user authentication.
+ *  ⚠ THIS PAGE NOW HOLDS PERSONAL DATA. The enquiry list carries brides'
+ *    names, phone numbers and email addresses, which is a materially
+ *    different thing to guard than a pipeline status table. Two consequences:
+ *
+ *      · ADMIN_PASSWORD must be a real generated secret, not a memorable
+ *        word. `openssl rand -base64 24`, as .env.example says.
+ *      · The day more than one person needs access — or /admin can WRITE
+ *        anything — a single shared password stops being adequate and this
+ *        needs real per-user authentication.
+ *
+ *    The route is a 404 until that password is set, so an unconfigured site
+ *    exposes nothing at all.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -72,6 +84,11 @@ export default async function AdminPage() {
   const durable = storeIsDurable();
   const source = currentContentSource();
 
+  // The enquiry record. Empty and harmless when no store is configured.
+  const enquiriesConfigured = storeIsConfigured();
+  const [enquiries, enquiryCount] = await Promise.all([listEnquiries(100), countEnquiries()]);
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY && process.env.CONTACT_TO_EMAIL);
+
   return (
     <div className="shell pb-28 pt-[calc(var(--nav-h)+5rem)]">
       <p className="eyebrow mb-6">Internal</p>
@@ -81,6 +98,34 @@ export default async function AdminPage() {
         so a CMS can be dropped in behind the same <code className="text-champagne">ContentProvider</code>{" "}
         interface the whole site already consumes.
       </p>
+
+      {/* ── ENQUIRIES ────────────────────────────────────────────────────
+          First on the page, because it is the only thing here with a bride
+          waiting at the other end of it. */}
+      <section aria-labelledby="enquiries" className="mt-14">
+        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
+          <h2 id="enquiries" className="eyebrow">
+            Enquiries
+          </h2>
+          <p className="font-mono text-[0.7rem] tracking-wide text-muted">
+            {enquiriesConfigured
+              ? `${enquiryCount < 0 ? "?" : enquiryCount} held · showing ${enquiries.length}`
+              : "no durable store connected"}
+          </p>
+        </div>
+
+        {!enquiriesConfigured && (
+          <p className="body-base mb-6 rounded-lg border border-rose/30 bg-ink-2 px-5 py-4 text-sm">
+            <strong className="font-medium text-rose">Nothing is being kept.</strong> Enquiries are
+            validated and {emailConfigured ? "emailed" : "written to the server log"}, but no
+            durable copy is stored — a failed send or a deleted email loses it for good. Connect a
+            Redis store and set <code className="text-champagne">KV_REST_API_URL</code> and{" "}
+            <code className="text-champagne">KV_REST_API_TOKEN</code>.
+          </p>
+        )}
+
+        <EnquiryList enquiries={enquiries} />
+      </section>
 
       <div className="mt-14 grid gap-14 lg:grid-cols-2">
         <section aria-labelledby="pipeline">
@@ -109,6 +154,16 @@ export default async function AdminPage() {
             <Row
               label="Media published"
               value={String(store.items.filter((i) => i.published).length)}
+            />
+            <Row
+              label="Enquiry email (Resend)"
+              value={emailConfigured ? "configured" : "not configured"}
+              good={emailConfigured}
+            />
+            <Row
+              label="Enquiry record (KV)"
+              value={enquiriesConfigured ? "durable" : "none — enquiries not kept"}
+              good={enquiriesConfigured}
             />
             <Row label="Portfolio items live" value={String(items.length)} />
             <Row label="Bride stories" value={String(brides.length)} />

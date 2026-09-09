@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { saveEnquiry, storeIsConfigured } from "@/lib/enquiries";
 
 export const runtime = "nodejs";
 
@@ -157,19 +158,17 @@ async function sendEmail(enquiry: Enquiry, receivedAt: string): Promise<string |
   }
 }
 
-/** Appends the enquiry to a capped KV list. Never fails the request. */
+/**
+ * The durable copy. Both halves of the credential are now required — checking
+ * only KV_REST_API_URL meant a half-configured store looked connected and then
+ * threw on every write.
+ *
+ * The write itself lives in `lib/enquiries.ts` alongside the read, so the key
+ * and the shape cannot drift apart. Never fails the request.
+ */
 async function store(enquiry: Enquiry, receivedAt: string): Promise<boolean> {
-  if (!process.env.KV_REST_API_URL) return false;
-
-  try {
-    const { kv } = await import("@vercel/kv");
-    await kv.lpush("enquiries", JSON.stringify({ ...enquiry, receivedAt }));
-    await kv.ltrim("enquiries", 0, 999);
-    return true;
-  } catch (err) {
-    console.error("[enquiry] kv write failed", err);
-    return false;
-  }
+  if (!storeIsConfigured()) return false;
+  return saveEnquiry({ ...enquiry, receivedAt });
 }
 
 export async function POST(request: Request) {
