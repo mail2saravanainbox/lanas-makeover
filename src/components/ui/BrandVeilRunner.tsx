@@ -4,6 +4,22 @@ import { useEffect } from "react";
 
 /** Hard ceiling. Whatever is still pending at this point, the veil goes. */
 const CEILING = 1200;
+
+/**
+ * A FLOOR, which this deliberately did not have before.
+ *
+ * The silk takes 520ms to fall (see `veil-drape`). On a warm cache the fonts
+ * and the hero can both be ready inside 300ms, and the veil would then lift
+ * while the fabric was still falling — a drape cut in half, which reads as a
+ * glitch rather than as an opening.
+ *
+ * This is the one honest use of a minimum here: it is not pretending the page
+ * is still loading, it is letting a deliberate 520ms gesture finish. It costs
+ * every first-time visitor a fraction of a second, once per session, and the
+ * ceiling above is unchanged — nothing waits longer because of it.
+ */
+const FLOOR = 760;
+
 /** The wipe itself. */
 const WIPE = 900;
 
@@ -46,8 +62,24 @@ export default function BrandVeilRunner() {
     // starts, not at a number chosen to look busy.
     if (line) line.style.transform = "scaleX(0.08)";
 
-    function finish() {
+    const startedAt = performance.now();
+    let floorTimer = 0;
+
+    /**
+     * `force` is the escape hatch for deliberate input. The floor exists to
+     * protect an animation, and no animation outranks someone who has already
+     * decided to walk through it.
+     */
+    function finish(force = false) {
       if (done) return;
+
+      const elapsed = performance.now() - startedAt;
+      if (!force && elapsed < FLOOR) {
+        window.clearTimeout(floorTimer);
+        floorTimer = window.setTimeout(() => finish(), FLOOR - elapsed);
+        return;
+      }
+
       done = true;
 
       try {
@@ -76,13 +108,13 @@ export default function BrandVeilRunner() {
       }, WIPE);
     }
 
-    // Any deliberate input beats the animation. Nobody waits for a curtain
-    // they have already decided to walk through.
-    const skip = () => finish();
+    // Any deliberate input beats the animation, floor included. Nobody waits
+    // for a curtain they have already decided to walk through.
+    const skip = () => finish(true);
     window.addEventListener("keydown", skip, { once: true });
     window.addEventListener("pointerdown", skip, { once: true });
 
-    const ceiling = window.setTimeout(finish, CEILING);
+    const ceiling = window.setTimeout(() => finish(), CEILING);
 
     void Promise.all([
       document.fonts.ready.then(advance, advance),
@@ -90,11 +122,12 @@ export default function BrandVeilRunner() {
     ]).then(() => {
       // A beat on a full progress line, so it reads as complete rather than
       // as having been interrupted.
-      window.setTimeout(finish, 120);
+      window.setTimeout(() => finish(), 120);
     });
 
     return () => {
       window.clearTimeout(ceiling);
+      window.clearTimeout(floorTimer);
       window.removeEventListener("keydown", skip);
       window.removeEventListener("pointerdown", skip);
     };
