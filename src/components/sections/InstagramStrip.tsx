@@ -61,6 +61,7 @@ export default function InstagramStrip({
                       tone: item.tone,
                       seed: item.seed,
                       blurDataURL: item.blurDataURL,
+                      focus: item.focus,
                     }}
                     className="h-full w-full"
                     sizes="(max-width: 1024px) 31vw, 16vw"

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "import:portfolio": "node scripts/import-portfolio.mjs",
     "test": "playwright test",
-    "import:portrait": "node scripts/import-portrait.mjs"
+    "import:portrait": "node scripts/import-portrait.mjs",
+    "compute:focus": "node scripts/compute-focus.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

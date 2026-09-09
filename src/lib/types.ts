@@ -134,6 +134,16 @@ export interface PortfolioItem {
   height?: number;
   /** Blur-up placeholder generated from the photograph itself. */
   blurDataURL?: string;
+  /**
+   * Art-direction focal point, 0–1, written by `npm run compute:focus`.
+   *
+   * Every frame on this site crops a photograph into a shape it was not
+   * composed for — a 3:4 portrait becomes a 16:9 service banner and a 48px
+   * byline circle. Centre-cropping a standing portrait lands on the waist and
+   * cuts the face off above the frame; this is the point those crops are
+   * taken around instead. Absent on photographs with no person in them.
+   */
+  focus?: { x: number; y: number };
   /** Manual ordering within the gallery (§19). */
   sortOrder?: number;
   source: ContentSource;

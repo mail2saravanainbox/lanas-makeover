@@ -35,6 +35,8 @@ function toImageRef(item: PortfolioItem, altSuffix?: string): ImageRef {
     width: item.width,
     height: item.height,
     blurDataURL: item.blurDataURL,
+    // Keeps her face in frame when this is cropped into a banner (§43).
+    focus: item.focus,
   };
 }
 

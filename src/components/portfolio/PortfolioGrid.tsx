@@ -222,6 +222,7 @@ export default function PortfolioGrid({
                             tone: item.tone,
                             seed: item.seed,
                             blurDataURL: item.blurDataURL,
+                            focus: item.focus,
                           }}
                           className="h-full w-full"
                           sizes="(max-width: 768px) 92vw, (max-width: 1280px) 46vw, 33vw"
