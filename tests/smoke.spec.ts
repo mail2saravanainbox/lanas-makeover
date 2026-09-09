@@ -527,10 +527,8 @@ test.describe("the brush cursor", () => {
       .toBeGreaterThan(0);
 
     const state = await page.evaluate(() => {
-      const svg = document.querySelector(
-        '[aria-hidden="true"] svg [data-brush="bristles"]',
-      );
-      const layer = svg?.closest('[aria-hidden="true"]') as HTMLElement | null;
+      const svg = document.querySelector('[data-brush="bristles"]');
+      const layer = svg?.closest(".pointer-events-none") as HTMLElement | null;
       return {
         bristles: !!svg,
         ariaHidden: layer?.getAttribute("aria-hidden"),
@@ -550,7 +548,7 @@ test.describe("the brush cursor", () => {
     const before = await page.evaluate(
       () =>
         (
-          document.querySelector('[aria-hidden="true"] svg')
+          document.querySelector('[data-brush="bristles"]')?.closest("svg")
             ?.parentElement as HTMLElement
         )?.style.transform,
     );
@@ -561,7 +559,7 @@ test.describe("the brush cursor", () => {
           page.evaluate(
             () =>
               (
-                document.querySelector('[aria-hidden="true"] svg')
+                document.querySelector('[data-brush="bristles"]')?.closest("svg")
                   ?.parentElement as HTMLElement
               )?.style.transform,
           ),
@@ -595,8 +593,11 @@ test.describe("the brush cursor", () => {
 
     const translation = () =>
       page.evaluate(() => {
-        const el = document.querySelector('[aria-hidden="true"] svg')
-          ?.parentElement as HTMLElement | null;
+        // Reached via the brush's own stable hook. `[aria-hidden] svg` also
+        // matches the brand veil's jasmine mark, which precedes it in the DOM.
+        const el = document
+          .querySelector('[data-brush="bristles"]')
+          ?.closest("svg")?.parentElement as HTMLElement | null;
         const m = /translate3d\(([-\d.]+)px,\s*([-\d.]+)px/.exec(el?.style.transform ?? "");
         return m ? { x: Number(m[1]), y: Number(m[2]) } : null;
       });
@@ -840,4 +841,64 @@ test("no transformation section is shown without a genuine before/after pair", a
     return !!document.querySelector("#transformation-title");
   });
   expect(hasPair, "a before/after appeared with no permissioned pair in the archive").toBe(false);
+});
+
+
+/**
+ * §THE OPENING. The veil is the site's loading screen: a field of silk held
+ * over the page while it becomes ready, then lifted. Three things must stay
+ * true of it, and all three are safety rather than decoration.
+ */
+test.describe("the brand veil", () => {
+  test("is the homepage's opening and nothing else's", async ({ page }) => {
+    // The markup ships from the layout on every route; the guard decides.
+    await page.goto("/portfolio");
+    await page.waitForTimeout(400);
+    expect(
+      await page.evaluate(() => document.documentElement.classList.contains("lm-veiled")),
+      "the veil must never be shown on an inner route",
+    ).toBe(false);
+    await expect(page.locator("#lm-veil")).toBeHidden();
+  });
+
+  test("never traps the page, and never runs twice in a session", async ({ page }) => {
+    await page.goto("/");
+    // Whatever happened, the veil must have let go.
+    await expect
+      .poll(
+        () => page.evaluate(() => document.documentElement.classList.contains("lm-veiled")),
+        { timeout: 6_000 },
+      )
+      .toBe(false);
+    await expect(page.locator("#lm-veil")).toBeHidden();
+
+    // Second visit in the same session: skipped outright.
+    await page.goto("/");
+    await page.waitForTimeout(300);
+    expect(
+      await page.evaluate(() => document.documentElement.classList.contains("lm-veiled")),
+    ).toBe(false);
+  });
+
+  test("sits above the header rather than under it", async ({ page }) => {
+    /**
+     * THE REGRESSION THIS GUARDS. The veil used to render inside
+     * `.page-content`, which is `position: relative; z-index: 10` and
+     * therefore a stacking context — so its own z-index could never lift it
+     * above the header at z-50, and the navigation sat on top of the veil.
+     * Invisible on an ivory field; unmissable on silk.
+     */
+    const stacking = await page.goto("/").then(() =>
+      page.evaluate(() => {
+        const veil = document.getElementById("lm-veil");
+        const header = document.querySelector("header");
+        if (!veil || !header) return null;
+        // A shared ancestor that creates a stacking context would trap it.
+        const trapped = veil.closest(".page-content") !== null;
+        return { trapped, veilZ: getComputedStyle(veil).zIndex };
+      }),
+    );
+    expect(stacking).not.toBeNull();
+    expect(stacking!.trapped, "the veil is inside .page-content again").toBe(false);
+  });
 });

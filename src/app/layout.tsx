@@ -10,6 +10,7 @@ import { localBusinessSchema, pageMetadata, seoConfig } from "@/lib/seo";
 
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import BrushCursor from "@/components/ui/BrushCursor";
+import BrandVeil from "@/components/ui/BrandVeil";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
@@ -109,6 +110,12 @@ export default async function RootLayout({
     >
       <body className="grain antialiased">
         <JsonLd data={localBusinessSchema()} />
+
+        {/* OUTSIDE .page-content, deliberately: that element is a stacking
+            context, and a fixed child of one cannot rise above a sibling of
+            it — which is how the header spent its life sitting on top of the
+            veil. Homepage-only is enforced by the guard, not by placement. */}
+        <BrandVeil brand={settings.brandName} />
 
         <SmoothScroll />
         <BrushCursor />

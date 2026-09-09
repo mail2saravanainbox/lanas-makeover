@@ -628,11 +628,106 @@ html.lm-veiled #lm-veil {
   align-items: center;
   justify-content: center;
   gap: var(--s-3);
-  background: var(--color-ivory);
-  color: var(--color-ink);
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--color-champagne);
+
+  /* ── THE SILK ─────────────────────────────────────────────────────────────
+     A Kanchipuram red, drawn entirely in CSS. Three layers, back to front:
+
+       1. the body — a radial falloff, lit from the upper left, so the field
+          reads as a curved surface rather than a flat colour
+       2. the folds — wide bands at the angle silk falls when it is draped,
+          alternating shadow and a much weaker highlight
+       3. the zari — a fine gold thread every 9px, at a tenth opacity
+
+     NOT A PHOTOGRAPH, and that is the point. This paints on the very first
+     frame, before any network request resolves. A full-viewport silk JPEG
+     would be a download sitting in front of the page it is supposed to be
+     covering — the loading screen would be the thing making it slow.
+     ──────────────────────────────────────────────────────────────────────── */
+  background-color: #6b211d;
+  background-image:
+    /* zari — a fine gold thread, sparse enough to read as a glint */
+    repeating-linear-gradient(
+      99deg,
+      rgba(224, 205, 178, 0.09) 0 1px,
+      transparent 1px 34px
+    ),
+    /* THREE fold layers at DIFFERENT angles and periods. The interference
+       between 104/97/109deg at 71/113/167px is what makes the folds
+       irregular — a single repeating gradient reads as corduroy, because a
+       single repeating gradient IS corduroy. Silk does not repeat. */
+    repeating-linear-gradient(
+      104deg,
+      rgba(0, 0, 0, 0.16) 0 26px,
+      rgba(255, 236, 214, 0.045) 26px 48px,
+      rgba(0, 0, 0, 0.05) 48px 71px
+    ),
+    repeating-linear-gradient(
+      97deg,
+      rgba(0, 0, 0, 0.13) 0 44px,
+      rgba(255, 232, 208, 0.05) 44px 79px,
+      transparent 79px 113px
+    ),
+    repeating-linear-gradient(
+      109deg,
+      transparent 0 61px,
+      rgba(0, 0, 0, 0.14) 61px 118px,
+      rgba(255, 236, 214, 0.035) 118px 167px
+    ),
+    /* the body — lit from the upper left, so the field is a curved surface
+       rather than a flat colour */
+    radial-gradient(
+      130% 95% at 28% 18%,
+      #a33a30 0%,
+      #8d2f2a 34%,
+      #5e1b18 74%,
+      #3a0f0d 100%
+    );
+
   clip-path: inset(0 0 0 0);
   transition: clip-path var(--d-slow) var(--ease-veil);
   will-change: clip-path;
+}
+
+/* The specular sweep — one wide highlight travelling across the weave, which
+   is what stops the field reading as a flat red rectangle while it is held. */
+html.lm-veiled #lm-veil::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: linear-gradient(
+    102deg,
+    transparent 30%,
+    rgba(255, 228, 196, 0.16) 46%,
+    rgba(255, 240, 214, 0.24) 50%,
+    rgba(255, 228, 196, 0.14) 54%,
+    transparent 70%
+  );
+  transform: translate3d(-35%, 0, 0);
+  animation: veil-sheen 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* And the whole weave drifts, very slowly, so the silk is alive rather than
+   printed. 1.06 → 1 over the hold: it settles as the page arrives. */
+html.lm-veiled #lm-veil {
+  animation: veil-settle 2.4s var(--ease-silk) forwards;
+}
+
+@keyframes veil-sheen {
+  0% { transform: translate3d(-40%, 0, 0); }
+  100% { transform: translate3d(40%, 0, 0); }
+}
+
+@keyframes veil-settle {
+  from {
+    background-size: 108% 108%, 106% 106%, 111% 111%, 115% 115%, 114% 114%;
+  }
+  to {
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  }
 }
 
 html.lm-veiled #lm-veil[data-veil="out"] {
@@ -646,14 +741,21 @@ html.lm-veiled #lm-veil[data-veil="out"] {
   letter-spacing: 0.3em;
   text-transform: uppercase;
   text-indent: 0.3em;
-  color: var(--color-ink);
+  /* Ivory on silk, with the shadow a name embroidered in thread would cast. */
+  color: var(--color-ivory);
+  text-shadow: 0 1px 12px rgba(58, 15, 13, 0.55);
+}
+
+.lm-veil__mark {
+  color: var(--color-champagne);
+  filter: drop-shadow(0 1px 8px rgba(58, 15, 13, 0.5));
 }
 
 .lm-veil__rail {
   display: block;
   width: min(9rem, 40vw);
   height: 1px;
-  background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: rgba(247, 243, 233, 0.22);
   overflow: hidden;
 }
 
@@ -661,7 +763,8 @@ html.lm-veiled #lm-veil[data-veil="out"] {
   display: block;
   height: 100%;
   width: 100%;
-  background: var(--color-bronze);
+  /* Gold thread, not bronze: bronze disappears against the silk. */
+  background: var(--color-gold);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--d-base) var(--ease-silk);
