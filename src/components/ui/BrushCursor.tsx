@@ -44,6 +44,19 @@ const LABELS: Record<string, string> = {
 const REST_ANGLE = 0;
 
 /**
+ * ── THE ART'S DIMENSIONS, AND THE HOTSPOT DERIVED FROM THEM (§27) ────────
+ * The brush is drawn with its bristle tip at (TIP, TIP) inside a VIEWBOX-unit
+ * square and rendered at SIZE css pixels. HOTSPOT is therefore the tip's
+ * position in rendered pixels, and the layer offsets itself by exactly that —
+ * so the point where the bristles touch is the point that receives the click,
+ * and it stays true if any of these three numbers change.
+ */
+const SIZE = 34;
+const VIEWBOX = 48;
+const TIP = 7;
+const HOTSPOT = (TIP * SIZE) / VIEWBOX;
+
+/**
  * ── INTERACTION STATES (§28) ─────────────────────────────────────────────
  * Five, and no more. Each is a scale and a rotation offset applied to the
  * SAME transform the frame loop already writes — no extra element, no extra
@@ -62,10 +75,10 @@ type BrushState = "default" | "link" | "cta" | "image" | "drag";
 
 const STATES: Record<BrushState, { scale: number; angle: number }> = {
   default: { scale: 1, angle: 0 },
-  link: { scale: 1.08, angle: -6 },
-  cta: { scale: 1.16, angle: -10 },
-  image: { scale: 1.1, angle: 8 },
-  drag: { scale: 1.06, angle: 0 },
+  link: { scale: 1.05, angle: -4 },
+  cta: { scale: 1.09, angle: -7 },
+  image: { scale: 1.06, angle: 5 },
+  drag: { scale: 1.04, angle: 0 },
 };
 
 /**
@@ -182,8 +195,10 @@ export default function BrushCursor() {
       at.y = damp(at.y, target.y, 18, dt);
 
       // Lean into the direction of travel, then settle back to rest.
-      const lean = Math.max(-14, Math.min(14, (at.x - px) * 0.9));
-      angle = damp(angle, REST_ANGLE + lean, 8, dt);
+      // ±8°, not ±14°: past about ten degrees this stops reading as weight
+      // and starts reading as a wobble.
+      const lean = Math.max(-8, Math.min(8, (at.x - px) * 0.55));
+      angle = damp(angle, REST_ANGLE + lean, 9, dt);
 
       // The interaction state, eased rather than snapped, and the press —
       // which decays on its own clock so a click reads as a dab, not a hold.
@@ -296,60 +311,120 @@ export default function BrushCursor() {
         style={{ filter: "blur(2px)" }}
       />
 
-      {/* The brush. Tip at (12,56) in its own coordinates, which is the
-          transform origin, so the bristle point sits exactly on the pointer. */}
-      {/* The brush. A blush powder head up-left, lavender ferrule, two-tone
-          charcoal handle down-right — drawn on its own diagonal, so the lean
-          below is a real lean rather than a correction. The HEAD is the
-          hotspot: the pointer sits where the bristles touch. */}
+      {/* ── THE BRUSH ────────────────────────────────────────────────────
+          Redrawn. The previous art was a blush-pink powder blob with a
+          lavender ferrule and a purple handle, at 42px — three colours that
+          appear nowhere else on this site, on a head almost as wide as the
+          cursor was tall, with three heavy hatching strokes across it. It read
+          as a sticker rather than as a tool.
+
+          This one is a slim artist's brush in the site's own palette and
+          nothing else: champagne bristles, an ivory ferrule, a bronze handle,
+          34px. No saturated colour, no hatching, no outline.
+
+          GEOMETRY. Drawn along a LOCAL VERTICAL AXIS with the tip at the
+          origin, then rotated -45° into the diagonal. Every number below is
+          therefore a readable width or length along the brush rather than a
+          hand-solved diagonal coordinate — which is what made the old art
+          effectively un-editable.
+
+          HOTSPOT (§27). The tip is at viewBox (TIP, TIP) by construction, so
+          the CSS offset is computed from it rather than eyeballed: change the
+          size or the tip and the hotspot follows. The bristle point sits
+          exactly on the true pointer position. */}
       <div
         ref={brushRef}
         className="absolute left-0 top-0 will-change-transform"
-        style={{ transformOrigin: "6px 6px", marginLeft: -6, marginTop: -6 }}
+        style={{
+          transformOrigin: `${HOTSPOT}px ${HOTSPOT}px`,
+          marginLeft: -HOTSPOT,
+          marginTop: -HOTSPOT,
+        }}
       >
-        <svg width="42" height="42" viewBox="0 0 48 48" fill="none">
+        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} fill="none">
           <defs>
-            <filter id="lm-brush-shadow" x="-30%" y="-30%" width="180%" height="180%">
-              <feDropShadow dx="0.8" dy="1.4" stdDeviation="1.2"
-                floodColor="#2A2033" floodOpacity="0.34" />
+            {/* Warm and shallow. The old shadow was a purple 1.2px blur at
+                34% — a halo you could see. This is just enough to hold the
+                brush legible over both the ink pages and the ivory ones. */}
+            <filter id="lm-brush-shadow" x="-40%" y="-40%" width="200%" height="200%">
+              <feDropShadow dx="0.4" dy="0.8" stdDeviation="0.8"
+                floodColor="#120D08" floodOpacity="0.34" />
             </filter>
+
+            {/* Light along the length of the brush, not across it. */}
+            <linearGradient id="lm-bristle" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#EDDDC0" />
+              <stop offset="1" stopColor="#BCA485" />
+            </linearGradient>
+            <linearGradient id="lm-ferrule" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#F7F3E9" />
+              <stop offset="1" stopColor="#C3B8A4" />
+            </linearGradient>
+            {/* Deep bronze, deliberately desaturated. The first pass sat at
+                #AC8354, which on a warm-black ground read as orange wood. */}
+            <linearGradient id="lm-handle" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#93724A" />
+              <stop offset="1" stopColor="#453320" />
+            </linearGradient>
           </defs>
 
-          <g filter="url(#lm-brush-shadow)">
-            {/* handle — lighter upper-right face */}
+          <g filter="url(#lm-brush-shadow)" transform={`translate(${TIP} ${TIP}) rotate(-45)`}>
+            {/* handle — long, slim, gently tapered, rounded at the end.
+
+                PROPORTION IS WHAT MAKES IT A BRUSH. Head 11, handle 28: a bit
+                over 1:2.5. At the near-1:1 it started out with, the silhouette
+                read as a nib or a blade, because that is the proportion a nib
+                has. */}
             <path
-              d="M32.2 20.8 L44.6 39.4 C46.6 42.4 42.4 46.6 39.4 44.6 L20.8 32.2 Z"
-              fill="#3B3348"
-            />
-            {/* handle — shadow face along the lower-left edge */}
-            <path
-              d="M26.4 26.4 L41.9 44.9 C40.9 45.1 39.9 44.9 39.4 44.6 L20.8 32.2 Z"
-              fill="#272033"
+              d="M-2.7 16.4 L2.7 16.4 L1.15 41.8 C1.15 43.9 -1.15 43.9 -1.15 41.8 Z"
+              fill="url(#lm-handle)"
             />
 
-            {/* ferrule */}
-            <path d="M28.7 17.3 L32.2 20.8 L20.8 32.2 L17.3 28.7 Z" fill="#EDE8F2" />
-            <path d="M30.5 19.1 L32.2 20.8 L20.8 32.2 L19.1 30.5 Z" fill="#DED8E7" />
+            {/* ferrule, with the single crimp line that makes it read as metal */}
+            <path
+              d="M-3.6 11.2 L3.6 11.2 L2.7 16.5 L-2.7 16.5 Z"
+              fill="url(#lm-ferrule)"
+              stroke="#8B7857"
+              strokeWidth="0.5"
+              strokeOpacity="0.32"
+              strokeLinejoin="round"
+            />
+            <path d="M-3.4 13.7 L3.4 13.7" stroke="#8E8271" strokeWidth="0.55" opacity="0.45" />
 
-            {/* bristles — soft powder head. data-brush is a stable test hook:
-                the tests used to select on a gradient id, which vanished the
-                moment the art was redrawn. */}
+            {/* bristles — SOFT, not sharp. The control points pull the width
+                out early (−2.4 at y 2.6), so the bundle has a belly and the
+                apex is a point you can aim with rather than a needle. That is
+                the whole difference between reading as loaded bristles and
+                reading as a scalpel.
+
+                `data-brush` is a stable test hook: the tests once selected on
+                a gradient id, which vanished the moment the art was redrawn. */}
+            {/* THE HAIRLINE IS NOT DECORATION.
+
+                The site has an ivory surface as well as an ink one, and on
+                ivory the pale head — which is where the HOTSPOT is — had
+                almost no contrast and the tip disappeared. A cursor whose
+                point of contact you cannot see is a broken cursor.
+
+                A 0.5-unit stroke in a warm mid-tone defines the silhouette on
+                a light ground and, on the dark pages, is simply read as the
+                edge of the bristles. One value that works on both, rather
+                than a backdrop-aware cursor, which SVG cannot be. */}
             <path
               data-brush="bristles"
-              d="M28.7 17.3 C30.2 8 24 1.4 15 2.5 C6 3.6 1.4 10 3.5 18 C5.1 24.6 11 30.6 17.3 28.7 Z"
-              fill="#F8CCC2"
+              d="M0 0 C-2.4 2.6 -3.9 6.2 -3.6 11.2 L3.6 11.2 C3.9 6.2 2.4 2.6 0 0 Z"
+              fill="url(#lm-bristle)"
+              stroke="#8B7857"
+              strokeWidth="0.5"
+              strokeOpacity="0.5"
+              strokeLinejoin="round"
             />
-            {/* the shaded side of the head */}
+            {/* the shaded flank, at a fraction of the old contrast */}
             <path
-              d="M17.3 28.7 C11 30.6 5.1 24.6 3.5 18 C2 11.6 5 6 10.2 3.4 C6.4 8 5.2 14 7.1 19.6 C8.9 25 12.9 28.2 17.3 28.7 Z"
-              fill="#F2B0A4"
+              d="M0 0 C1.3 2.6 2.5 6.2 2.3 11.2 L3.6 11.2 C3.9 6.2 2.4 2.6 0 0 Z"
+              fill="#A8916F"
+              opacity="0.32"
             />
-            {/* fan lines — the bristles reading as hair, not as a blob */}
-            <g stroke="#F0A99C" strokeWidth="1.7" strokeLinecap="round">
-              <path d="M24.6 20.8 L17.4 9.9" />
-              <path d="M22.4 23.2 L12.2 14.6" />
-              <path d="M20.4 25.4 L9.6 20.3" />
-            </g>
           </g>
         </svg>
       </div>
@@ -360,9 +435,9 @@ export default function BrushCursor() {
         ref={labelRef}
         className="absolute left-0 top-0 whitespace-nowrap rounded-full bg-ivory px-3 py-1 text-[0.75rem] font-medium uppercase tracking-[0.22em] text-ink will-change-transform"
         style={{
-          // Up and right of the head, clear of the handle — which now runs
-          // down-right and had the label sitting on top of it.
-          marginLeft: 34,
+          // Up and right of the head, clear of the handle, which runs
+          // down-right. Scales with the art rather than being a magic number.
+          marginLeft: SIZE * 0.8,
           marginTop: -12,
           opacity: label ? 1 : 0,
           transition: "opacity var(--d-fast) var(--ease-silk)",

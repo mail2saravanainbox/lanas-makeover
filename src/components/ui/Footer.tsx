@@ -146,14 +146,11 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           <p>Designed as a bridal editorial experience</p>
         </div>
 
-        {settings.contentIsPlaceholder && (
-          <p className="mt-8 rounded-lg border border-ivory/10 bg-ink-2 px-5 py-4 text-[0.75rem] leading-relaxed tracking-wide text-muted">
-            <strong className="font-medium text-ivory/70">Preview build.</strong> The photography
-            on this site is licensed stand-in imagery, not Lana&apos;s work and not her clients,
-            and copy marked in the content files is awaiting her confirmation. No testimonial,
-            price, credential or client is represented here.
-          </p>
-        )}
+        {/* The public "Preview build" notice was removed at the client's
+            request. `contentIsPlaceholder` is still live and still drives the
+            /admin status panel and the note on /about, so the flag remains the
+            single source of truth about what is and is not real — it is simply
+            no longer announced to visitors in the footer. */}
       </div>
     </footer>
   );
