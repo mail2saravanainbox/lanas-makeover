@@ -1,4 +1,5 @@
 import type { SiteSettings } from "@/lib/types";
+import portrait from "@/content/portrait.json";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -149,6 +150,32 @@ export const siteSettings: SiteSettings = {
         mp4: "/video/hero-landscape.mp4",
       },
     },
+  },
+
+  /**
+   * ───────────────────────────────────────────────────────────────────────
+   *  THE ARTIST
+   * ───────────────────────────────────────────────────────────────────────
+   *  A real photograph of Lana, the founder of Lana's Makeover — not a bride,
+   *  not a stand-in. This is the one image on the site that is unambiguously
+   *  a person rather than a look, which is why it was never allowed to be
+   *  filled from the bridal archive.
+   *
+   *  Its dimensions and blur placeholder come from `portrait.json`, written by
+   *  `npm run import:portrait` from content/lana/. To replace the photograph,
+   *  drop a new file in that folder and re-run it — nothing here changes.
+   *
+   *  `focus` keeps her FACE in frame when the image is cropped to a shape it
+   *  was not composed for. The journal byline renders it as a 48px circle; on
+   *  a 4:5 source, a centre crop would land on the necklace.
+   */
+  portrait: {
+    src: portrait.src,
+    alt: "Lana, founder of Lana's Makeover",
+    width: portrait.width,
+    height: portrait.height,
+    blurDataURL: portrait.blurDataURL,
+    focus: { x: 0.53, y: 0.26 },
   },
 
   /**

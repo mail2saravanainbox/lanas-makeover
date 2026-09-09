@@ -1,6 +1,7 @@
 import "server-only";
 import type { ImageRef, MediaTone, PortfolioCategory, PortfolioItem } from "@/lib/types";
 import { activePortfolio, hasRealPhotography } from "./local";
+import { siteSettings } from "@/content/site";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -186,11 +187,12 @@ export function getImageSlots(): ImageSlots {
     ] as [ImageRef, ImageRef, ImageRef],
 
     /**
-     * ACT II / About. Deliberately NOT filled from the bridal portfolio — a
-     * photograph of a bride is not a photograph of the artist. Until a real
-     * portrait of Lana exists, both sections render type instead (§21).
+     * ACT II / About. Still deliberately NOT filled from the bridal portfolio
+     * — a photograph of a bride is not a photograph of the artist. It resolves
+     * from `siteSettings.portrait` alone, and falls back to the typographic
+     * treatment (§21) if that is ever cleared.
      */
-    artistPortrait: null,
+    artistPortrait: siteSettings.portrait ?? null,
 
     /**
      * THE MUHURTHAM RITUAL — eight ordered frames.

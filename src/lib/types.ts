@@ -250,6 +250,12 @@ export interface SiteSettings {
   /** One word of Tamil, rendered once per page. See site.ts. */
   signatureTamil: string;
   hero: HeroMedia;
+  /**
+   * The artist herself. Absent until a real photograph of Lana exists — the
+   * About and Artist sections render a typographic treatment instead, and the
+   * journal byline drops its avatar rather than borrowing a bride's face.
+   */
+  portrait?: ImageRef;
   /** Optional footage for the hair sequence. See site.ts. */
   hair?: { clip?: VideoSources };
   /** Marks demo copy so the UI can be honest about what is placeholder. */
