@@ -642,66 +642,25 @@ html.lm-veiled #lm-veil {
      ──────────────────────────────────────────────────────────────────────── */
   background-color: #3a0f0d;
 
-  /* ── THE DRAPE ────────────────────────────────────────────────────────────
-     The silk FALLS over the page and is later lifted off it, rather than
-     simply being there. Both halves are the same clip-path travelling in the
-     same direction — down to cover, up to reveal — which is what a length of
-     fabric drawn across something and then taken away actually does.
+  /* ── COVERED FROM THE FIRST FRAME ─────────────────────────────────────────
+     The silk no longer falls into place. It used to drape down over ~420ms
+     behind a wavy fabric hem, and the page underneath was visible the whole
+     time it did — which is the opposite of what the opening is for. The veil
+     exists so the page is NOT seen until it is ready.
 
-     `backwards`, not `forwards`: the fill applies the opening frame before
-     the animation starts and then hands the property back to the rule below
-     when it ends, so the exit TRANSITION still has something to transition.
-     With `forwards` the animation keeps hold of clip-path and the veil can
-     never lift.
+     So it is complete on the first painted frame, holds, and lifts. The mask
+     that carried the falling hem has gone with it rather than being left in
+     place: a mask with nothing to animate is a compositing layer for nothing.
+
+     The lift stays a clip-path travelling upward — taking a drape off is a
+     straight pull, and that half was never the problem.
      ──────────────────────────────────────────────────────────────────────── */
-  /* ── THE LEADING EDGE IS FABRIC, NOT A RULER ──────────────────────────────
-     Measured off the reference at 25fps: the silk falls with a WAVY edge, the
-     hem of a length of cloth, not the straight horizontal line a clip-path
-     inset gives. So the fall is a mask — an SVG whose opaque half ends in a
-     wave — slid down over the element. The exit stays a clip-path, because
-     lifting a drape off is a straight pull.
-     ──────────────────────────────────────────────────────────────────────── */
-  --veil-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='400' preserveAspectRatio='none'%3E%3Cpath d='M0 0 H200 V212 C188 226 172 204 154 216 C136 228 120 206 102 218 C84 228 68 204 50 216 C32 226 16 206 0 218 Z' fill='%23fff'/%3E%3C/svg%3E");
-
-  -webkit-mask-image: var(--veil-edge);
-  mask-image: var(--veil-edge);
-  -webkit-mask-size: 100% 200%;
-  mask-size: 100% 200%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  /* At rest the element sits over the mask's TOP half, which is solid — so
-     the silk covers completely and the wave is nowhere to be seen. The wave
-     is cut at y=212 of 400, deliberately BELOW the halfway line, so no part
-     of it can clip the bottom edge once the fall has finished. */
-  -webkit-mask-position: 0 0;
-  mask-position: 0 0;
-
   clip-path: inset(0 0 0 0);
   /* 520ms, matching WIPE in BrandVeilRunner. The lift is quick. */
   transition: clip-path 520ms var(--ease-veil);
-  animation: veil-drape 420ms cubic-bezier(0.25, 0.7, 0.35, 1) backwards;
-  will-change: clip-path, mask-position;
+  will-change: clip-path;
 }
 
-/**
- * 100% → 0%, not -100% → 0%.
- *
- * With a mask twice the height of the box, `100%` aligns the mask's BOTTOM
- * with the box's bottom — the transparent half — so nothing shows; `0%`
- * aligns their tops, the solid half, so everything does. The first attempt
- * animated from -100%, which is a different offset entirely and left the
- * fabric stranded partway down the screen with its hem in mid-air.
- */
-@keyframes veil-drape {
-  from {
-    -webkit-mask-position: 0 100%;
-    mask-position: 0 100%;
-  }
-  to {
-    -webkit-mask-position: 0 0;
-    mask-position: 0 0;
-  }
-}
 
 /* The kaleidoscope. The parent owns the zoom; the quadrants own the pan, and
    they all run the SAME pan so the symmetry survives the movement. */

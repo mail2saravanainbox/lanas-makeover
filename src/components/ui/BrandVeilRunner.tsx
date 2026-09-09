@@ -12,13 +12,13 @@ const CEILING = 1700;
 /**
  * A FLOOR, which this deliberately did not have before.
  *
- * The silk takes 420ms to fall (see `veil-drape`) and then has to be SEEN.
- * On a warm cache the fonts and the hero can both be ready inside 300ms, and
- * the veil would lift while the fabric was still falling — a drape cut in half
- * reads as a glitch rather than as an opening.
+ * The silk covers from the first frame and then has to be SEEN. On a warm
+ * cache the fonts and the hero can both be ready inside 300ms, and the veil
+ * would come and go faster than the eye registers it — an opening nobody sees
+ * is an opening that only costs.
  *
- * Measured off the reference: it falls for ~0.3s, is held for ~1.5s, and is
- * gone by 1.9s. This is that hold.
+ * Measured off the reference: the silk is held for ~1.5s and is gone by 1.9s.
+ * This is that hold; the 520ms lift accounts for the rest.
  *
  * This is the one honest use of a minimum here: it is not pretending the page
  * is still loading, it is letting a deliberate 520ms gesture finish. It costs
