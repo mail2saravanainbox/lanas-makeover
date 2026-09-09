@@ -289,6 +289,37 @@ export default function BookingFlow() {
     }
   }
 
+  /**
+   * THE LAST DOOR (§45).
+   *
+   * If the enquiry was recorded but not delivered, she is the only one who can
+   * carry it. This is a `mailto:` holding everything she typed, so the escape
+   * hatch is one tap and not "please write it all out again" — and it depends
+   * on no service, no API key and no integration staying up.
+   *
+   * Rendered only when a real address is configured; never a dead link.
+   */
+  const mailtoHref = useMemo(() => {
+    if (!siteSettings.email) return null;
+    const lines = [
+      `Name: ${values.name}`,
+      `Phone: ${values.phone}`,
+      values.email.trim() ? `Email: ${values.email}` : null,
+      values.instagram.trim() ? `Instagram: ${values.instagram}` : null,
+      `Wedding date: ${values.weddingDate}`,
+      `City: ${resolvedCity}`,
+      values.venue.trim() ? `Venue: ${values.venue}` : null,
+      values.events.length ? `Events: ${values.events.join(", ")}` : null,
+      values.services.length ? `Services: ${values.services.join(", ")}` : null,
+      values.message.trim() ? `\nNotes:\n${values.message}` : null,
+    ].filter(Boolean);
+
+    const subject = `Enquiry — ${values.weddingDate} — ${resolvedCity}`;
+    return `mailto:${siteSettings.email}?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(lines.join("\n"))}`;
+  }, [values, resolvedCity]);
+
   const continueHref = useMemo(
     () =>
       whatsappLink(
@@ -360,6 +391,14 @@ export default function BookingFlow() {
               WhatsApp Lana
             </a>
           )}
+          {/* Only offered when delivery actually failed — on a successful
+              send it would invite her to write the same thing twice. */}
+          {!arrived && mailtoHref && (
+            <a href={mailtoHref} className="btn btn-ghost">
+              Email it instead
+            </a>
+          )}
+
           <a
             href={siteSettings.instagram}
             target="_blank"

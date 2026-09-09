@@ -64,11 +64,41 @@ function bad(error: string, status = 400) {
   return NextResponse.json({ ok: false, error }, { status });
 }
 
-/** `enquiries@<site host>` — a sane default when CONTACT_FROM_EMAIL is unset. */
+/**
+ * The From address, when CONTACT_FROM_EMAIL is unset.
+ *
+ * ⚠ A SENDER MUST BE ON A DOMAIN VERIFIED IN RESEND, or the send is rejected
+ *   and the enquiry is not delivered.
+ *
+ * This used to derive the sender from NEXT_PUBLIC_SITE_URL unconditionally,
+ * which was a trap armed and waiting: that variable gets set for canonicals
+ * and SEO long before there is a custom domain, and the moment it was set on
+ * this project the From became `enquiries@lanas-makeover.vercel.app` — a
+ * domain nobody can verify, because nobody owns it. Every send would have been
+ * rejected, the form would have gone back to "not connected", and the cause
+ * would have looked like an SEO change.
+ *
+ * So the host is only used when it is a REAL domain. Platform hosts —
+ * vercel.app, localhost, raw IPs — fall through to Resend's own onboarding
+ * sender, which works without any DNS at all.
+ *
+ * `onboarding@resend.dev` has one limit worth knowing: it can only deliver to
+ * the address that owns the Resend account. That is fine for the studio's own
+ * inbox and is exactly the shape of this use case; a custom domain removes the
+ * limit whenever the real one is attached.
+ */
 function defaultFrom(): string {
   const url = process.env.NEXT_PUBLIC_SITE_URL;
   try {
-    if (url) return `enquiries@${new URL(url).hostname.replace(/^www\./, "")}`;
+    if (url) {
+      const host = new URL(url).hostname.replace(/^www\./, "");
+      const isPlatformHost =
+        host === "localhost" ||
+        host.endsWith(".vercel.app") ||
+        host.endsWith(".localhost") ||
+        /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+      if (!isPlatformHost) return `enquiries@${host}`;
+    }
   } catch {
     /* fall through */
   }
@@ -240,6 +270,23 @@ export async function POST(request: Request) {
   ]);
 
   const delivered = emailError === null;
+
+  /**
+   * NOTHING GETS LOST QUIETLY.
+   *
+   * A delivery that failed is logged again, at error level, under its own
+   * marker and with the whole enquiry attached. `[enquiry]` above is the
+   * routine record; this one is the alarm, and it is the line to search for
+   * when a bride says she wrote and nobody replied.
+   */
+  if (!delivered) {
+    console.error("[enquiry:undelivered]", {
+      reason: emailError,
+      storedInKv: stored,
+      enquiry,
+      receivedAt,
+    });
+  }
 
   return NextResponse.json({
     ok: true,
