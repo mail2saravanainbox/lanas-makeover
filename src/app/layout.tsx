@@ -115,7 +115,7 @@ export default async function RootLayout({
             context, and a fixed child of one cannot rise above a sibling of
             it — which is how the header spent its life sitting on top of the
             veil. Homepage-only is enforced by the guard, not by placement. */}
-        <BrandVeil brand={settings.brandName} />
+        <BrandVeil />
 
         <SmoothScroll />
         <BrushCursor />

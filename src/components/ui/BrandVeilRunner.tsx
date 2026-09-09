@@ -2,26 +2,37 @@
 
 import { useEffect } from "react";
 
-/** Hard ceiling. Whatever is still pending at this point, the veil goes. */
-const CEILING = 1200;
+/**
+ * Hard ceiling. Whatever is still pending at this point, the veil goes.
+ * Raised from 1,200ms to sit above the floor below — a ceiling under a floor
+ * is not a ceiling.
+ */
+const CEILING = 1700;
 
 /**
  * A FLOOR, which this deliberately did not have before.
  *
- * The silk takes 520ms to fall (see `veil-drape`). On a warm cache the fonts
- * and the hero can both be ready inside 300ms, and the veil would then lift
- * while the fabric was still falling — a drape cut in half, which reads as a
- * glitch rather than as an opening.
+ * The silk takes 420ms to fall (see `veil-drape`) and then has to be SEEN.
+ * On a warm cache the fonts and the hero can both be ready inside 300ms, and
+ * the veil would lift while the fabric was still falling — a drape cut in half
+ * reads as a glitch rather than as an opening.
+ *
+ * Measured off the reference: it falls for ~0.3s, is held for ~1.5s, and is
+ * gone by 1.9s. This is that hold.
  *
  * This is the one honest use of a minimum here: it is not pretending the page
  * is still loading, it is letting a deliberate 520ms gesture finish. It costs
  * every first-time visitor a fraction of a second, once per session, and the
  * ceiling above is unchanged — nothing waits longer because of it.
  */
-const FLOOR = 760;
+const FLOOR = 1400;
 
-/** The wipe itself. */
-const WIPE = 900;
+/**
+ * The lift. Faster than the fall by design and faster than it used to be:
+ * in the reference the silk is gone within about a tenth of a second once it
+ * starts moving. A slow exit makes the visitor wait twice.
+ */
+const WIPE = 520;
 
 /** Resolves when the hero's own image has decoded, or immediately if there isn't one. */
 function heroReady(): Promise<void> {
@@ -47,20 +58,13 @@ export default function BrandVeilRunner() {
     if (!found) return;
     const el: HTMLElement = found;
 
-    const line = el.querySelector<HTMLElement>(".lm-veil__line");
-    const mark = el.querySelector<HTMLElement>(".lm-veil__mark");
     let done = false;
 
-    const settled = { n: 0 };
-    const total = 2;
-    const advance = () => {
-      settled.n += 1;
-      if (line) line.style.transform = `scaleX(${(settled.n / total).toFixed(3)})`;
-    };
-
-    // Something is happening, and it is real: the line starts where the work
-    // starts, not at a number chosen to look busy.
-    if (line) line.style.transform = "scaleX(0.08)";
+    /**
+     * Nothing to advance any more — the veil carries no progress line and no
+     * mark since it became bare silk. The readiness promises below are still
+     * what decides WHEN it lifts; they simply have nothing to draw.
+     */
 
     const startedAt = performance.now();
     let floorTimer = 0;
@@ -88,20 +92,6 @@ export default function BrandVeilRunner() {
         /* private mode — the veil simply shows again next time */
       }
 
-      // The mark flies to where the nav's mark already is, so the brand
-      // arrives in its final position rather than dissolving.
-      const navMark = document.querySelector<SVGElement>("header a svg");
-      if (mark && navMark) {
-        const from = mark.getBoundingClientRect();
-        const to = navMark.getBoundingClientRect();
-        const scale = to.width / from.width;
-        mark.style.transition = `transform var(--d-base) var(--ease-silk)`;
-        mark.style.transform =
-          `translate(${(to.left + to.width / 2 - (from.left + from.width / 2)).toFixed(1)}px,` +
-          ` ${(to.top + to.height / 2 - (from.top + from.height / 2)).toFixed(1)}px)` +
-          ` scale(${scale.toFixed(3)})`;
-      }
-
       el.setAttribute("data-veil", "out");
       window.setTimeout(() => {
         document.documentElement.classList.remove("lm-veiled");
@@ -117,13 +107,9 @@ export default function BrandVeilRunner() {
     const ceiling = window.setTimeout(() => finish(), CEILING);
 
     void Promise.all([
-      document.fonts.ready.then(advance, advance),
-      heroReady().then(advance, advance),
-    ]).then(() => {
-      // A beat on a full progress line, so it reads as complete rather than
-      // as having been interrupted.
-      window.setTimeout(() => finish(), 120);
-    });
+      document.fonts.ready.catch(() => undefined),
+      heroReady().catch(() => undefined),
+    ]).then(() => finish());
 
     return () => {
       window.clearTimeout(ceiling);

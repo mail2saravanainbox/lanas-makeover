@@ -1,4 +1,3 @@
-import JasmineMark from "./JasmineMark";
 import veil from "@/content/veil-blur.json";
 import BrandVeilRunner from "./BrandVeilRunner";
 
@@ -6,9 +5,15 @@ import BrandVeilRunner from "./BrandVeilRunner";
  * ═══════════════════════════════════════════════════════════════════════════
  *  THE BRAND VEIL
  * ═══════════════════════════════════════════════════════════════════════════
- *  A field of Kanchipuram silk holding the mark and the wordmark while the
- *  page actually becomes ready, then lifting upward to reveal it — the way a
- *  drape is lifted rather than a curtain dropped.
+ *  A field of Kanchipuram silk drawn across the page while it actually becomes
+ *  ready, then lifted off it — the way a drape is lifted rather than a curtain
+ *  dropped.
+ *
+ *  NOTHING IS WRITTEN ON IT. No mark, no wordmark, no progress line: it is
+ *  fabric and then it is gone. That is a deliberate choice and it has a cost —
+ *  a first-time visitor is shown a red screen with no explanation and no
+ *  indication that anything is loading — which is affordable only because it
+ *  is brief, it is skippable by any input, and it is capped at 1,200ms.
  *
  *  The silk is a PHOTOGRAPH — see scripts/build-veil.mjs for why the CSS
  *  version was abandoned. It cannot be a thing the visitor waits for, though,
@@ -68,7 +73,7 @@ const GUARD = `(function(){
   setTimeout(function(){ d.classList.remove('lm-veiled'); }, 2500);
 })();`;
 
-export default function BrandVeil({ brand }: { brand: string }) {
+export default function BrandVeil() {
   return (
     <>
       {/* Fetched at the highest priority the browser will give an image, so
@@ -87,16 +92,19 @@ export default function BrandVeil({ brand }: { brand: string }) {
           } as React.CSSProperties
         }
       >
-        {/* The photograph. A child rather than a background layer so it can be
-            scaled while it settles without ever ceasing to cover. */}
-        <span className="lm-veil__silk" />
+        {/* ── TWO HALVES, ONE MIRRORED ────────────────────────────────────
+            The reference silk is symmetrical about a vertical axis down the
+            middle of the screen — kaleidoscopic, the way a loom's repeat or a
+            mirrored video looks. It is the single most recognisable thing
+            about it and no amount of drifting a single photograph produces
+            it, because a photograph is not symmetrical.
 
-        <div className="lm-veil__mark">
-          <JasmineMark className="h-8 w-8" />
-        </div>
-        <p className="lm-veil__word">{brand.replace(/'s/i, "\u2019s")}</p>
-        <span className="lm-veil__rail">
-          <span className="lm-veil__line" />
+            So the fabric is rendered twice: the same crop in both halves, the
+            right one flipped. The seam falls exactly on the centre line,
+            where a mirror seam belongs. */}
+        <span className="lm-veil__silk">
+          <span className="lm-veil__half" />
+          <span className="lm-veil__half" />
         </span>
       </div>
       <script dangerouslySetInnerHTML={{ __html: GUARD }} />
