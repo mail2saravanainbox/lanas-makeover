@@ -375,18 +375,23 @@ test("no WebGL canvas exists, before or after scrolling", async ({ page }) => {
    * cursor's powder trail is a legitimate 2D canvas; the thing Task 2.4
    * removed and this guards is a WebGL context and the Three.js runtime.
    */
+  /**
+   * COUNTED, NOT PROBED.
+   *
+   * This used to call `getContext("webgl")` on every canvas and treat a
+   * non-null result as proof of a WebGL rig. On a canvas that has no context
+   * yet, that call does not REPORT a context — it CREATES one. The brush
+   * cursor's trail canvas is 2D, but for the few frames before it calls
+   * getContext("2d") the probe would manufacture a WebGL context on it and
+   * then fail the test for finding it. A test that creates the thing it
+   * forbids.
+   *
+   * The brush's canvas carries `data-brush-trail`; anything else is a canvas
+   * this site has no business having.
+   */
   const webglCanvases = () =>
     page.evaluate(
-      () =>
-        [...document.querySelectorAll("canvas")].filter((c) => {
-          // Reading the context type is the only reliable way to tell them
-          // apart, and getContext returns the EXISTING context if there is one.
-          try {
-            return !!(c.getContext("webgl2") || c.getContext("webgl"));
-          } catch {
-            return false;
-          }
-        }).length,
+      () => document.querySelectorAll("canvas:not([data-brush-trail])").length,
     );
 
   await page.goto("/");
@@ -641,12 +646,32 @@ test.describe("the brush cursor", () => {
 test("the ritual loads two frames up front and all eight by the end", async ({
   page,
 }) => {
+  /**
+   * The slowest test here: it scrolls the entire homepage and waits on eight
+   * separate image fetches. A 25s poll inside a 30s default was a test that
+   * could only ever fail by timing out at the wrong level.
+   */
+  test.slow();
+
   const fetched = new Set<string>();
   page.on("response", (r) => {
     const m = /url=([^&]+)/.exec(r.url());
     if (!/_next\/image/.test(r.url()) || !m) return;
     const name = decodeURIComponent(m[1]).split("/").pop() ?? "";
     if (name.startsWith("ritual-")) fetched.add(name);
+  });
+
+  /**
+   * Skip the opening. This test is about IMAGE LOADING, and the veil now
+   * deliberately holds the page for ~1.9s — time taken straight out of this
+   * test's budget for a gesture it is not measuring.
+   */
+  await page.addInitScript(() => {
+    try {
+      sessionStorage.setItem("lm:veil", "1");
+    } catch {
+      /* private mode */
+    }
   });
 
   await page.goto("/", { waitUntil: "networkidle" });
@@ -664,7 +689,9 @@ test("the ritual loads two frames up front and all eight by the end", async ({
 
   // Every frame arrives by the time the reader has been through the section,
   // so no stage is ever blank.
-  await expect.poll(() => fetched.size, { timeout: 15_000 }).toBe(8);
+  // 25s: fourteen browsers against one server make image delivery the
+  // slow part here, not the page.
+  await expect.poll(() => fetched.size, { timeout: 25_000 }).toBe(8);
 });
 
 
@@ -864,20 +891,44 @@ test.describe("the brand veil", () => {
   test("never traps the page, and never runs twice in a session", async ({ page }) => {
     await page.goto("/");
     // Whatever happened, the veil must have let go.
+    /**
+     * Generous: the opening is now a deliberate ~1.9s (a 420ms fall, a 1,400ms
+     * floor so the drape is actually seen, then a 520ms lift), and this runs
+     * fourteen-wide against one server. The assertion is that it ALWAYS lets
+     * go, not that it lets go quickly.
+     */
     await expect
       .poll(
         () => page.evaluate(() => document.documentElement.classList.contains("lm-veiled")),
-        { timeout: 6_000 },
+        { timeout: 15_000 },
       )
       .toBe(false);
     await expect(page.locator("#lm-veil")).toBeHidden();
 
-    // Second visit in the same session: skipped outright.
+  });
+
+  test("is skipped once it has already been seen this session", async ({ page }) => {
+    /**
+     * Asserted by SETTING the flag rather than by loading the page twice and
+     * assuming the first load showed it. The guard also skips when the
+     * document is already complete, so a fast first load legitimately leaves
+     * no flag behind — and the two-visit version of this test then failed
+     * intermittently for a reason that was correct behaviour.
+     */
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.setItem("lm:veil", "1");
+      } catch {
+        /* private mode; the assertion below still holds */
+      }
+    });
+
     await page.goto("/");
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400);
     expect(
       await page.evaluate(() => document.documentElement.classList.contains("lm-veiled")),
     ).toBe(false);
+    await expect(page.locator("#lm-veil")).toBeHidden();
   });
 
   test("sits above the header rather than under it", async ({ page }) => {
@@ -900,5 +951,47 @@ test.describe("the brand veil", () => {
     );
     expect(stacking).not.toBeNull();
     expect(stacking!.trapped, "the veil is inside .page-content again").toBe(false);
+  });
+});
+
+
+/**
+ * Lana's own logo. It is her artwork, it carries its own black ground, and it
+ * is NOT legible small — measured unreadable at the header's 34px and clean
+ * from about 80px. These guard both halves of that: it appears where there is
+ * room, and it does not appear where there is not.
+ */
+test.describe("the logo", () => {
+  test("is in the footer at a size it can be read at", async ({ page }) => {
+    await page.goto("/");
+    const logo = page.locator("footer img").first();
+    await expect(logo).toBeAttached();
+    await logo.scrollIntoViewIfNeeded();
+
+    const box = await logo.boundingBox();
+    expect(box, "the footer logo has no size").not.toBeNull();
+    // Below ~80px the script turns to mush; this is the floor that matters.
+    expect(box!.height).toBeGreaterThanOrEqual(80);
+    await expect(logo).toHaveAttribute("alt", /Lana/i);
+  });
+
+  test("is not used in the header, where it would be illegible", async ({ page }) => {
+    await page.goto("/");
+    // The header keeps the typographic wordmark, which reads at 12px.
+    await expect(page.locator("header img")).toHaveCount(0);
+    await expect(
+      page.locator("header").getByRole("link", { name: "Lana's Makeover" }),
+    ).toBeVisible();
+  });
+
+  test("is served as the tab icon and on the share card", async ({ request }) => {
+    const icon = await request.get("/icon.png");
+    expect(icon.status()).toBe(200);
+    expect(icon.headers()["content-type"]).toContain("image/png");
+
+    const og = await request.get("/opengraph-image");
+    expect(og.status()).toBe(200);
+    // Satori cannot decode WebP; a broken embed silently yields a tiny image.
+    expect((await og.body()).byteLength).toBeGreaterThan(50_000);
   });
 });

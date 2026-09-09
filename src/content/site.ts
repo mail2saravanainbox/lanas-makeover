@@ -1,5 +1,6 @@
 import type { SiteSettings } from "@/lib/types";
 import portrait from "@/content/portrait.json";
+import logo from "@/content/logo.json";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -150,6 +151,31 @@ export const siteSettings: SiteSettings = {
         mp4: "/video/hero-landscape.mp4",
       },
     },
+  },
+
+  /**
+   * ───────────────────────────────────────────────────────────────────────
+   *  THE LOGO
+   * ───────────────────────────────────────────────────────────────────────
+   *  Lana's own artwork: the wordmark in script, drawn into a lipstick
+   *  swatch, on black.
+   *
+   *  ⚠ IT CANNOT BE RECOLOURED, and it is not legible small. The lettering is
+   *    painted into the swatch, so there is no ivory-on-dark variant without
+   *    redrawing the logo — that is the designer's job, not a build script's.
+   *    Measured at the sizes this site uses: unreadable at 34px, clean from
+   *    about 80px up. It therefore appears where there is room for it (the
+   *    footer, the share card) and NOT in the 34px-tall header, where the
+   *    typographic wordmark stays because it can actually be read.
+   *
+   *  Rebuild from a new file with `npm run build:logo`.
+   */
+  logo: {
+    src: logo.src,
+    alt: "Lana's Makeover",
+    width: logo.width,
+    height: logo.height,
+    blurDataURL: logo.blurDataURL,
   },
 
   /**

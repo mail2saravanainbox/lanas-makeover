@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
 import JasmineMark from "./JasmineMark";
@@ -91,9 +92,26 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="font-display text-2xl uppercase tracking-[0.3em] text-ivory">
-              {settings.brandName}
-            </p>
+            {/* Lana's own logo, at a size it can actually be read at. The
+                artwork carries its own black ground, which sits on the site's
+                warm black as the swatch floating rather than as a box — the
+                reason it is here and not on an ivory surface. */}
+            {settings.logo?.src ? (
+              <Image
+                src={settings.logo.src}
+                alt={settings.logo.alt}
+                width={settings.logo.width ?? 900}
+                height={settings.logo.height ?? 616}
+                sizes="(max-width: 640px) 60vw, 220px"
+                placeholder={settings.logo.blurDataURL ? "blur" : undefined}
+                blurDataURL={settings.logo.blurDataURL}
+                className="h-auto w-[clamp(9rem,34vw,13.75rem)]"
+              />
+            ) : (
+              <p className="font-display text-2xl uppercase tracking-[0.3em] text-ivory">
+                {settings.brandName}
+              </p>
+            )}
 
             {/* The mark and the one word of Tamil on the site. A signature,
                 not a translation — see settings.signatureTamil. */}

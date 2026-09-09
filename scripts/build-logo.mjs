@@ -1,0 +1,140 @@
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  LANA'S LOGO
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  Turns the supplied artwork into the sizes the site actually needs.
+ *
+ *    content/brand/logo.png  →  public/brand/logo.webp       the full lockup
+ *                            →  public/brand/logo-mark.webp  a square crop
+ *                            →  src/content/logo.json        dimensions + blur
+ *
+ *  THE ARTWORK IS BLACK SCRIPT ON A LIPSTICK SWATCH, on a black ground. Two
+ *  consequences the site has to respect:
+ *
+ *    · It cannot be recoloured. The wordmark is drawn INTO the swatch, so
+ *      there is no version of it that is ivory-on-dark without redrawing the
+ *      logo, which is the designer's job and not this script's.
+ *    · It carries its own background. The black is part of the image, and on
+ *      this site's warm-black ground (#0a0806) that reads as the swatch
+ *      floating rather than as a box — which is why the surplus black is
+ *      trimmed to a small margin rather than removed outright.
+ *
+ *  Run: npm run build:logo
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+import { writeFile, mkdir } from "node:fs/promises";
+import sharp from "sharp";
+
+const SOURCE = "content/brand/logo.png";
+const OUT_FULL = "public/brand/logo.webp";
+const OUT_MARK = "public/brand/logo-mark.webp";
+const OUT_JSON = "src/content/logo.json";
+
+await mkdir("public/brand", { recursive: true });
+
+/**
+ * Trim the surplus black. `threshold` is generous because the ground is not
+ * pure #000 — it is a photographed black with noise in it.
+ */
+const trimmed = await sharp(SOURCE).trim({ threshold: 34 }).png().toBuffer();
+const t = await sharp(trimmed).metadata();
+
+// A small even margin back, so the swatch never touches the edge of the box.
+const pad = Math.round(t.width * 0.03);
+const padded = await sharp(trimmed)
+  .extend({
+    top: pad,
+    bottom: pad,
+    left: pad,
+    right: pad,
+    /**
+     * Pure black, matching the artwork's own ground — the lift below is what
+     * moves BOTH onto the site's ink in one step. Padding in #0a0806 here and
+     * then lifting would count the offset twice and leave the margin brighter
+     * than the artwork it surrounds.
+     */
+    background: "#000000",
+  })
+  .png()
+  .toBuffer();
+
+/**
+ * Lift the artwork's blacks to the site's ink.
+ *
+ * Padding the OUTSIDE in #0a0806 was not enough: the black inside the artwork
+ * — above, below and between the brushstrokes — is #000, so the logo still
+ * read as a faint rectangle sitting on the page. A +10/+8/+6 offset maps that
+ * black onto the site's exactly. On the swatch itself, ten levels out of 255
+ * is invisible.
+ */
+const grounded = await sharp(padded)
+  // Crush first. The artwork's ground is PHOTOGRAPHED black, not generated —
+  // it carries sensor noise a few levels above zero, and lifting it without
+  // flattening it first leaves a mottled plate slightly brighter than the
+  // page. This drops anything under ~16 to true black and leaves the swatch,
+  // which is nowhere near that end of the range, untouched.
+  .linear([1.07, 1.07, 1.07], [-16, -16, -16])
+  // Then lift the whole ground onto the site's ink in one move.
+  .linear([1, 1, 1], [10, 8, 6])
+  .png()
+  .toBuffer();
+
+const full = await sharp(grounded)
+  .resize({ width: 900, withoutEnlargement: true })
+  .webp({ quality: 88 })
+  .toFile(OUT_FULL);
+
+/**
+ * The square mark, for the tab icon and anywhere the lockup is too wide to
+ * read. A centre crop of the swatch: at 32px the script is unreadable anyway,
+ * so what survives is the brushstroke colour, which is the recognisable part.
+ */
+const mark = await sharp(grounded)
+  .resize({ width: 512, height: 512, fit: "cover", position: "centre" })
+  .webp({ quality: 88 })
+  .toFile(OUT_MARK);
+
+/**
+ * The tab icon, as a static file rather than a generated one. Next serves
+ * `src/app/icon.png` by file convention; the ImageResponse route it replaces
+ * drew a jasmine mark because there was no logo to use.
+ *
+ * A script logo is illegible at 32px, so this is the swatch — the brushstroke
+ * colour is what is recognisable at that size, not the lettering.
+ */
+await sharp(grounded)
+  .resize({ width: 180, height: 180, fit: "cover", position: "centre" })
+  .png()
+  .toFile("src/app/icon.png");
+
+/**
+ * A PNG copy for the Open Graph card. Satori — which renders ImageResponse —
+ * cannot decode WebP, and hands back an opaque "u2 is not iterable" rather
+ * than saying so. This is the same artwork in a format it can read.
+ */
+await sharp(grounded).resize({ width: 860 }).png({ quality: 90 }).toFile("public/brand/logo-og.png");
+
+const blur = await sharp(grounded).resize({ width: 20 }).webp({ quality: 40 }).toBuffer();
+
+await writeFile(
+  OUT_JSON,
+  `${JSON.stringify(
+    {
+      _comment: "Generated by scripts/build-logo.mjs. Do not edit by hand.",
+      generatedAt: new Date().toISOString(),
+      src: `/${OUT_FULL.replace(/^public\//, "")}`,
+      width: full.width,
+      height: full.height,
+      mark: `/${OUT_MARK.replace(/^public\//, "")}`,
+      blurDataURL: `data:image/webp;base64,${blur.toString("base64")}`,
+    },
+    null,
+    2,
+  )}\n`,
+);
+
+console.log(`✓ ${OUT_FULL}  ${full.width}×${full.height}  ${(full.size / 1024).toFixed(0)} KB`);
+console.log(`✓ ${OUT_MARK}  ${mark.width}×${mark.height}  ${(mark.size / 1024).toFixed(0)} KB`);
+console.log("✓ public/brand/logo-og.png  (Satori-readable)");
+console.log("✓ src/app/icon.png  180×180");
+console.log(`✓ ${OUT_JSON}`);

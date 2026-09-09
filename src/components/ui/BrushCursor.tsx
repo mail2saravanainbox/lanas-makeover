@@ -307,6 +307,12 @@ export default function BrushCursor() {
       {/* The powder, under the brush */}
       <canvas
         ref={canvasRef}
+        // Stable hook. The WebGL guard test has to be able to tell this 2D
+        // trail canvas apart from a hypothetical WebGL one WITHOUT probing it
+        // — `getContext("webgl")` on a canvas that has no context yet does not
+        // report one, it CREATES one, which is a false positive for exactly
+        // the thing that test exists to forbid.
+        data-brush-trail=""
         className="absolute inset-0 h-full w-full"
         style={{ filter: "blur(2px)" }}
       />

@@ -260,6 +260,8 @@ export interface SiteSettings {
   /** One word of Tamil, rendered once per page. See site.ts. */
   signatureTamil: string;
   hero: HeroMedia;
+  /** Lana's own logo artwork. See site.ts for why it is not used small. */
+  logo?: ImageRef;
   /**
    * The artist herself. Absent until a real photograph of Lana exists — the
    * About and Artist sections render a typographic treatment instead, and the

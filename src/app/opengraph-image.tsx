@@ -1,7 +1,9 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { ImageResponse } from "next/og";
-import { siteSettings } from "@/content/site";
+import { citiesDotted, siteSettings } from "@/content/site";
 
-export const alt = "Lana's Makeover — Bridal Makeup & Hair Artist, Trichy";
+export const alt = "Lana's Makeover — Bridal Makeup & Hair Artist";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -12,7 +14,28 @@ export const contentType = "image/png";
  * TODO(client): once Lana approves a hero photograph, replace this route with
  * a static /public/og/home.jpg and point `seoConfig` at it (§48).
  */
+/**
+ * The logo, inlined as a data URI.
+ *
+ * ImageResponse renders through Satori in an isolated runtime — it cannot
+ * reach the site over the network to fetch /brand/logo.webp, and a relative
+ * path means nothing to it. Reading the file off disk at render time is the
+ * one route that works, and it fails soft: no logo, no crash, just the
+ * typographic card this had before.
+ */
+async function logoDataUri(): Promise<string | null> {
+  try {
+    // PNG, not the WebP the site serves: Satori cannot decode WebP.
+    const file = await readFile(path.join(process.cwd(), "public/brand/logo-og.png"));
+    return `data:image/png;base64,${file.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
 export default async function Image() {
+  const logo = await logoDataUri();
+
   return new ImageResponse(
     (
       <div
@@ -38,13 +61,21 @@ export default async function Image() {
             color: "#a08a6a",
           }}
         >
-          {siteSettings.location}
+          {citiesDotted()}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          <div style={{ display: "flex", fontSize: 96, lineHeight: 1, letterSpacing: -2 }}>
-            {siteSettings.brandName}
-          </div>
+          {/* The real logo where there is room for it to read, and the
+              typographic wordmark when the file is unreadable for any reason.
+              A share card is one of the few places on the site big enough for
+              a script lockup. */}
+          {logo ? (
+            <img src={logo} alt="" width={430} height={294} />
+          ) : (
+            <div style={{ display: "flex", fontSize: 96, lineHeight: 1, letterSpacing: -2 }}>
+              {siteSettings.brandName}
+            </div>
+          )}
           <div
             style={{
               display: "flex",
