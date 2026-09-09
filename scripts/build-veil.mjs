@@ -101,18 +101,19 @@ async function recolour(input, width) {
 /**
  * The source frame and the region taken from it.
  *
- * `ritual-06-gold` is a bride beneath a red veil; this box is the fabric to
- * the right of her, which is silk and gold bokeh and nothing else. A veil that
- * is a photograph of a FACE would compete with the wordmark laid over it, and
- * would put a stand-in bride on the first frame of the site.
+ * A veil that is a photograph of a FACE would put a stand-in bride on the very
+ * first frame of the site, so the crop is fabric and only fabric.
  */
-const SOURCE = "public/portfolio/ritual-06-gold.webp";
+const SOURCE = "public/portfolio/jadai-01-jasmine-gold.webp";
 /**
- * Height stops at 880, not 1100. Below that line the bride's mehendi hand
- * enters the frame — invisible on a desktop crop, but a portrait viewport
- * shows the full height and put a hand in the corner of the opening.
+ * A pallu of Kanchipuram brocade — woven gold paisleys on silk — held up and
+ * filling the frame. Hands and face are outside this box.
+ *
+ * The PATTERN is the point. The reference's loading screen is not plain
+ * fabric, it is zari work: ornate, repeating, unmistakably a saree. A field of
+ * undecorated silk was the third thing this got wrong.
  */
-const REGION = { left: 1150, top: 0, width: 850, height: 880 };
+const REGION = { left: 440, top: 1920, width: 960, height: 747 };
 
 const OUT_IMG = "public/veil/veil-silk.webp";
 const OUT_BLUR = "src/content/veil-blur.json";

@@ -641,10 +641,6 @@ html.lm-veiled #lm-veil {
      letterbox bands above and below the silk on a portrait phone.
      ──────────────────────────────────────────────────────────────────────── */
   background-color: #3a0f0d;
-  background-image: var(--veil-blur, none);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 
   /* ── THE DRAPE ────────────────────────────────────────────────────────────
      The silk FALLS over the page and is later lifted off it, rather than
@@ -707,8 +703,8 @@ html.lm-veiled #lm-veil {
   }
 }
 
-/* The mirrored pair. The parent owns the zoom; the halves own the pan, and
-   they run the SAME pan so the symmetry survives the movement. */
+/* The kaleidoscope. The parent owns the zoom; the quadrants own the pan, and
+   they all run the SAME pan so the symmetry survives the movement. */
 html.lm-veiled .lm-veil__silk {
   position: absolute;
   inset: -6%;
@@ -716,26 +712,38 @@ html.lm-veiled .lm-veil__silk {
   animation: veil-flow 6s ease-in-out infinite alternate;
 }
 
-html.lm-veiled .lm-veil__half {
+html.lm-veiled .lm-veil__quad {
   position: absolute;
-  top: 0;
-  height: 100%;
   width: 50%;
-  background-image: var(--veil-img, none);
-  background-size: cover;
+  height: 50%;
+  /* The inline blur sits under the photograph in every quadrant, so even the
+     first painted frame is symmetrical rather than resolving into symmetry. */
+  background-image: var(--veil-img, none), var(--veil-blur, none);
+  background-size: cover, cover;
   background-position: center 30%;
   background-repeat: no-repeat;
   animation: veil-pan 4.5s ease-in-out infinite alternate;
 }
 
-html.lm-veiled .lm-veil__half:first-child {
+/* Four reflections of one crop: as shot, flipped in X, in Y, and in both. */
+html.lm-veiled .lm-veil__quad:nth-child(1) {
   left: 0;
+  top: 0;
 }
-
-/* The mirror. Same crop, flipped, so the two halves meet as reflections. */
-html.lm-veiled .lm-veil__half:last-child {
+html.lm-veiled .lm-veil__quad:nth-child(2) {
   left: 50%;
+  top: 0;
   transform: scaleX(-1);
+}
+html.lm-veiled .lm-veil__quad:nth-child(3) {
+  left: 0;
+  top: 50%;
+  transform: scaleY(-1);
+}
+html.lm-veiled .lm-veil__quad:nth-child(4) {
+  left: 50%;
+  top: 50%;
+  transform: scale(-1, -1);
 }
 
 /* The specular sweep — one wide highlight travelling across the weave, which

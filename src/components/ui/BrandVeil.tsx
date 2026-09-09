@@ -92,19 +92,20 @@ export default function BrandVeil() {
           } as React.CSSProperties
         }
       >
-        {/* ── TWO HALVES, ONE MIRRORED ────────────────────────────────────
-            The reference silk is symmetrical about a vertical axis down the
-            middle of the screen — kaleidoscopic, the way a loom's repeat or a
-            mirrored video looks. It is the single most recognisable thing
-            about it and no amount of drifting a single photograph produces
-            it, because a photograph is not symmetrical.
+        {/* ── A KALEIDOSCOPE, NOT A MIRROR ────────────────────────────────
+            Read off the reference at full resolution: the fabric is mirrored
+            on BOTH axes and radiates from the centre, the way a kolam or a
+            loom repeat does. A single left-right mirror — which is what this
+            was — gets the seam right and the structure wrong.
 
-            So the fabric is rendered twice: the same crop in both halves, the
-            right one flipped. The seam falls exactly on the centre line,
-            where a mirror seam belongs. */}
+            Four quadrants of the same brocade: top-left as shot, top-right
+            flipped in X, bottom-left in Y, bottom-right in both. They all run
+            the same pan, so the weave moves without the axes ever drifting. */}
         <span className="lm-veil__silk">
-          <span className="lm-veil__half" />
-          <span className="lm-veil__half" />
+          <span className="lm-veil__quad" />
+          <span className="lm-veil__quad" />
+          <span className="lm-veil__quad" />
+          <span className="lm-veil__quad" />
         </span>
       </div>
       <script dangerouslySetInnerHTML={{ __html: GUARD }} />
