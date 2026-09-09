@@ -64,7 +64,29 @@ const nextConfig: NextConfig = {
   },
 
   async redirects() {
-    return retiredImageRedirects();
+    return [
+      /**
+       * ONE CANONICAL HOST.
+       *
+       * Both www.lanas.in and lanas.in are attached to the project, so without
+       * this Vercel serves the site on both and every page exists at two
+       * addresses — which splits link equity and lets search engines pick the
+       * winner for you.
+       *
+       * The apex wins: it is shorter, and it is what the brand says out loud.
+       * 308, so the method and body survive the hop and browsers cache it.
+       *
+       * Done here rather than in the dashboard so it lives in the repository
+       * with everything else, and cannot be silently changed by a click.
+       */
+      {
+        source: "/:path*",
+        has: [{ type: "host" as const, value: "www.lanas.in" }],
+        destination: "https://lanas.in/:path*",
+        permanent: true,
+      },
+      ...retiredImageRedirects(),
+    ];
   },
 
   async headers() {
