@@ -1,7 +1,9 @@
+import Link from "next/link";
 import MagneticCta from "@/components/ui/MagneticCta";
 import type { HeroMedia, ImageRef } from "@/lib/types";
 import HeroVideo from "@/components/ui/HeroVideo";
 import HeroScroll from "./HeroScroll";
+import { citiesDotted } from "@/content/site";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -63,24 +65,52 @@ export default function Hero({
         style={{ opacity: "calc(1 + var(--p) * 0.4)" }}
       />
 
-      {/* ── The identity, in frame one ─────────────────────────────────── */}
-      <div className="shell relative z-10 pb-[14vh] pt-[calc(var(--nav-h)+4rem)]">
+      {/* ── The identity, in frame one (§5) ─────────────────────────────────
+          Five answers before a single scroll: what the business is, what she
+          does, where she works, why it is different, and what to do next.
+
+          The order is deliberate. The wordmark says whose site this is; the
+          H1 says what it is FOR; the register line says what kind of work it
+          is; the cities say whether she can even come; the italic line is the
+          only line here that is voice rather than fact, and it earns its place
+          precisely because everything around it is plain.
+
+          Vertical budget on a phone: the pair of CTAs stacks, and the bottom
+          padding drops to clear the sticky action bar rather than sitting
+          behind it. ────────────────────────────────────────────────────── */}
+      <div className="shell relative z-10 pb-[calc(11vh+var(--action-bar-h))] pt-[calc(var(--nav-h)+3rem)] sm:pb-[14vh] sm:pt-[calc(var(--nav-h)+4rem)]">
         <p className="wordmark wordmark-mobile display-lg uppercase leading-[0.95] text-ivory">
           {brand.replace(/'s/i, "’s")}
         </p>
 
         {/* The page's single H1: what this business is, not what it is called. */}
-        <h1 className="eyebrow mt-6 text-champagne/85">
-          Tamil bridal makeup &amp; hair artist, Trichy
+        <h1 className="display-sm mt-5 max-w-[20ch] font-display text-champagne sm:mt-6">
+          Tamil Bridal Makeup &amp; Hair Artist
         </h1>
 
-        <p className="italic-serif display-sm mt-8 max-w-[24ch] text-balance text-champagne">
+        {/* The register, then the reach. Two lines, hairline between them, so
+            neither is mistaken for a slogan. */}
+        <p className="eyebrow mt-5 !text-ivory/75">Natural · HD · South Indian Bridal</p>
+        <p className="eyebrow mt-2.5 !text-champagne/70">{citiesDotted()}</p>
+
+        <p className="italic-serif display-sm mt-7 max-w-[24ch] text-balance text-champagne sm:mt-8">
           Before she becomes a bride&hellip;
         </p>
 
-        <MagneticCta href="/contact" placement="hero" className="btn mt-9">
-          {cta}
-        </MagneticCta>
+        {/* Primary and secondary, in that order and never equal in weight.
+            One filled, one ghost — the same pairing everywhere on the site. */}
+        <div className="mt-8 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:items-center sm:gap-4">
+          <MagneticCta href="/contact" placement="hero" className="btn w-full sm:w-auto">
+            {cta}
+          </MagneticCta>
+          <Link
+            href="/portfolio"
+            data-cursor="view"
+            className="btn btn-ghost w-full sm:w-auto"
+          >
+            View the work
+          </Link>
+        </div>
       </div>
 
       {/* Scroll cue — the same 48px line device as before. */}

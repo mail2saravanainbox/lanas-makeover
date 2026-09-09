@@ -3,25 +3,24 @@ import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
 import JasmineMark from "./JasmineMark";
 
+/**
+ * SIMPLIFIED (§34).
+ *
+ * Was five columns' worth of links across three headings, including three
+ * discipline routes that duplicate what /portfolio and /services already
+ * cover. A footer is a map, not an index: navigation, locations, contact,
+ * legal — and the same one booking CTA the rest of the site uses.
+ */
 const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string }> }> = [
   {
-    title: "The Work",
+    title: "Navigation",
     links: [
-      { href: "/portfolio", label: "Portfolio" },
-      { href: "/brides", label: "Bride Stories" },
-      { href: "/bridal", label: "Bridal" },
-      { href: "/hair", label: "Bridal Hair" },
-      { href: "/makeup", label: "Makeup" },
-    ],
-  },
-  {
-    title: "The Studio",
-    links: [
-      { href: "/about", label: "About Lana" },
+      { href: "/portfolio", label: "Work" },
       { href: "/services", label: "Services" },
+      { href: "/about", label: "About" },
       { href: "/journal", label: "Journal" },
       { href: "/faq", label: "FAQ" },
-      { href: "/contact", label: "Enquire" },
+      { href: "/contact", label: "Check Your Date" },
     ],
   },
   {
@@ -41,7 +40,8 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
       <div className="shell py-20 sm:py-28">
         <div className="grid gap-16 lg:grid-cols-[1.4fr_2fr]">
           <div>
-            <p className="eyebrow mb-6">{settings.tagline}</p>
+            {/* The positioning line, verbatim, in the same words as the hero. */}
+            <p className="eyebrow mb-6">Bridal Makeup &amp; Hair Artist</p>
             <p className="display-md max-w-md text-ivory">
               Your story
               <br />
@@ -53,6 +53,20 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           </div>
 
           <div className="grid gap-10 sm:grid-cols-3">
+            {/* §3 — the four service locations, stated on every page of the
+                site. One business, four areas served: the heading says so, so
+                the list cannot be read as four branches. */}
+            <div>
+              <h2 className="eyebrow mb-5">Serving</h2>
+              <ul className="space-y-3">
+                {settings.serviceAreas.map((city) => (
+                  <li key={city} className="text-sm text-ivory/65">
+                    {city}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {COLUMNS.map((col) => (
               <nav key={col.title} aria-label={col.title}>
                 <h2 className="eyebrow mb-5">{col.title}</h2>
@@ -90,7 +104,9 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               </span>
             </p>
 
-            <p className="body-base mt-3 max-w-sm">{settings.location} · Travel available</p>
+            <p className="body-base mt-3 max-w-sm">
+              Based in {settings.location}. {settings.travelNote}
+            </p>
           </div>
 
           <ul className="space-y-2 text-sm text-ivory/65">

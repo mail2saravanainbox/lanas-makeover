@@ -231,7 +231,13 @@ export interface SiteSettings {
   artistName: string;
   tagline: string;
   location: string;
+  /**
+   * The primary service locations (§3). Four areas served by ONE business —
+   * every surface that prints cities reads this, in this order.
+   */
   serviceAreas: string[];
+  /** The wider travel claim, always printed with its own qualifier. */
+  travelNote: string;
   instagram: string;
   instagramHandle: string;
   phone: string;

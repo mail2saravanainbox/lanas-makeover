@@ -43,10 +43,54 @@ const LABELS: Record<string, string> = {
 /** The art is drawn on its own diagonal, so rest is no rotation. */
 const REST_ANGLE = 0;
 
+/**
+ * ── INTERACTION STATES (§28) ─────────────────────────────────────────────
+ * Five, and no more. Each is a scale and a rotation offset applied to the
+ * SAME transform the frame loop already writes — no extra element, no extra
+ * listener, no second animation clock.
+ *
+ *   default  the brush at rest
+ *   link     a slight lift, the way a hand raises a brush off the surface
+ *   cta      the same gesture, a little further — a conversion is worth more
+ *   image    turned toward the plate, as if about to sweep it
+ *   drag     squared up to the axis it is about to travel along
+ *
+ * The click dab is not a state: it is a one-frame impulse (see `dabNow`),
+ * because a press is an event, not a condition.
+ */
+type BrushState = "default" | "link" | "cta" | "image" | "drag";
+
+const STATES: Record<BrushState, { scale: number; angle: number }> = {
+  default: { scale: 1, angle: 0 },
+  link: { scale: 1.08, angle: -6 },
+  cta: { scale: 1.16, angle: -10 },
+  image: { scale: 1.1, angle: 8 },
+  drag: { scale: 1.06, angle: 0 },
+};
+
+/**
+ * What the brush is standing on, resolved from ONE `closest()` per move.
+ *
+ * `data-cursor="drag"` wins outright — it is declared by the only control on
+ * the site where the pointer is about to be captured, and mistaking that for
+ * an image hover would be a lie about what the next press does.
+ */
+function stateFor(el: Element | null): BrushState {
+  if (!el) return "default";
+  const declared = el.closest("[data-cursor]")?.getAttribute("data-cursor");
+  if (declared === "drag") return "drag";
+  if (el.closest(".btn, [data-cta]")) return "cta";
+  if (el.closest("[data-tile], figure, picture, img")) return "image";
+  if (el.closest("a[href], button, [role=\"button\"], label, summary")) return "link";
+  return declared ? "link" : "default";
+}
+
 interface Dab {
   x: number;
   y: number;
   life: number;
+  /** Radius multiplier. The click dab is a heavier press than a travel dab. */
+  weight: number;
 }
 
 export default function BrushCursor() {
@@ -55,7 +99,21 @@ export default function BrushCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [label, setLabel] = useState<string | null>(null);
   const [active, setActive] = useState(false);
-  const [down, setDown] = useState(false);
+
+  /**
+   * THE PRESS IS A REF, NOT STATE.
+   *
+   * It used to be `useState` with `down` in this effect's dependency array,
+   * which meant every single mousedown and mouseup tore down the frame loop
+   * and all five listeners and rebuilt them — and the rebuild re-seeded the
+   * tracked position at the CENTRE OF THE VIEWPORT. The brush visibly flew to
+   * the middle of the screen and eased back on every click. It also dropped
+   * every pointer event in the gap.
+   *
+   * The frame loop reads this ref directly. The effect now binds once, for
+   * the lifetime of the component, which is what it always meant to do.
+   */
+  const downRef = useRef(false);
 
   useEffect(() => {
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
@@ -69,6 +127,13 @@ export default function BrushCursor() {
     /** Lean, driven by horizontal speed — the brush trails its own stroke. */
     let angle = REST_ANGLE;
     let moved = false;
+
+    /** The state the brush is easing toward, and the two values it eases. */
+    let state: BrushState = "default";
+    let scale = 1;
+    let stateAngle = 0;
+    /** One-frame impulse set by pointerdown: the brush dabs the surface. */
+    let press = 0;
 
     const dabs: Dab[] = [];
     let lastDab = { x: target.x, y: target.y };
@@ -89,13 +154,24 @@ export default function BrushCursor() {
       canvas.height = Math.ceil(innerHeight * SCALE);
     };
 
+    /**
+     * `clientX/clientY` and nothing else. The layer is `position: fixed`, so
+     * these are already in its coordinate space — mixing in pageX/pageY or a
+     * scroll offset is exactly what makes a custom cursor drift as the page
+     * moves, and there is no scroll term anywhere in this file.
+     */
     const onMove = (e: PointerEvent) => {
       target.x = e.clientX;
       target.y = e.clientY;
       moved = true;
-      const el = (e.target as Element | null)?.closest?.("[data-cursor]");
-      const state = el?.getAttribute("data-cursor") ?? null;
-      setLabel(state && LABELS[state] ? LABELS[state] : null);
+
+      const el = e.target as Element | null;
+      state = stateFor(el);
+
+      const declared = el?.closest?.("[data-cursor]")?.getAttribute("data-cursor") ?? null;
+      const next = declared && LABELS[declared] ? LABELS[declared] : null;
+      // One `closest()` per move is cheap; a React render per move is not.
+      setLabel((prev) => (prev === next ? prev : next));
     };
 
     const stop = onFrame((dt) => {
@@ -109,11 +185,19 @@ export default function BrushCursor() {
       const lean = Math.max(-14, Math.min(14, (at.x - px) * 0.9));
       angle = damp(angle, REST_ANGLE + lean, 8, dt);
 
+      // The interaction state, eased rather than snapped, and the press —
+      // which decays on its own clock so a click reads as a dab, not a hold.
+      const want = STATES[state];
+      scale = damp(scale, want.scale * (downRef.current ? 0.9 : 1), 14, dt);
+      stateAngle = damp(stateAngle, want.angle, 10, dt);
+      press = Math.max(0, press - dt * 5);
+
       const brush = brushRef.current;
       if (brush) {
         brush.style.transform =
           `translate3d(${at.x.toFixed(1)}px, ${at.y.toFixed(1)}px, 0)` +
-          ` rotate(${angle.toFixed(2)}deg) scale(${down ? 0.92 : 1})`;
+          ` rotate(${(angle + stateAngle).toFixed(2)}deg)` +
+          ` scale(${(scale - press * 0.06).toFixed(3)})`;
       }
       if (labelRef.current) {
         labelRef.current.style.transform = `translate3d(${at.x.toFixed(1)}px, ${at.y.toFixed(1)}px, 0)`;
@@ -130,7 +214,7 @@ export default function BrushCursor() {
       if (moved) {
         const d = Math.hypot(at.x - lastDab.x, at.y - lastDab.y);
         if (d > 5) {
-          dabs.push({ x: at.x, y: at.y, life: 1 });
+          dabs.push({ x: at.x, y: at.y, life: 1, weight: 1 });
           lastDab = { x: at.x, y: at.y };
           if (dabs.length > 16) dabs.shift();
         }
@@ -147,7 +231,7 @@ export default function BrushCursor() {
           dabs.splice(i, 1);
           continue;
         }
-        const r = (3 + (1 - dab.life) * 9) * SCALE;
+        const r = (3 + (1 - dab.life) * 9) * dab.weight * SCALE;
         const g = ctx.createRadialGradient(
           dab.x * SCALE, dab.y * SCALE, 0,
           dab.x * SCALE, dab.y * SCALE, r,
@@ -161,13 +245,28 @@ export default function BrushCursor() {
       }
     });
 
-    const onDown = () => setDown(true);
-    const onUp = () => setDown(false);
-    const onLeave = () => setLabel(null);
+    const onDown = () => {
+      downRef.current = true;
+      // The dab a press leaves behind: one heavier mark at the bristle tip.
+      press = 1;
+      dabs.push({ x: at.x, y: at.y, life: 1, weight: 2.1 });
+      if (dabs.length > 16) dabs.shift();
+    };
+    const onUp = () => {
+      downRef.current = false;
+    };
+    const onLeave = () => {
+      setLabel(null);
+      state = "default";
+      downRef.current = false;
+    };
 
     addEventListener("pointermove", onMove, { passive: true });
     addEventListener("pointerdown", onDown, { passive: true });
     addEventListener("pointerup", onUp, { passive: true });
+    // A press that ends outside the window never fires pointerup on it.
+    addEventListener("pointercancel", onUp, { passive: true });
+    addEventListener("blur", onUp);
     addEventListener("resize", size);
     document.addEventListener("pointerleave", onLeave);
 
@@ -177,11 +276,14 @@ export default function BrushCursor() {
       removeEventListener("pointermove", onMove);
       removeEventListener("pointerdown", onDown);
       removeEventListener("pointerup", onUp);
+      removeEventListener("pointercancel", onUp);
+      removeEventListener("blur", onUp);
       removeEventListener("resize", size);
       document.removeEventListener("pointerleave", onLeave);
       document.documentElement.classList.remove("has-brush-cursor");
     };
-  }, [down]);
+    // Binds ONCE. See `downRef` above — this array must stay empty.
+  }, []);
 
   if (!active) return null;
 

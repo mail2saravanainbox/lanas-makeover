@@ -57,21 +57,36 @@ export default function BeforeAfterSlider({
         ref={ref}
         data-cursor="drag"
         className="relative aspect-[4/5] w-full touch-pan-y select-none overflow-hidden sm:aspect-[3/2]"
+        /**
+         * CAPTURE ON THE CONTAINER, NOT ON WHATEVER WAS UNDER THE FINGER.
+         *
+         * `e.target` is the image, the label pill or the handle depending on
+         * where the press landed, and capturing on one of those loses the
+         * drag the moment the pointer crosses out of that child — which is
+         * most of the width of the control. The container is the element that
+         * owns the gesture, so the container takes the capture.
+         */
         onPointerDown={(e) => {
+          // Primary button only; a right-click should not start a drag.
+          if (e.button !== 0 && e.pointerType === "mouse") return;
           dragging.current = true;
-          (e.target as Element).setPointerCapture?.(e.pointerId);
+          e.currentTarget.setPointerCapture?.(e.pointerId);
           setFromClientX(e.clientX);
         }}
         onPointerMove={(e) => {
           if (dragging.current) setFromClientX(e.clientX);
         }}
-        onPointerUp={() => {
+        onPointerUp={(e) => {
           dragging.current = false;
+          e.currentTarget.releasePointerCapture?.(e.pointerId);
         }}
-        onPointerCancel={() => {
+        onPointerCancel={(e) => {
           dragging.current = false;
+          e.currentTarget.releasePointerCapture?.(e.pointerId);
         }}
       >
+        {/* Both frames fill the same aspect-ratio box, so nothing reflows as
+            they arrive and the comparison never jumps (§9, CLS). */}
         <EditorialImage image={after} className="absolute inset-0 h-full w-full" sizes="92vw" />
 
         <div

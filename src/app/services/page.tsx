@@ -132,8 +132,9 @@ export default async function ServicesPage() {
                       <Link href="/contact" className="btn">
                         {settings.bookingCta}
                       </Link>
+                      {/* §10, §44 — the same two words on every service. */}
                       <Link href={`/services/${s.slug}`} className="btn btn-ghost">
-                        Enter this world
+                        View service
                       </Link>
                     </div>
                   </Reveal>

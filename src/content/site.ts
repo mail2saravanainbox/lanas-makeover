@@ -26,14 +26,30 @@ export const siteSettings: SiteSettings = {
 
   // Verified from the Instagram bio.
   location: "Trichy, Tamil Nadu",
-  serviceAreas: [
-    "Trichy",
-    "Tiruchirappalli",
-    "Thanjavur",
-    "Madurai",
-    "Tamil Nadu",
-    "Travel available",
-  ],
+
+  /**
+   * THE FOUR PRIMARY SERVICE LOCATIONS (§3).
+   *
+   * One business, four areas served — never four studios. Every surface that
+   * lists cities reads `serviceCities` below, so this list is the single
+   * place the set is defined; changing it changes the hero, the footer, the
+   * FAQ, the booking form's city options and the LocalBusiness schema at once.
+   *
+   * Trichy remains `location` because that is the base stated on the public
+   * profile. The other three are areas served, which is a different claim and
+   * is worded as one throughout.
+   */
+  serviceAreas: ["Chennai", "Trichy", "Pudukkottai", "Madurai"],
+
+  /**
+   * The wider claim, kept deliberately conditional. "Across Tamil Nadu" is
+   * only ever printed with this qualifier attached — travel is subject to
+   * availability and terms, and neither has been supplied.
+   *
+   * TODO(client): confirm the radius, the terms, and whether travel outside
+   * Tamil Nadu should be offered at all.
+   */
+  travelNote: "Travel available across Tamil Nadu, subject to availability and travel terms.",
 
   instagram: "https://www.instagram.com/lanasmakeover/",
   instagramHandle: "@lanasmakeover",
@@ -202,3 +218,40 @@ export function whatsappEnquiry(input: {
     type ? ` (${type})` : ""
   }.`;
 }
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  LOCATION HELPERS (§3, §22)
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  Every location string on the site is built here, from `serviceAreas`, so
+ *  the four cities are stated once and read everywhere. Nothing keyword-stuffs:
+ *  these produce a list, a sentence and a serial phrase, and pages pick the one
+ *  that reads naturally in context.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/** The four, in order. Chennai · Trichy · Pudukkottai · Madurai. */
+export const serviceCities: readonly string[] = siteSettings.serviceAreas;
+
+/** "Chennai · Trichy · Pudukkottai · Madurai" — the hero and footer register. */
+export const citiesDotted = (): string => serviceCities.join(" · ");
+
+/** "Chennai, Trichy, Pudukkottai and Madurai" — the prose register. */
+export const citiesProse = (): string =>
+  serviceCities.length < 2
+    ? (serviceCities[0] ?? "")
+    : `${serviceCities.slice(0, -1).join(", ")} and ${serviceCities[serviceCities.length - 1]}`;
+
+/** "Chennai, Trichy, Pudukkottai & Madurai" — the metadata register. */
+export const citiesAmp = (): string =>
+  serviceCities.length < 2
+    ? (serviceCities[0] ?? "")
+    : `${serviceCities.slice(0, -1).join(", ")} & ${serviceCities[serviceCities.length - 1]}`;
+
+/**
+ * The one-line description of what the business is and where it works.
+ * Used verbatim by the hero, the footer and the About page so the claim is
+ * phrased identically wherever a bride meets it.
+ */
+export const positioningLine = (): string =>
+  `Bridal makeup & hair artist serving ${citiesProse()}.`;

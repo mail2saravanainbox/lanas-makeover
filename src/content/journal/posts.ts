@@ -1,4 +1,5 @@
 import type { BlogPost } from "@/lib/types";
+import { citiesProse } from "@/content/site";
 
 /**
  * THE LANA JOURNAL
@@ -9,6 +10,22 @@ import type { BlogPost } from "@/lib/types";
  *
  * Articles are advisory and factual. None of them claims anything about Lana's
  * training, clientele, results or pricing.
+ *
+ * ── ON LOCATION CONTENT (§21, §22) ──────────────────────────────────────────
+ * The brief lists a separate article per service city. There is exactly one
+ * here instead, and deliberately: four near-identical pages differing only in
+ * a city name is the doorway-page pattern, it reads as spam to a bride and to
+ * a search engine alike, and writing four of them would mean inventing local
+ * detail about venues and clients that nobody has supplied.
+ *
+ * The article that IS here — travelling for a wedding — is the genuinely
+ * useful version of that intent: it carries all four cities naturally, it is
+ * true, and it answers the question a bride in Madurai actually has about an
+ * artist based in Trichy.
+ *
+ * TODO(client): once Lana has real work and real venue knowledge in a given
+ * city, a dedicated page for that city becomes honest and worth building.
+ * Not before.
  *
  * TODO(client): this is the file a CMS replaces. See lib/content/cms.ts.
  */
@@ -155,6 +172,111 @@ This is extremely common and entirely workable, but it needs to be said out loud
 Jasmine is measured in *muzham*, not in stems, and it wilts. It should be bought as close to the morning as possible, kept cool, and never sealed in plastic overnight.
 
 If your ceremony runs long, plan a second string. It is a small cost and it is visible in every photograph taken after midday.`,
+  },
+  {
+    slug: "bridal-makeup-when-the-wedding-is-in-another-city",
+    title: `Booking a bridal artist in another city: ${citiesProse()}`,
+    excerpt:
+      "One artist working across four cities is a logistics problem before it is an aesthetic one. What to tell her, and what to ask, when she is travelling to you.",
+    cover: { alt: "Travelling bridal kit — placeholder plate", tone: "bronze", seed: 405 },
+    category: "Wedding Guides",
+    tags: [
+      "bridal makeup chennai",
+      "bridal makeup trichy",
+      "bridal makeup pudukkottai",
+      "bridal makeup madurai",
+      "travel",
+      "wedding guides",
+    ],
+    author: "Lana's Makeover",
+    publishedAt: "2026-01-20",
+    readingMinutes: 5,
+    published: true,
+    seo: {
+      title: "Bridal Makeup Across Chennai, Trichy, Pudukkottai & Madurai",
+      description:
+        "What changes when your bridal artist travels to your city — timing, kit, trials and the questions worth asking before you book.",
+    },
+    body: `Most South Indian weddings are not held where everyone lives. The bride is working in Chennai, the family home is in Pudukkottai, the muhurtham is in Madurai and the artist is based in Trichy. That is normal, and it is worth planning rather than hoping through.
+
+## The travel decides the call time, not the makeup
+
+An artist arriving from another city is not starting at your door. She is starting at a bus stand or a station or a car at an hour that has to work backwards from the muhurtham, with the traffic of that particular morning built in.
+
+> Ask what time she needs to arrive, not what time she needs to start. They are different questions and only one of them is yours to plan around.
+
+## What to tell her when you enquire
+
+- **The city and the venue.** "Madurai" and "a hall forty minutes outside Madurai" are different jobs.
+- **The muhurtham time.** Everything else is scheduled from it.
+- **Where you will be getting ready.** A hotel room, a family house and a temple side-room have very different light and very different power sockets.
+- **How many people.** A bride alone and a bride with four relatives are not the same morning.
+- **Whether there are events on consecutive days**, and in which cities.
+
+## The trial, when you are not in the same city
+
+This is the part that catches people out. If you live in one city and the wedding is in another, a trial may need its own trip for one of you. Ask early:
+
+- Where can a trial be done, and when?
+- What can be settled over photographs and a call instead?
+- If a trial is not practical, what is the plan for making the decisions it would have made?
+
+## What does not change
+
+The kit, the hands and the approach are the same in ${citiesProse()}. The register is chosen with you either way. What changes is the timetable — and a timetable is much easier to fix in advance than on the morning.
+
+If your wedding is in one of the four, send the date and the venue and you will be told plainly whether it is open.`,
+  },
+  {
+    slug: "the-bridal-makeup-trial",
+    title: "The bridal trial: what it is actually for",
+    excerpt:
+      "Not a dress rehearsal for the face. A test of decisions — register, hair structure, and how the whole thing behaves after four hours.",
+    cover: { alt: "Trial in progress — placeholder plate", tone: "champagne", seed: 406 },
+    category: "Wedding Preparation",
+    tags: ["bridal trial", "makeup trial", "wedding preparation", "bridal beauty"],
+    author: "Lana's Makeover",
+    publishedAt: "2026-02-10",
+    readingMinutes: 5,
+    published: true,
+    seo: {
+      title: "The Bridal Makeup Trial — A Practical Guide",
+      description:
+        "How to use a bridal makeup trial properly: what to bring, what to photograph, what to look at after four hours, and what a trial cannot tell you.",
+    },
+    body: `A trial is not there so you can see yourself in bridal makeup. It is there so that the decisions are already made before the morning nobody has time to make them on.
+
+## Bring the things that will actually be in the room
+
+- **The saree**, or at least a photograph of it in daylight. Colour decides more of the palette than the face does.
+- **The jewellery**, particularly anything that sits near the hairline or the ears.
+- **A photograph of your hair on a normal day** — not styled, not on a good day. That is what she is working with.
+
+## Photograph it badly on purpose
+
+The trial photographs that matter are not the flattering ones.
+
+- With flash, front-on, in a small room.
+- In daylight, near a window, no filter.
+- From the back, if there is a braid or a jadai involved.
+
+> If it survives a phone flash at arm's length, it will survive the photographer.
+
+## Look at it after four hours
+
+The only honest verdict on a finish comes late. Wear the trial through an ordinary afternoon — heat, a meal, a car — and look again. What you are checking:
+
+- Has the base moved, gone patchy, or gone flat?
+- Is the eye still where it was?
+- Has the hair dropped, and if so, from the root or from the structure?
+
+## What a trial cannot tell you
+
+It cannot rehearse the day. On the morning there will be more heat, more people, less time and a great deal more emotion. What the trial buys you is that none of the *decisions* have to be taken in those conditions — only the execution.
+
+## Say what you did not like
+
+This is the whole point of the trial and the part brides skip out of politeness. A look you are quietly unsure about at a trial becomes a look you are quietly unsure about in your wedding photographs for the rest of your life. Say it plainly. It is much easier to change now.`,
   },
   {
     slug: "muhurtham-morning-timeline",

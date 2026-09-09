@@ -19,6 +19,9 @@ import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
 import ClosingCTA from "@/components/sections/ClosingCTA";
+import TrustSignals from "@/components/sections/TrustSignals";
+import Pricing from "@/components/sections/Pricing";
+import Transformation from "@/components/sections/Transformation";
 import SectionMark from "@/components/ui/SectionMark";
 
 export const metadata: Metadata = pageMetadata({ path: "/" });
@@ -57,6 +60,17 @@ export default async function HomePage() {
   const latest = await provider.getPortfolio({ limit: 6 });
 
   /**
+   * The before/after pair is searched across the WHOLE archive, not the six
+   * items the Instagram strip happens to show. Tying it to `latest` meant the
+   * section appeared or vanished depending on the sort order of unrelated
+   * photographs — it was there only if a genuine pair landed in the first six.
+   */
+  const allWork = await provider.getPortfolio();
+  const transformation = allWork.filter(
+    (i) => i.beforeAfter?.before && i.beforeAfter?.after,
+  );
+
+  /**
    * THE NUMBERS ARE COMPUTED FROM WHAT ACTUALLY RENDERS.
    *
    * Several sections return null on empty content — no bride stories, no
@@ -65,14 +79,29 @@ export default async function HomePage() {
    * see the sections that are missing; they can only see that two numbers
    * are. This assigns the sequence over the sections that survive.
    */
+  /**
+   * THE ORDER CHANGED IN ONE PLACE, AND FOR ONE REASON (§7, §50).
+   *
+   * The proof — bride stories where they exist, the featured looks where they
+   * do not — now runs SECOND, immediately after the hero, ahead of the two
+   * opening acts. A bride arriving from Instagram asks "is the work good"
+   * before she will read anything, and the film used to make her scroll
+   * through two acts to find out. Everything else keeps its sequence; this is
+   * a re-ordering of the first two minutes, not a rewrite of the film.
+   */
   const renders = {
+    brides: brides.length > 0 || featured.length > 0,
     before: true,
     ritual: true,
-    brides: brides.length > 0 || featured.length > 0,
+    // §9 — present only when a genuine, permissioned pair exists. The section
+    // returns null otherwise, so the number is never orphaned.
+    transformation: transformation.length > 0,
     heritage: true,
     ceremonies: services.length > 0,
     artist: true,
     silhouette: true,
+    trust: true,
+    investment: true,
     journal: posts.length > 0,
     voices: testimonials.length > 0,
     mirror: true,
@@ -106,21 +135,25 @@ export default async function HomePage() {
         video={settings.hero.video}
       />
 
-      <ActBefore index={n.before!} images={slots.beforeLayers} />
-
-      <ActRitual index={n.ritual!} images={slots.transformation} />
-
-      <SectionMark />
-
-      {/* 03 — whichever of the two the archive can actually fill. Bride
-          stories when they exist; the featured work when they do not; and
-          nothing at all when neither does. Both render null when empty, so
-          the number is never orphaned. */}
+      {/* 01 — THE PROOF, FIRST. Whichever of the two the archive can actually
+          fill: bride stories when they exist, the featured work when they do
+          not, and nothing at all when neither does. Both render null when
+          empty, so the number is never orphaned. */}
       {brides.length > 0 ? (
         <BrideStories index={n.brides!} brides={brides.slice(0, 3)} settings={settings} />
       ) : (
         <FeaturedLooks index={n.brides!} items={featured} />
       )}
+
+      <SectionMark />
+
+      <ActBefore index={n.before!} images={slots.beforeLayers} />
+
+      <ActRitual index={n.ritual!} images={slots.transformation} />
+
+      <Transformation index={n.transformation} items={transformation} />
+
+      <SectionMark />
 
       <ActHeritage index={n.heritage!} images={slots.heritage} details={slots.detail} />
 
@@ -137,6 +170,15 @@ export default async function HomePage() {
       />
 
       <HairSilhouette index={n.silhouette!} images={slots.hair} clip={settings.hair?.clip} />
+
+      <SectionMark />
+
+      {/* §19 and §11 — the two questions a bride asks once she believes the
+          work: can I rely on her, and can I afford her. Both answer with what
+          is actually known and neither invents a figure. */}
+      <TrustSignals index={n.trust} />
+
+      <Pricing index={n.investment} />
 
       <JournalTeaser index={n.journal!} posts={journal} />
 

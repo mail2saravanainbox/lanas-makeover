@@ -36,7 +36,7 @@ export default async function PortfolioPage() {
       <PageHeader
         eyebrow="The work"
         titleLines={["The portfolio."]}
-        intro="Bridal, reception, engagement and hair. Filter by world, or move straight through the whole archive."
+        intro="Filter by look, event, hair or category — combine them, or move straight through the whole archive."
         breadcrumb={[
           { name: "Home", href: "/" },
           { name: "Portfolio", href: "/portfolio" },

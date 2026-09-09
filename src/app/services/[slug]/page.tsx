@@ -3,13 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
 import { serviceImage, serviceNeighbours } from "@/lib/content/slots";
-import { absoluteUrl, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { absoluteUrl, breadcrumbSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 import EditorialImage from "@/components/ui/EditorialImage";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
 import JsonLd from "@/components/ui/JsonLd";
 import ClosingCTA from "@/components/sections/ClosingCTA";
+import ViewTracker from "@/components/ui/ViewTracker";
 
 export const revalidate = 3600;
 
@@ -90,12 +91,24 @@ export default async function BridalWorldPage({
 
   return (
     <>
+      <ViewTracker event="service_view" payload={{ slug: service.slug, name: service.name }} />
+
       <JsonLd
-        data={breadcrumbSchema([
-          { name: "Home", path: "/" },
-          { name: "Services", path: "/services" },
-          { name: service.name, path: `/services/${service.slug}` },
-        ])}
+        data={[
+          /* §23 — Service schema, with the four service locations as
+             areaServed and no offers block, because no price exists. */
+          serviceSchema({
+            name: service.name,
+            description: service.summary,
+            slug: service.slug,
+            image: image.src ? absoluteUrl(image.src) : undefined,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Services", path: "/services" },
+            { name: service.name, path: `/services/${service.slug}` },
+          ]),
+        ]}
       />
 
       {/* Full-bleed opening */}

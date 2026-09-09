@@ -85,7 +85,27 @@
   --on-page: var(--color-ivory);
   --rule: rgba(242, 237, 228, 0.13);
   --nav-h: 4.5rem;
+
+  /* ── The sticky action bar's reserved band (§33) ───────────────────────────
+     The bar is `position: fixed`, so it takes no space of its own. This is the
+     space the DOCUMENT gives back to it. Zero on desktop, where the bar is not
+     rendered at all; on smaller viewports it is the bar's real height plus the
+     iOS home-indicator inset, and `.page-content` pads by exactly this.
+
+     Anything that must sit clear of the bar reads this variable rather than
+     guessing a magic number — the hero's bottom padding, the footer, the
+     lightbox controls, the floating WhatsApp affordance.
+     ──────────────────────────────────────────────────────────────────────── */
+  --action-bar-h: 0px;
+
   color-scheme: dark;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    /* 52px control + 2 × 10px padding + 1px rule ≈ 4.6rem. */
+    --action-bar-h: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Ivory (light) surfaces — used by editorial pages, not by the cinematic home */
@@ -664,6 +684,23 @@ html.lm-veiled #lm-veil[data-veil="out"] {
 .page-content {
   position: relative;
   z-index: 10;
+}
+
+/* The action bar overlays the viewport; this is what stops it overlaying the
+   CONTENT — the document gives back exactly the height the bar takes.
+
+   Conditional on the bar actually being rendered: it is dropped on /contact,
+   where its only action would be a link to the page you are already on, and
+   reserving a band for a bar that is not there is just a gap at the foot of
+   the page. `[data-action-bar]` is the bar's own marker and a sibling of
+   .page-content, so :has(~ …) is the exact relationship.
+
+   Where :has() is unsupported the padding is simply not applied, which is the
+   behaviour before the bar existed — never a broken layout. */
+@supports selector(:has(*)) {
+  .page-content:has(~ [data-action-bar]) {
+    padding-bottom: var(--action-bar-h);
+  }
 }
 
 .section-dark {

@@ -21,13 +21,43 @@ export const runtime = "nodejs";
 interface Enquiry {
   name: string;
   phone: string;
-  email: string;
+  /**
+   * Optional since the six-step flow (§12). Email was required by the old
+   * single-page form; for a bride arriving from Instagram on a phone, a phone
+   * number IS the contact detail and demanding an address as well cost
+   * completions for nothing. `email` is still validated when supplied.
+   */
+  email?: string;
   weddingDate: string;
   city: string;
+  venue?: string;
+  /** Multi-select (§12 step 3). `weddingType` is the legacy single value. */
+  events?: string[];
   weddingType?: string;
   services?: string[];
+  whatsapp?: string;
+  instagram?: string;
   people?: string;
   message?: string;
+}
+
+/**
+ * PHONE (§48).
+ *
+ * Indian mobile numbers are ten digits beginning 6–9, optionally carrying the
+ * 91 country code and any amount of spacing, dashes or brackets in between.
+ * International numbers are accepted too — Lana travels, and a bride planning
+ * from Dubai or Singapore is not an error state.
+ *
+ * Deliberately permissive at the edges and strict in the middle: the job here
+ * is to catch a typo, not to adjudicate the global numbering plan.
+ */
+function phoneLooksReal(input: string): boolean {
+  const digits = input.replace(/\D/g, "");
+  // 91 + ten digits, or a bare ten-digit Indian mobile.
+  if (/^(91)?[6-9]\d{9}$/.test(digits)) return true;
+  // Anything else that is plausibly a phone number at all.
+  return digits.length >= 8 && digits.length <= 15;
 }
 
 function bad(error: string, status = 400) {
@@ -50,9 +80,12 @@ function plainText(enquiry: Enquiry, receivedAt: string): string {
     ["Name", enquiry.name],
     ["Phone", enquiry.phone],
     ["Email", enquiry.email],
+    ["WhatsApp", enquiry.whatsapp],
+    ["Instagram", enquiry.instagram],
     ["Wedding date", enquiry.weddingDate],
     ["Wedding city", enquiry.city],
-    ["Wedding type", enquiry.weddingType],
+    ["Venue", enquiry.venue],
+    ["Events", enquiry.events?.join(", ") ?? enquiry.weddingType],
     ["Services", enquiry.services?.join(", ")],
     ["People", enquiry.people],
     ["Received", receivedAt],
@@ -78,7 +111,8 @@ async function sendEmail(enquiry: Enquiry, receivedAt: string): Promise<string |
     const { error } = await resend.emails.send({
       from: process.env.CONTACT_FROM_EMAIL ?? defaultFrom(),
       to,
-      replyTo: enquiry.email,
+      // Reply-to only when she actually gave an address; Resend rejects "".
+      ...(enquiry.email ? { replyTo: enquiry.email } : {}),
       subject: `Enquiry — ${enquiry.weddingDate} — ${enquiry.city}`,
       text: plainText(enquiry, receivedAt),
     });
@@ -124,29 +158,71 @@ export async function POST(request: Request) {
 
   const str = (k: string) => (typeof payload[k] === "string" ? (payload[k] as string).trim() : "");
 
+  /**
+   * ANTI-SPAM, SECOND GATE (§49).
+   *
+   * The honeypot above catches the naive bots. This catches the ones that fill
+   * it correctly: `startedAt` is stamped when the flow is first interacted
+   * with, and no human completes six steps in under three seconds. Silently
+   * accepted rather than rejected, for the same reason as the honeypot — a
+   * script that learns which rule it tripped simply adjusts.
+   *
+   * Deliberately NOT a CAPTCHA. A bride on a phone in an Instagram in-app
+   * browser should not have to identify traffic lights to ask about a date.
+   */
+  const startedAt = Number(payload.startedAt);
+  const tooFast = Number.isFinite(startedAt) && startedAt > 0 && Date.now() - startedAt < 3000;
+  if (tooFast) {
+    /**
+     * A FALSE POSITIVE HERE MUST NOT LOSE A REAL ENQUIRY.
+     *
+     * The time gate is a heuristic, and a heuristic on a form that a human
+     * fills in is a heuristic that will eventually be wrong about a human.
+     * So the response is silent (a script that learns which rule it tripped
+     * simply adjusts) but the submission is still written to the server log,
+     * under its own marker, where it can be found and answered.
+     */
+    console.warn("[enquiry:trapped]", {
+      reason: "submitted faster than a human fills six steps",
+      elapsedMs: Date.now() - startedAt,
+      payload,
+    });
+    return NextResponse.json({ ok: true, delivered: true, stored: false });
+  }
+
+  /** A list field, tolerant of the single-string legacy shape. */
+  const list = (k: string): string[] | undefined => {
+    const v = payload[k];
+    if (Array.isArray(v)) {
+      const out = v.filter((x): x is string => typeof x === "string" && x.trim() !== "");
+      return out.length ? out.slice(0, 20).map((x) => x.trim().slice(0, 120)) : undefined;
+    }
+    return str(k) ? [str(k)] : undefined;
+  };
+
   const enquiry: Enquiry = {
     name: str("name"),
     phone: str("phone"),
-    email: str("email"),
+    email: str("email") || undefined,
     weddingDate: str("weddingDate"),
     city: str("city"),
+    venue: str("venue") || undefined,
+    events: list("events"),
     weddingType: str("weddingType") || undefined,
-    services: Array.isArray(payload.services)
-      ? (payload.services as string[])
-      : str("services")
-        ? [str("services")]
-        : undefined,
+    services: list("services"),
+    whatsapp: str("whatsapp") || undefined,
+    instagram: str("instagram") || undefined,
     people: str("people") || undefined,
     message: str("message") || undefined,
   };
 
-  if (!enquiry.name || !enquiry.phone || !enquiry.email || !enquiry.weddingDate || !enquiry.city) {
+  if (!enquiry.name || !enquiry.phone || !enquiry.weddingDate || !enquiry.city) {
     return bad("Please complete every required field.");
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(enquiry.email)) {
+  if (enquiry.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(enquiry.email)) {
     return bad("That email address doesn't look right.");
   }
-  if (enquiry.phone.replace(/\D/g, "").length < 8) {
+  if (!phoneLooksReal(enquiry.phone)) {
     return bad("That phone number doesn't look right.");
   }
   if ((enquiry.message?.length ?? 0) > 4000) {

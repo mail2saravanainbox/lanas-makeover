@@ -10,19 +10,23 @@ import JsonLd from "@/components/ui/JsonLd";
 import Testimonials from "@/components/sections/Testimonials";
 import ClosingCTA from "@/components/sections/ClosingCTA";
 import KolamGrid from "@/components/sections/KolamGrid";
+import TrustSignals from "@/components/sections/TrustSignals";
+import Link from "next/link";
+import { citiesProse } from "@/content/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Lana",
   description:
-    "Lana is a bridal and party transformation makeup artist based in Trichy, Tamil Nadu, working in natural, HD and South Indian bridal registers.",
+    `Lana is a bridal and party transformation makeup artist based in Trichy, Tamil Nadu, serving ${citiesProse()} in natural, HD and South Indian bridal registers.`,
   path: "/about",
 });
 
 export default async function AboutPage() {
   const provider = content();
-  const [settings, testimonials] = await Promise.all([
+  const [settings, testimonials, services] = await Promise.all([
     provider.getSiteSettings(),
     provider.getTestimonials(),
+    provider.getServices(),
   ]);
   const slots = getImageSlots();
 
@@ -157,6 +161,91 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Locations served (§17, §3) ────────────────────────────────────
+          A section of its own rather than a line in a definition list. It is
+          the second question a bride asks after "is the work good", and on
+          this page it was previously four words inside a table. */}
+      <section className="section-dark py-24 sm:py-32" aria-labelledby="locations-title">
+        <div className="shell">
+          <Reveal>
+            <p className="eyebrow mb-8">Locations served</p>
+            <h2 id="locations-title" className="display-md max-w-[20ch] text-ivory">
+              {/* Counted from the list, never typed — the heading cannot
+                  outlive the number of cities under it. */}
+              One artist,
+              <br />
+              <span className="italic-serif text-champagne">
+                {settings.serviceAreas.length === 4 ? "four" : settings.serviceAreas.length} cities.
+              </span>
+            </h2>
+          </Reveal>
+
+          <ul className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            {settings.serviceAreas.map((city, i) => (
+              <li key={city}>
+                <Reveal delay={(i % 4) * 110}>
+                  <p className="border-t border-champagne/30 pt-5 font-display text-3xl text-ivory">
+                    {city}
+                  </p>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+
+          <Reveal delay={460}>
+            <p className="body-lg measure mt-12">
+              {settings.travelNote} Based in {settings.location} — the same hands, the same kit
+              and the same approach wherever your wedding is.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Her services (§17) ─────────────────────────────────────────────
+          Named here and linked, rather than described again. The service pages
+          are the canonical account of the work; this is a signpost. */}
+      {services.length > 0 && (
+        <section className="shell py-24 sm:py-28" aria-labelledby="her-services-title">
+          <Reveal>
+            <p className="eyebrow mb-8">Her services</p>
+            <h2 id="her-services-title" className="display-md max-w-[16ch] text-ivory">
+              What she is
+              <br />
+              <span className="italic-serif text-champagne">asked for.</span>
+            </h2>
+          </Reveal>
+
+          <ul className="mt-12 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((s, i) => (
+              <li key={s.slug}>
+                <Reveal delay={(i % 3) * 90}>
+                  <Link
+                    href={`/services/${s.slug}`}
+                    className="group flex items-baseline justify-between gap-4 border-b border-ivory/10 py-4"
+                  >
+                    <span className="font-display text-xl text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
+                      {s.name}
+                    </span>
+                    <span className="shrink-0 text-[0.7rem] uppercase tracking-[0.2em] text-champagne/70">
+                      View
+                    </span>
+                  </Link>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+
+          <Reveal delay={320}>
+            <Link href="/contact" className="btn mt-12">
+              {settings.bookingCta}
+            </Link>
+          </Reveal>
+        </section>
+      )}
+
+      {/* Why brides choose Lana — verified signals only (§19). */}
+      <TrustSignals />
 
       <Testimonials items={testimonials} />
       <ClosingCTA settings={settings} />

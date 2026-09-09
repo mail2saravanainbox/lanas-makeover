@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { content } from "@/lib/content/provider";
-import { whatsappLink, telLink } from "@/content/site";
+import { citiesProse, whatsappLink, telLink } from "@/content/site";
 import { breadcrumbSchema, localBusinessSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
-import ContactForm from "@/components/ui/ContactForm";
+import BookingFlow from "@/components/booking/BookingFlow";
 import Reveal from "@/components/ui/Reveal";
 import JsonLd from "@/components/ui/JsonLd";
 import InstagramLink from "@/components/ui/InstagramLink";
@@ -11,7 +11,7 @@ import InstagramLink from "@/components/ui/InstagramLink";
 export const metadata: Metadata = pageMetadata({
   title: "Check Your Date — Enquire",
   description:
-    "Send your wedding date, city and events to Lana's Makeover and find out plainly whether the date is open. Based in Trichy, travel available.",
+    `Send your wedding date, city and events and find out plainly whether the date is open. Bridal makeup and hair in ${citiesProse()}.`,
   path: "/contact",
 });
 
@@ -35,7 +35,7 @@ export default async function ContactPage() {
       <PageHeader
         eyebrow="Check your date"
         titleLines={["Your story", "starts here."]}
-        intro="Send the date, the city and the events. You will be told plainly whether it is open."
+        intro="Six short steps: the date, the city, the events, what you need, and how to reach you. You will be told plainly whether the date is open."
         breadcrumb={[
           { name: "Home", href: "/" },
           { name: "Contact", href: "/contact" },
@@ -44,7 +44,7 @@ export default async function ContactPage() {
 
       <div className="shell grid gap-16 pb-28 lg:grid-cols-[1.4fr_1fr] lg:gap-24 sm:pb-40">
         <Reveal className="lg:col-start-1 lg:row-start-1">
-          <ContactForm />
+          <BookingFlow />
         </Reveal>
 
         {/* The second door. Rendered only when a real number is configured —
@@ -58,10 +58,11 @@ export default async function ContactPage() {
               rel="noopener noreferrer"
               className="btn w-full justify-center sm:w-auto"
             >
-              Ask on WhatsApp
+              WhatsApp Lana
             </a>
             <p className="body-base mt-4">
-              Fastest for a date check. The form below is better for the full brief.
+              Fastest for a straight date check. The six steps beside it are better when there
+              is more than one event to plan.
             </p>
           </div>
         )}
@@ -117,10 +118,14 @@ export default async function ContactPage() {
             </div>
 
             <div>
-              <h2 className="eyebrow mb-4">Based in</h2>
-              <p className="font-display text-2xl text-ivory">{settings.location}</p>
-              <p className="body-base mt-3">
-                Travel available. Share the venue and city in your enquiry.
+              <h2 className="eyebrow mb-4">Where she works</h2>
+              <ul className="space-y-1.5 font-display text-2xl text-ivory">
+                {settings.serviceAreas.map((city) => (
+                  <li key={city}>{city}</li>
+                ))}
+              </ul>
+              <p className="body-base mt-4">
+                Based in {settings.location}. {settings.travelNote}
               </p>
             </div>
 

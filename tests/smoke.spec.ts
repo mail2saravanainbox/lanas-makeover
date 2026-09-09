@@ -26,17 +26,29 @@ test.describe("the homepage introduces itself in frame one", () => {
       header.getByRole("link", { name: "Lana's Makeover" }),
     ).toBeVisible();
 
-    await expect(
-      header.getByRole("link", { name: "Check Your Date" }),
-    ).toBeVisible();
+    /**
+     * The booking CTA is in frame one at every width — but not in the same
+     * place. On desktop it is in the header; on a phone it is in the sticky
+     * action bar, which is where it was moved to so that CHECK YOUR DATE did
+     * not appear three times in one 390px frame. Either way it is on screen
+     * without scrolling, which is the thing that actually matters.
+     */
+    const cta = isDesktop(page)
+      ? header.getByRole("link", { name: "Check Your Date" })
+      : page
+          .getByRole("navigation", { name: "Quick actions" })
+          .getByRole("link", { name: "Check Your Date" });
+    await expect(cta).toBeVisible();
 
     if (isDesktop(page)) {
       const nav = page.getByRole("navigation", { name: "Primary" });
-      for (const label of ["Portfolio", "Services", "Journal", "About"]) {
+      for (const label of ["Work", "Services", "About", "Journal", "FAQ"]) {
         await expect(nav.getByRole("link", { name: label })).toBeVisible();
       }
       // "Brides" has no stories behind it, so it must not be offered.
       await expect(nav.getByRole("link", { name: "Brides" })).toHaveCount(0);
+      // And the header CTA is desktop-only — the bar owns it below lg.
+      await expect(page.getByRole("navigation", { name: "Quick actions" })).toBeHidden();
     }
   });
 
@@ -64,36 +76,205 @@ test.describe("the homepage introduces itself in frame one", () => {
       `focus landed on ${JSON.stringify(focused)}`,
     ).toBe(true);
 
+    /**
+     * Three tabs from the top land on something that navigates. The set
+     * differs by width — the header carries the booking CTA on desktop and
+     * only the wordmark and the menu button on a phone — so both are allowed
+     * here; what is asserted is that the focus is inside the header and on a
+     * real destination, not on nothing.
+     */
     const reachable = [
       "/contact",
       "/portfolio",
       "/services",
       "/journal",
       "/about",
+      "/faq",
       "/",
+      // The menu button is a button, not a link, and has no href.
+      null,
     ];
     expect(reachable).toContain(focused!.href);
   });
 });
 
-test("the enquiry form admits that no inbox is connected", async ({ page }) => {
-  await page.goto("/contact");
+/** The chip a visitor actually clicks — the label wrapping an sr-only input. */
+function chip(page: Page, name: string) {
+  return page.locator("label").filter({ hasText: new RegExp(`^${name}$`) });
+}
 
+/**
+ * Wait until React has actually attached to the enquiry form.
+ *
+ * THE BUG THIS EXISTS FOR. The flow is server-rendered, so its inputs are in
+ * the HTML before React hydrates. Playwright would fill the date field in that
+ * gap: the DOM value was set, but React never heard the input event, so its
+ * state stayed empty — and every subsequent "Continue" was correctly refused
+ * by validation, forever, on a field the test could plainly see was filled.
+ * It looked like a step that would not advance; it was a value React did not
+ * have. Rare, load-dependent, and utterly baffling without this note.
+ *
+ * React marks every hydrated host node with a `__reactFiber$…` key, which is
+ * the cheapest honest signal that handlers are attached. Test-only probe; no
+ * production code exists to support it.
+ */
+async function waitForHydration(page: Page, selector = "form") {
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      return !!el && Object.keys(el).some((k) => k.startsWith("__reactFiber$"));
+    },
+    selector,
+    { timeout: 20_000 },
+  );
+}
+
+/** The step indicator, which is also the flow's live region. */
+const stepMarker = (page: Page, n: number) => page.getByText(`Step ${n} of 6`);
+
+const onStep = (page: Page, n: number) =>
+  expect(stepMarker(page, n)).toBeVisible({ timeout: 20_000 });
+
+/**
+ * Advance one step, tolerating a click that lands before hydration.
+ *
+ * The enquiry is server-rendered, so its buttons exist in the HTML a moment
+ * before React attaches handlers to them. Playwright will happily click one in
+ * that gap, and the click does nothing at all — which showed up as a rare,
+ * genuinely confusing "Step 2 of 6 not found" on a fully working flow.
+ *
+ * The retry is guarded by a check for the target step, so an advance that DID
+ * register but rendered slowly is never clicked a second time and never skips
+ * a step.
+ */
+async function advanceTo(page: Page, n: number) {
+  await expect(async () => {
+    if ((await stepMarker(page, n).count()) === 0) {
+      await page.getByRole("button", { name: "Continue" }).click();
+    }
+    await expect(stepMarker(page, n)).toBeVisible({ timeout: 1_500 });
+  }).toPass({ timeout: 25_000 });
+}
+
+/**
+ * Walks the six-step enquiry (§12) from the date to the submit button.
+ * Returns nothing; the caller asserts on whatever state it lands in.
+ */
+async function completeBookingFlow(page: Page, city = "Trichy") {
+  const advance = (n: number) => advanceTo(page, n);
+
+  await page.goto("/contact");
+  await waitForHydration(page);
+  await onStep(page, 1);
+
+  // 01 date
+  await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await advance(2);
+
+  // 02 location — the four cities are radio chips, not a free-text field.
+  // The control is a real radio, visually replaced by its own label, so the
+  // test clicks what a visitor clicks: the chip.
+  await chip(page, city).click();
+  await advance(3);
+
+  // 03 events
+  await chip(page, "Muhurtham").click();
+  await advance(4);
+
+  // 04 services
+  await chip(page, "Bridal Makeup").click();
+  await advance(5);
+
+  // 05 details — name and phone are the only required fields.
   await page.getByLabel("Name *").fill("Test Enquiry");
   await page.getByLabel("Phone *").fill("9876543210");
-  await page.getByLabel("Email *").fill("test@example.com");
-  await page.getByLabel("Wedding date *").fill("2027-05-14");
-  await page.getByLabel("Wedding city *").fill("Trichy");
+  await advance(6);
 
-  await page.getByRole("button", { name: "Send enquiry" }).click();
+  // 06 review.
+  //
+  // The endpoint silently drops anything submitted within three seconds of
+  // the first interaction — no human fills six steps that fast, but Playwright
+  // does. Waiting past the gate is what makes this test exercise the real
+  // path rather than the spam trap.
+  await expect(page.getByText("Ready to send.")).toBeVisible();
+  await page.waitForTimeout(3200);
+  await page.getByRole("button", { name: "Check availability" }).click();
+}
+
+test("the six-step enquiry will not advance past an empty required step", async ({ page }) => {
+  await page.goto("/contact");
+
+  await onStep(page, 1);
+
+  // No date entered — Continue must refuse and say why. Retried the same way
+  // as an advance, because a pre-hydration click is silent here too.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Please choose your wedding date.")).toBeVisible({
+      timeout: 1_500,
+    });
+  }).toPass({ timeout: 25_000 });
+
+  await onStep(page, 1);
+
+  await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await advanceTo(page, 2);
+});
+
+test("the enquiry offers the four service locations as cities", async ({ page }) => {
+  await page.goto("/contact");
+  await waitForHydration(page);
+  await onStep(page, 1);
+  await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await advanceTo(page, 2);
+
+  for (const city of ["Chennai", "Trichy", "Pudukkottai", "Madurai"]) {
+    await expect(chip(page, city)).toBeVisible();
+    // The chip is a label for a real radio, so it is keyboard- and
+    // screen-reader-operable rather than a styled div.
+    await expect(page.getByRole("radio", { name: city })).toHaveCount(1);
+  }
+  // And the honest escape hatch for anywhere else.
+  await expect(chip(page, "Other location")).toBeVisible();
+});
+
+test("going back through the enquiry does not lose what was entered", async ({ page }) => {
+  await page.goto("/contact");
+  await waitForHydration(page);
+  await onStep(page, 1);
+
+  await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await advanceTo(page, 2);
+
+  await chip(page, "Madurai").click();
+  await expect(page.getByRole("radio", { name: "Madurai" })).toBeChecked();
+
+  await page.getByRole("button", { name: "Back" }).click();
+  await onStep(page, 1);
+  await expect(page.getByLabel("Wedding date *")).toHaveValue("2027-05-14");
+
+  await advanceTo(page, 2);
+  await expect(page.getByRole("radio", { name: "Madurai" })).toBeChecked();
+});
+
+test("the enquiry admits that no inbox is connected", async ({ page }) => {
+  // The slowest test in the suite by design: it walks six steps AND waits out
+  // the endpoint's three-second spam gate before submitting.
+  test.slow();
+
+  await completeBookingFlow(page);
 
   const status = page.locator('[role="status"]');
-  await expect(status).toContainText("isn't connected yet");
-  // And never the claim that it arrived somewhere.
+  // Typographic apostrophe: the copy uses ’ throughout, and a straight one
+  // here would pass for the wrong reason on the day the copy changes.
+  await expect(status).toContainText("isn’t connected yet");
+  // And NEVER the claim that it arrived somewhere.
   await expect(status).not.toContainText("has been received");
+  await expect(status).toContainText("been recorded");
 
-  // Her words are still in the form so she can copy them elsewhere.
-  await expect(page.getByLabel("Name *")).toHaveValue("Test Enquiry");
+  // Her answers stay on screen so she can carry them somewhere that works.
+  await expect(status).toContainText("Test Enquiry");
+  await expect(status).toContainText("2027-05-14");
 });
 
 test("an imageless portfolio slug is a 404, not a plate under a made-up title", async ({
@@ -118,27 +299,39 @@ test.describe("prefers-reduced-motion", () => {
   });
 });
 
-test("at 390px the header fits the viewport and still shows the CTA", async ({
+test("at 390px the header fits and the booking CTA is always in reach", async ({
   page,
 }) => {
   test.skip(isDesktop(page), "phone-width layout only");
 
   await page.goto("/");
-  const header = page.locator("header");
-  const cta = header.getByRole("link", { name: "Check Your Date" });
-  await expect(cta).toBeVisible();
-
   const width = page.viewportSize()!.width;
-  const headerBox = (await header.boundingBox())!;
-  const ctaBox = (await cta.boundingBox())!;
+  const header = page.locator("header");
 
   // The bar does not overflow the viewport …
+  const headerBox = (await header.boundingBox())!;
   expect(headerBox.x).toBeGreaterThanOrEqual(0);
   expect(headerBox.x + headerBox.width).toBeLessThanOrEqual(width + 0.5);
 
-  // … and the CTA is wholly inside it, not clipped off the right edge.
-  expect(ctaBox.x).toBeGreaterThanOrEqual(headerBox.x - 0.5);
+  /**
+   * … and the booking CTA is reachable without scrolling.
+   *
+   * On a phone it lives in the sticky action bar rather than the header. The
+   * header version was removed at this width because it put CHECK YOUR DATE
+   * on screen three times at once and wrapped onto two lines; the bar version
+   * is pinned, so the CTA is reachable at every scroll position rather than
+   * only at the top.
+   */
+  const cta = page
+    .getByRole("navigation", { name: "Quick actions" })
+    .getByRole("link", { name: "Check Your Date" });
+  await expect(cta).toBeVisible();
+
+  const ctaBox = (await cta.boundingBox())!;
+  expect(ctaBox.x).toBeGreaterThanOrEqual(-0.5);
   expect(ctaBox.x + ctaBox.width).toBeLessThanOrEqual(width + 0.5);
+  // It is inside the first screen, not below the fold.
+  expect(ctaBox.y + ctaBox.height).toBeLessThanOrEqual(page.viewportSize()!.height + 0.5);
 
   // No horizontal scroll anywhere on the page.
   const overflow = await page.evaluate(
@@ -377,6 +570,53 @@ test.describe("the brush cursor", () => {
       .not.toBe(before);
   });
 
+  /**
+   * THE REGRESSION THIS GUARDS.
+   *
+   * The effect that binds the pointer listeners used to have the pressed
+   * state in its dependency array, so every mousedown tore the whole thing
+   * down and rebuilt it — re-seeding the tracked position at the CENTRE OF
+   * THE VIEWPORT. The brush visibly flew to the middle of the screen and
+   * eased back on every single click.
+   *
+   * A press should move the brush by a few pixels of dab, and nothing else.
+   */
+  test("a click does not throw the brush across the screen", async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop fine-pointer only");
+
+    await page.goto("/");
+
+    // Park the brush well away from the centre and let it settle there.
+    await page.mouse.move(1100, 640);
+    await expect
+      .poll(async () => page.locator('svg [data-brush="bristles"]').count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
+    await page.waitForTimeout(600);
+
+    const translation = () =>
+      page.evaluate(() => {
+        const el = document.querySelector('[aria-hidden="true"] svg')
+          ?.parentElement as HTMLElement | null;
+        const m = /translate3d\(([-\d.]+)px,\s*([-\d.]+)px/.exec(el?.style.transform ?? "");
+        return m ? { x: Number(m[1]), y: Number(m[2]) } : null;
+      });
+
+    const before = await translation();
+    expect(before, "the brush reports a position").not.toBeNull();
+
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(120);
+
+    const after = await translation();
+    expect(after).not.toBeNull();
+
+    // A dab, not a flight. The old bug moved it hundreds of pixels toward the
+    // viewport centre; anything past a few pixels is that bug returning.
+    expect(Math.abs(after!.x - before!.x)).toBeLessThan(12);
+    expect(Math.abs(after!.y - before!.y)).toBeLessThan(12);
+  });
+
   test("does not exist under reduced motion", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
@@ -424,4 +664,180 @@ test("the ritual loads two frames up front and all eight by the end", async ({
   // Every frame arrives by the time the reader has been through the section,
   // so no stage is ever blank.
   await expect.poll(() => fetched.size, { timeout: 15_000 }).toBe(8);
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE REDESIGN
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+test("the hero answers what, where and what next in frame one", async ({ page }) => {
+  await page.goto("/");
+
+  const hero = page.locator("[data-hero]");
+
+  // What the business is — the page's single H1.
+  await expect(hero.getByRole("heading", { level: 1 })).toHaveText(
+    /Tamil Bridal Makeup & Hair Artist/i,
+  );
+  // What kind of work.
+  await expect(hero.getByText("Natural · HD · South Indian Bridal")).toBeVisible();
+  // Where she works — all four, before a single scroll.
+  await expect(hero.getByText("Chennai · Trichy · Pudukkottai · Madurai")).toBeVisible();
+
+  // Both CTAs, and only one of them primary.
+  await expect(hero.getByRole("link", { name: "Check Your Date" })).toBeVisible();
+  await expect(hero.getByRole("link", { name: "View the work" })).toBeVisible();
+
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test("the four service locations are in the footer of every page", async ({ page }) => {
+  for (const path of ["/", "/services", "/faq"]) {
+    await page.goto(path);
+    const footer = page.locator("footer");
+    for (const city of ["Chennai", "Trichy", "Pudukkottai", "Madurai"]) {
+      await expect(footer.getByText(city, { exact: true }).first()).toBeAttached();
+    }
+  }
+});
+
+test.describe("the sticky action bar", () => {
+  test("is present on mobile and does not cover the end of the page", async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) >= 1024, "mobile only");
+
+    await page.goto("/");
+    const bar = page.getByRole("navigation", { name: "Quick actions" });
+    await expect(bar).toBeVisible();
+
+    // The one booking CTA, at a real touch size (§14 — 44px minimum).
+    const cta = bar.getByRole("link", { name: "Check Your Date" });
+    await expect(cta).toBeVisible();
+    const box = await cta.boundingBox();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+
+    /**
+     * THE BAR MUST NOT COVER THE CONTENT (§33).
+     *
+     * It is `position: fixed`, so it takes no space of its own — the document
+     * gives the space back through `--action-bar-h`. Measured as a reservation
+     * rather than by scrolling to the end: Lenis owns scrolling on this site,
+     * so `window.scrollTo` does not move the page and a scroll-then-measure
+     * test would pass or fail for reasons unrelated to the bar.
+     */
+    const geometry = await page.evaluate(() => {
+      const bar = document.querySelector('nav[aria-label="Quick actions"]');
+      const content = document.querySelector(".page-content");
+      const footer = document.querySelector("footer");
+      if (!bar || !content || !footer) return null;
+      return {
+        barHeight: bar.getBoundingClientRect().height,
+        reserved: parseFloat(getComputedStyle(content as Element).paddingBottom),
+        // The gap between the last of the content and the end of the document.
+        tail: content.getBoundingClientRect().bottom - footer.getBoundingClientRect().bottom,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    // Every pixel the bar occupies is a pixel the document has given back.
+    expect(geometry!.reserved).toBeGreaterThanOrEqual(geometry!.barHeight);
+    expect(geometry!.tail).toBeGreaterThanOrEqual(geometry!.barHeight);
+  });
+
+  test("is absent on desktop, where the header carries the same actions", async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop only");
+
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "Quick actions" })).toBeHidden();
+    await expect(
+      page.locator("header").getByRole("link", { name: "Check Your Date" }),
+    ).toBeVisible();
+  });
+});
+
+test.describe("portfolio filtering", () => {
+  test("offers combinable facets and reports the result count", async ({ page }) => {
+    await page.goto("/portfolio");
+
+    // Every axis the archive can genuinely fill (§15).
+    for (const axis of ["Look", "Event", "Hair", "Category"]) {
+      await expect(page.getByRole("group", { name: axis })).toBeVisible();
+    }
+
+    const status = page.locator('[role="status"]').first();
+    const unfiltered = await status.textContent();
+
+    await page.getByRole("button", { name: "Muhurtham", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Muhurtham", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(status).not.toHaveText(unfiltered ?? "");
+    await expect(status).toContainText("1 filter");
+  });
+
+  test("a combination with no work shows a way out, not an empty grid", async ({ page }) => {
+    await page.goto("/portfolio");
+
+    // Muhurtham frames are not filed under Hair — an intersection with
+    // nothing in it, which is exactly the state §46 is about.
+    await page.getByRole("button", { name: "Muhurtham", exact: true }).click();
+    await page.getByRole("button", { name: "Hair", exact: true }).click();
+
+    await expect(page.getByText("No looks found for this combination.")).toBeVisible();
+
+    const clear = page.getByRole("button", { name: "Clear filters" }).last();
+    await clear.click();
+
+    await expect(page.getByText("No looks found for this combination.")).toBeHidden();
+    await expect(page.getByRole("button", { name: "Muhurtham", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+});
+
+test("the FAQ answers the location questions and opens them natively", async ({ page }) => {
+  await page.goto("/faq");
+
+  // §20 — the questions a bride asks about a four-city practice.
+  await expect(page.getByText("Which cities do you serve?")).toBeVisible();
+  await expect(page.getByText("How do I check availability?")).toBeVisible();
+
+  const answer = page.locator("#cities");
+  await expect(answer).not.toHaveAttribute("open", "");
+  await answer.getByText("Which cities do you serve?").click();
+  await expect(answer).toHaveAttribute("open", "");
+  await expect(answer).toContainText("Pudukkottai");
+});
+
+test("no page scrolls horizontally at 390px", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 1024, "mobile only");
+
+  for (const path of ["/", "/portfolio", "/services", "/about", "/faq", "/contact"]) {
+    await page.goto(path);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow, `${path} overflows horizontally by ${overflow}px`).toBeLessThanOrEqual(0);
+  }
+});
+
+
+/**
+ * §9 + §38. The before/after control is fully built and fully wired, and it
+ * renders from `beforeAfter` on a portfolio item — a pair only Lana can
+ * create, because only she can attest that two frames are the same woman on
+ * the same morning. Until one exists the section must be ABSENT rather than
+ * faked from two unrelated photographs or one photograph cropped twice.
+ */
+test("no transformation section is shown without a genuine before/after pair", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const hasPair = await page.evaluate(async () => {
+    // The section identifies itself; nothing else on the page uses this id.
+    return !!document.querySelector("#transformation-title");
+  });
+  expect(hasPair, "a before/after appeared with no permissioned pair in the archive").toBe(false);
 });

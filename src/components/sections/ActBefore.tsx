@@ -34,6 +34,10 @@ export default function ActBefore({
        * if the scheduler never runs, nothing ever writes this and the overlay
        * masks itself out completely. The failure mode is no effect — never a
        * black sheet nobody can clear.
+       *
+       * Written by HeroScroll, which registers on THIS element rather than on
+       * the hero — see the comment there. The effect follows the section
+       * wherever the homepage orders it.
        */
       style={{ ["--wipe" as string]: 1 }}
     >

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import type { NavLink } from "./Nav";
-import { siteSettings } from "@/content/site";
+import { citiesDotted, siteSettings } from "@/content/site";
 import { track } from "@/lib/analytics";
 
 /**
@@ -18,12 +18,15 @@ export default function MobileNav({
   brand,
   cta,
   links,
+  whatsapp = null,
 }: {
   open: boolean;
   onClose: () => void;
   brand: string;
   cta: string;
   links: NavLink[];
+  /** Deep link, or null when no business number is configured. */
+  whatsapp?: string | null;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -139,6 +142,24 @@ export default function MobileNav({
           >
             {cta}
           </Link>
+
+          {/* The third door, in the standard order and the standard words
+              (§6, §44). Rendered only when a real number exists. */}
+          {whatsapp && (
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                track("whatsapp_click", { placement: "mobile-nav" });
+                onClose();
+              }}
+              className="btn btn-ghost w-full"
+            >
+              WhatsApp Lana
+            </a>
+          )}
+
           <div className="flex items-center justify-between text-[0.75rem] uppercase tracking-[0.24em] text-muted">
             <a
               href={siteSettings.instagram}
@@ -149,7 +170,7 @@ export default function MobileNav({
             >
               {siteSettings.instagramHandle}
             </a>
-            <span>{siteSettings.location}</span>
+            <span>{citiesDotted()}</span>
           </div>
         </div>
       </div>

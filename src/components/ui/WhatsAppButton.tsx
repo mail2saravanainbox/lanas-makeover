@@ -34,7 +34,8 @@ export default function WhatsAppButton({ href }: { href: string | null }) {
       aria-label="Message Lana's Makeover on WhatsApp"
       data-cursor="open"
       className={[
-        "fixed bottom-5 right-5 z-[55] flex h-12 w-12 items-center justify-center rounded-full",
+        // hidden below lg: the sticky action bar owns this action on a phone.
+        "fixed bottom-5 right-5 z-[55] hidden h-12 w-12 items-center justify-center rounded-full lg:flex",
         "border border-ivory/15 bg-ink-2/85 text-ivory/85 backdrop-blur-xl",
         "transition-all duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)]",
         "hover:border-champagne/50 hover:text-champagne",

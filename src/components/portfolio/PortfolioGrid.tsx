@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PortfolioCategory, PortfolioItem } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
 import Reveal from "@/components/ui/Reveal";
@@ -9,6 +9,14 @@ import PortfolioLightbox from "./PortfolioLightbox";
 import { cx } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { siteSettings } from "@/content/site";
+import PortfolioFilter from "./PortfolioFilter";
+import {
+  type FacetKey,
+  type FacetSelection,
+  availableFacets,
+  filterByFacets,
+  hasSelection,
+} from "@/lib/portfolio/facets";
 
 /**
  * EDITORIAL PORTFOLIO (§15)
@@ -21,24 +29,6 @@ import { siteSettings } from "@/content/site";
  * 400-image Instagram archive costs the same first paint as a 12-image one.
  */
 
-/**
- * Tamil work leads (§12, §13). A filter only appears when the archive actually
- * contains that category, so the site never advertises a speciality it cannot
- * show.
- */
-const FILTERS: Array<{ key: PortfolioCategory | "all"; label: string }> = [
-  { key: "tamil-bridal", label: "Tamil Bridal" },
-  { key: "muhurtham", label: "Muhurtham" },
-  { key: "jadai", label: "Jadai" },
-  { key: "all", label: "All" },
-  { key: "bridal", label: "South Indian Bridal" },
-  { key: "reception", label: "Reception" },
-  { key: "engagement", label: "Engagement" },
-  { key: "hair", label: "Hair" },
-  { key: "editorial", label: "Editorial" },
-  { key: "behind-scenes", label: "Atelier" },
-];
-
 const SPAN: Record<NonNullable<PortfolioItem["weight"]>, string> = {
   standard: "md:col-span-4 aspect-[3/4]",
   tall: "md:col-span-4 aspect-[2/3]",
@@ -47,11 +37,6 @@ const SPAN: Record<NonNullable<PortfolioItem["weight"]>, string> = {
 };
 
 /** Editorial annotation shown on hover — a caption, not a tooltip (§10). */
-/**
- * `before-after` and `other` are deliberately absent from FILTERS above.
- * A before/after needs consent per photograph and framing of its own; "other"
- * is not a room, it is a drawer. Neither is offered as a public filter.
- */
 const CATEGORY_ANNOTATION: Partial<Record<PortfolioCategory, string>> = {
   "tamil-bridal": "Tamil bridal",
   muhurtham: "Muhurtham",
@@ -75,22 +60,39 @@ export default function PortfolioGrid({
   showFilters?: boolean;
 }) {
   /**
-   * Opens on Tamil bridal when that work exists — the specialisation should be
-   * the first thing a visitor sees, not something they have to filter for.
+   * OPENS UNFILTERED (§15).
+   *
+   * The grid used to pre-select "Tamil Bridal", which meant a visitor's first
+   * view of the portfolio silently hid most of it, and the "All" chip read as
+   * a widening rather than the default it should have been. With four
+   * combinable axes there is no defensible default but the whole archive.
    */
-  const initial: PortfolioCategory | "all" = items.some((i) => i.category === "tamil-bridal")
-    ? "tamil-bridal"
-    : items.some((i) => i.category === "muhurtham")
-      ? "muhurtham"
-      : "all";
-  const [filter, setFilter] = useState<PortfolioCategory | "all">(initial);
+  const [selection, setSelection] = useState<FacetSelection>({});
   const [shown, setShown] = useState(PAGE);
   const [open, setOpen] = useState<number | null>(null);
 
-  const filtered = useMemo(
-    () => (filter === "all" ? items : items.filter((i) => i.category === filter)),
-    [items, filter],
-  );
+  const axes = useMemo(() => availableFacets(items), [items]);
+
+  const filtered = useMemo(() => filterByFacets(items, selection), [items, selection]);
+
+  /** AND across axes, OR within one — see `matches` in facets.ts. */
+  const toggleFacet = useCallback((axis: FacetKey, value: string) => {
+    setSelection((prev) => {
+      const current = prev[axis] ?? [];
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return { ...prev, [axis]: next };
+    });
+    setShown(PAGE);
+    track("portfolio_filter", { facet: axis, value });
+  }, []);
+
+  const clearFacets = useCallback(() => {
+    setSelection({});
+    setShown(PAGE);
+    track("portfolio_filter", { facet: "clear", value: "all" });
+  }, []);
 
   /**
    * Arriving on ?image=<slug> opens that photograph directly — which is what
@@ -114,7 +116,7 @@ export default function PortfolioGrid({
     const index = items.indexOf(target);
     // Widen to the full set first, so the index below is always resolved
     // against exactly the list the lightbox receives.
-    setFilter("all");
+    setSelection({});
     // And make sure the image is actually in the grid behind the lightbox,
     // so closing it does not leave the visitor above the thing they came for.
     setShown((n) => Math.max(n, Math.ceil((index + 1) / PAGE) * PAGE));
@@ -143,11 +145,6 @@ export default function PortfolioGrid({
     tile.style.setProperty("--my", `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
   }
 
-  const availableFilters = useMemo(
-    () => FILTERS.filter((f) => f.key === "all" || items.some((i) => i.category === f.key)),
-    [items],
-  );
-
   // ── Empty state (§43) ──────────────────────────────────────────────────
   if (items.length === 0) {
     return (
@@ -172,29 +169,14 @@ export default function PortfolioGrid({
 
   return (
     <>
-      {showFilters && availableFilters.length > 2 && (
-        <div className="shell mb-14">
-          <ul className="flex flex-wrap gap-x-7 gap-y-3" role="list">
-            {availableFilters.map((f) => (
-              <li key={f.key}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilter(f.key);
-                    setShown(PAGE);
-                  }}
-                  aria-pressed={filter === f.key}
-                  className={cx(
-                    "link-wipe text-[0.75rem] uppercase tracking-[0.26em] transition-colors duration-[var(--d-base)]",
-                    filter === f.key ? "text-champagne" : "text-ivory/55 hover:text-ivory",
-                  )}
-                >
-                  {f.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {showFilters && (
+        <PortfolioFilter
+          axes={axes}
+          selection={selection}
+          onToggle={toggleFacet}
+          onClear={clearFacets}
+          resultCount={filtered.length}
+        />
       )}
 
       <div className="shell">
@@ -283,8 +265,24 @@ export default function PortfolioGrid({
           </div>
         )}
 
+        {/* ── No results for this combination (§46) ────────────────────────
+            Never a broken or empty grid. The message names the actual problem
+            — the combination, not the archive — and the way out is a control,
+            not an instruction to go and undo four chips by hand. */}
         {filtered.length === 0 && (
-          <p className="body-base py-16 text-center">Nothing in this category yet.</p>
+          <div className="py-20 text-center">
+            <p className="display-sm text-ivory/75">No looks found for this combination.</p>
+            <p className="body-base mx-auto mt-4 max-w-md">
+              {hasSelection(selection)
+                ? "Try removing one of the filters — the archive is deeper on some combinations than others."
+                : "New work is added as each wedding season closes."}
+            </p>
+            {hasSelection(selection) && (
+              <button type="button" onClick={clearFacets} className="btn btn-ghost mt-8">
+                Clear filters
+              </button>
+            )}
+          </div>
         )}
       </div>
 

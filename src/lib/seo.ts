@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { siteSettings } from "@/content/site";
+import { citiesAmp, citiesProse, siteSettings } from "@/content/site";
 
 /**
  * SEO CONFIGURATION
@@ -40,22 +40,34 @@ export const seoConfig = {
   /** Set NEXT_PUBLIC_SITE_URL once a custom domain is attached. */
   siteUrl: resolveSiteUrl(),
   siteName: siteSettings.brandName,
-  defaultTitle: `${siteSettings.brandName} — Tamil Bridal Makeup & Hair Artist, Trichy`,
+  /**
+   * §22. The four cities are named once, in the title and once in the
+   * description — not repeated into every paragraph of the site. Both strings
+   * are built from `serviceAreas`, so the set cannot drift out of sync with
+   * the footer, the hero or the schema.
+   */
+  defaultTitle: `${siteSettings.brandName} | Bridal Makeup & Hair Artist in ${citiesAmp()}`,
   titleTemplate: `%s — ${siteSettings.brandName}`,
   defaultDescription:
-    "Tamil bridal makeup and hair artist in Trichy. Natural, HD and South Indian bridal looks, jadai and bridal hair, engagement and reception makeup.",
+    `Premium bridal makeup and hair styling by ${siteSettings.brandName}, serving ${citiesProse()}. ` +
+    "Natural, HD and South Indian bridal looks, jadai and bridal hair, engagement and reception makeup.",
   locale: "en_IN",
   /**
    * Descriptive only. These describe what the business genuinely does; they are
    * not repeated into copy. Search intent is served by real journal articles.
+   *
+   * One city-qualified topic per service location, and no more: this array
+   * feeds `knowsAbout` in the schema, which is a description of competence,
+   * not a keyword bin.
    */
   topics: [
-    "bridal makeup artist Trichy",
+    ...siteSettings.serviceAreas.map((city) => `bridal makeup artist ${city}`),
     "South Indian bridal makeup",
+    "Tamil bridal makeup",
     "HD bridal makeup",
     "natural bridal makeup",
-    "bridal hairstylist Trichy",
-    "engagement makeup artist Tamil Nadu",
+    "bridal hairstylist Tamil Nadu",
+    "jadai and bridal hair styling",
     "party transformation makeup",
   ],
   twitterHandle: undefined as string | undefined, // TODO(client)
@@ -151,7 +163,19 @@ export function localBusinessSchema(): Json {
       addressCountry: "IN",
       // TODO(client): streetAddress + postalCode once confirmed.
     },
-    areaServed: siteSettings.serviceAreas.map((name) => ({ "@type": "Place", name })),
+    /**
+     * The four primary service locations, as cities rather than bare Places,
+     * plus the wider region the travel note actually claims. One business,
+     * several areas served — never several LocalBusiness records.
+     */
+    areaServed: [
+      ...siteSettings.serviceAreas.map((name) => ({
+        "@type": "City",
+        name,
+        containedInPlace: { "@type": "AdministrativeArea", name: "Tamil Nadu" },
+      })),
+      { "@type": "AdministrativeArea", name: "Tamil Nadu" },
+    ],
     ...(siteSettings.phone ? { telephone: siteSettings.phone } : {}),
     ...(siteSettings.email ? { email: siteSettings.email } : {}),
     ...(sameAs.length ? { sameAs } : {}),
@@ -264,5 +288,33 @@ export function faqSchema(items: Array<{ question: string; answer: string }>): J
       name: i.question,
       acceptedAnswer: { "@type": "Answer", text: i.answer.replace(/⟨[^⟩]*⟩/g, "").trim() },
     })),
+  };
+}
+
+/**
+ * Service schema (§23).
+ *
+ * `areaServed` is the four primary locations — the same list the footer and
+ * the hero print, so a rich result cannot claim a coverage the page does not.
+ * No `offers` block: that would need a price, and no price has been supplied.
+ * Silence about price is correct here; an invented one would not be.
+ */
+export function serviceSchema(input: {
+  name: string;
+  description: string;
+  slug: string;
+  image?: string;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: input.name,
+    description: input.description,
+    url: absoluteUrl(`/services/${input.slug}`),
+    serviceType: input.name,
+    category: "Bridal makeup and hair styling",
+    provider: { "@id": absoluteUrl("/#business") },
+    areaServed: siteSettings.serviceAreas.map((name) => ({ "@type": "City", name })),
+    ...(input.image ? { image: input.image } : {}),
   };
 }

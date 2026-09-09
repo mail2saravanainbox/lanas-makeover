@@ -80,8 +80,9 @@ export const services: Service[] = [
     published: true,
   },
   {
+    // Slug unchanged: it is a live, indexed URL. Only the display name moves.
     slug: "party-transformation",
-    name: "Party Transformation",
+    name: "Party & Guest Makeup",
     eyebrow: "The Occasion",
     summary:
       "Transformation makeup for the people around the bride — and for every occasion that is not a wedding.",
@@ -91,6 +92,8 @@ export const services: Service[] = [
     ],
     includes: [
       "Party & occasion makeup",
+      "Guest makeup",
+      "Family makeup",
       "Transformation makeup",
       "Hair styling",
       "Group bookings",

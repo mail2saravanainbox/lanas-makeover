@@ -13,6 +13,7 @@ import BrushCursor from "@/components/ui/BrushCursor";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import MobileActionBar from "@/components/ui/MobileActionBar";
 import PageTransition from "@/components/ui/PageTransition";
 import AnalyticsScripts from "@/components/ui/Analytics";
 import JsonLd from "@/components/ui/JsonLd";
@@ -84,9 +85,28 @@ export default async function RootLayout({
   const settings = await content().getSiteSettings();
   // "Brides" only earns a nav link once there is a bride story behind it.
   const hasBrides = (await content().getBrides()).length > 0;
+  // Resolved once here rather than in four components. Null until a real
+  // business number is configured — every consumer renders nothing on null.
+  const whatsapp = whatsappLink();
 
   return (
-    <html lang="en-IN" className={`${display.variable} ${sans.variable} ${tamil.variable}`}>
+    <html
+      lang="en-IN"
+      className={`${display.variable} ${sans.variable} ${tamil.variable}`}
+      /**
+       * The veil's guard script runs BEFORE hydration and, when it decides
+       * this visitor should see the opening, adds `lm-veiled` to this element.
+       * That is the whole point of it — the class has to be on the root for
+       * the first painted frame, which is earlier than React exists.
+       *
+       * React therefore finds a className on the client that the server did
+       * not send, and logs a hydration mismatch on every single page load.
+       * This is the annotation for exactly that case: a pre-hydration script
+       * mutating the root element. It suppresses the warning for THIS
+       * element's attributes only — not for its children, and not for content.
+       */
+      suppressHydrationWarning
+    >
       <body className="grain antialiased">
         <JsonLd data={localBusinessSchema()} />
 
@@ -94,7 +114,12 @@ export default async function RootLayout({
         <BrushCursor />
         <PageTransition brand={settings.brandName} />
 
-        <Nav brand={settings.brandName} cta={settings.bookingCta} hasBrides={hasBrides} />
+        <Nav
+          brand={settings.brandName}
+          cta={settings.bookingCta}
+          hasBrides={hasBrides}
+          whatsapp={whatsapp}
+        />
 
         <div className="page-content flex min-h-dvh flex-col">
           <main id="main" className="flex-1">
@@ -103,7 +128,13 @@ export default async function RootLayout({
           <Footer settings={settings} />
         </div>
 
-        <WhatsAppButton href={whatsappLink()} />
+        {/* Desktop only. On a phone the same action lives in the sticky bar
+            below, and two WhatsApp affordances stacked in one corner is one
+            too many. */}
+        <WhatsAppButton href={whatsapp} />
+
+        {/* §33 — two actions, always in reach, mobile only. */}
+        <MobileActionBar cta={settings.bookingCta} whatsapp={whatsapp} />
 
         <AnalyticsScripts />
         <VercelAnalytics />
