@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { content } from "@/lib/content/provider";
-import { getImageSlots, journalCover, serviceImage } from "@/lib/content/slots";
+import { getImageSlots, serviceImage } from "@/lib/content/slots";
 import { pageMetadata, personSchema } from "@/lib/seo";
 import JsonLd from "@/components/ui/JsonLd";
 
@@ -12,7 +12,6 @@ import ActHeritage from "@/components/sections/ActHeritage";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import ActArtist from "@/components/sections/ActArtist";
 import HairSilhouette from "@/components/sections/HairSilhouette";
-import JournalTeaser from "@/components/sections/JournalTeaser";
 import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
@@ -43,11 +42,10 @@ export default async function HomePage() {
   // Lana's photographs where they exist, plates where they don't (§31).
   const slots = getImageSlots();
 
-  const [settings, services, brides, posts, testimonials, timeline] = await Promise.all([
+  const [settings, services, brides, testimonials, timeline] = await Promise.all([
     provider.getSiteSettings(),
     provider.getServices(),
     provider.getBrides(),
-    provider.getPosts(),
     provider.getTestimonials(),
     provider.getTimeline(),
   ]);
@@ -99,7 +97,6 @@ export default async function HomePage() {
     silhouette: true,
     trust: true,
     investment: true,
-    journal: posts.length > 0,
     voices: testimonials.length > 0,
     mirror: true,
     cta: true,
@@ -110,9 +107,8 @@ export default async function HomePage() {
     Object.entries(renders).map(([key, shown]) => [key, shown ? ++counter : undefined]),
   ) as Record<keyof typeof renders, number | undefined>;
 
-  // Each world shows work from its own category; each article a different image.
+  // Each world shows work from its own category.
   const worlds = services.map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
-  const journal = posts.map((p, i) => ({ ...p, cover: journalCover(i, p.cover) }));
 
   return (
     <>
@@ -178,8 +174,6 @@ export default async function HomePage() {
       <TrustSignals index={n.trust} />
 
       <Pricing index={n.investment} />
-
-      <JournalTeaser index={n.journal!} posts={journal} />
 
       <Testimonials index={n.voices} items={testimonials} />
 
