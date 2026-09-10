@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
 import SocialCtas from "./SocialCtas";
+import { locationForCity } from "@/content/locations";
 import JasmineMark from "./JasmineMark";
 
 /**
@@ -22,6 +23,9 @@ const COLUMNS: Array<{
     links: [
       { href: "/portfolio", label: "Work" },
       { href: "/services", label: "Services" },
+      // The four city pages hang off this. Without one strong site-wide link
+      // to the index they are four orphans reachable only from a footer list.
+      { href: "/locations", label: "Locations" },
       { href: "/about", label: "About" },
       { href: "/journal", label: "Journal" },
       { href: "/faq", label: "FAQ" },
@@ -66,17 +70,29 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                 the list cannot be read as four branches. */}
             <div>
               <h2 className="eyebrow mb-5">Serving</h2>
-              {/* One line on a phone, four rows from `lg`. Four cities stacked
-                  vertically is four rows of a footer for four words. */}
-              <p className="text-sm text-ivory/65 lg:hidden">
-                {settings.serviceAreas.join(" · ")}
-              </p>
-              <ul className="hidden space-y-3 lg:block">
-                {settings.serviceAreas.map((city) => (
-                  <li key={city} className="text-sm text-ivory/65">
-                    {city}
-                  </li>
-                ))}
+              {/* ── EVERY CITY IS NOW A PAGE ──────────────────────────────
+                  These were four words of plain text on every page of the
+                  site — the single most-repeated internal link opportunity
+                  there was, spent on nothing. Each city now points at the
+                  page written about weddings in it. */}
+              <ul className="space-y-0 lg:space-y-3">
+                {settings.serviceAreas.map((city) => {
+                  const l = locationForCity(city);
+                  return (
+                    <li key={city} className="text-sm text-ivory/65">
+                      {l ? (
+                        <Link
+                          href={`/locations/${l.slug}`}
+                          className="tap link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
+                        >
+                          {city}
+                        </Link>
+                      ) : (
+                        <span className="tap">{city}</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { content } from "@/lib/content/provider";
 import { absoluteUrl } from "@/lib/seo";
 import { collections } from "@/content/collections";
+import { locations } from "@/content/locations";
 
 /**
  * Dynamic sitemap (§46). Only published content is ever listed — the provider
@@ -26,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/hair"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/makeup"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/services"), priority: 0.85, changeFrequency: "monthly" },
+    { url: absoluteUrl("/locations"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/brides"), priority: 0.8, changeFrequency: "monthly" },
     { url: absoluteUrl("/journal"), priority: 0.8, changeFrequency: "weekly" },
     { url: absoluteUrl("/about"), priority: 0.7, changeFrequency: "yearly" },
@@ -37,6 +39,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    /**
+     * The four city pages. High priority: "bridal makeup artist in <city>" is
+     * the query this site most needs to answer, and these are the only pages
+     * written to answer it.
+     */
+    ...locations.map((l) => ({
+      url: absoluteUrl(`/locations/${l.slug}`),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    })),
     ...services.map((s) => ({
       url: absoluteUrl(`/services/${s.slug}`),
       lastModified: now,

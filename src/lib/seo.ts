@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { citiesAmp, citiesProse, siteSettings } from "@/content/site";
+import { waLink, waNumber } from "@/lib/whatsapp";
 
 /**
  * SEO CONFIGURATION
@@ -147,7 +148,26 @@ type Json = Record<string, unknown>;
 
 /** LocalBusiness / BeautySalon. Only verified facts are emitted. */
 export function localBusinessSchema(): Json {
-  const sameAs = [siteSettings.instagram].filter(Boolean);
+  /**
+   * THE NUMBER IS NOW REAL, SO THE ENTITY CAN CARRY IT.
+   *
+   * `telephone` on a LocalBusiness is one of the strongest local signals
+   * there is, and until a number was supplied this record had none. It comes
+   * from the same helper the wa.me links use, so there is exactly one number
+   * on this site and it cannot drift — and it is null-safe, so the field
+   * simply disappears again if the number is ever unset.
+   *
+   * E.164, because that is the format schema.org expects and the only one a
+   * search engine can dial from another country.
+   *
+   * NOTE: this publishes the number to search results, which may render a
+   * call button. The SITE still offers no `tel:` link anywhere —
+   * siteSettings.phone is deliberately empty — so nothing here changes what
+   * the pages themselves invite. If calls are not wanted, remove `telephone`
+   * below; the wa.me links are unaffected.
+   */
+  const tel = waNumber();
+  const sameAs = [siteSettings.instagram, waLink()].filter(Boolean);
   return {
     "@context": "https://schema.org",
     "@type": "BeautySalon",
@@ -176,7 +196,7 @@ export function localBusinessSchema(): Json {
       })),
       { "@type": "AdministrativeArea", name: "Tamil Nadu" },
     ],
-    ...(siteSettings.phone ? { telephone: siteSettings.phone } : {}),
+    ...(tel ? { telephone: `+${tel}` } : {}),
     ...(siteSettings.email ? { email: siteSettings.email } : {}),
     ...(sameAs.length ? { sameAs } : {}),
     knowsAbout: seoConfig.topics,
@@ -316,5 +336,46 @@ export function serviceSchema(input: {
     provider: { "@id": absoluteUrl("/#business") },
     areaServed: siteSettings.serviceAreas.map((name) => ({ "@type": "City", name })),
     ...(input.image ? { image: input.image } : {}),
+  };
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  A CITY PAGE'S SCHEMA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  One Service, scoped to ONE city, provided by the single business record.
+ *
+ *  ── WHY NOT A SECOND LocalBusiness ────────────────────────────────────────
+ *  The obvious move on a city page is to emit a LocalBusiness for that city.
+ *  It is also the move that gets a business flattened in local search: there
+ *  is one business, in Trichy, and four LocalBusiness records with four
+ *  addresses would be a claim to four premises that do not exist.
+ *
+ *  So the business is referenced by @id — the record emitted once in the root
+ *  layout — and what varies per city is `areaServed`, which is the field that
+ *  actually means "we work here" rather than "we are here".
+ *
+ *  No `offers`, for the same reason as serviceSchema: no price exists.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export function cityServiceSchema(input: {
+  city: string;
+  slug: string;
+  description: string;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `Bridal makeup and hair in ${input.city}`,
+    description: input.description,
+    url: absoluteUrl(`/locations/${input.slug}`),
+    serviceType: "Bridal makeup and hair styling",
+    category: "Bridal makeup and hair styling",
+    provider: { "@id": absoluteUrl("/#business") },
+    areaServed: {
+      "@type": "City",
+      name: input.city,
+      containedInPlace: { "@type": "AdministrativeArea", name: "Tamil Nadu" },
+    },
   };
 }

@@ -1583,3 +1583,161 @@ test("nothing readable falls under the contrast minimum", async ({ page }) => {
 
   expect(bad).toEqual([]);
 });
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE CITY PAGES
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  "Bridal makeup artist in Chennai" is the query this site most needs to
+ *  answer, and these four pages are the only ones written to answer it. The
+ *  failure mode is not that they break — it is that they quietly become one
+ *  template with four names in it, which is the oldest and most reliably
+ *  penalised trick in local SEO.
+ */
+test.describe("the city pages", () => {
+  const CITIES = [
+    { slug: "chennai", city: "Chennai" },
+    { slug: "trichy", city: "Trichy" },
+    { slug: "madurai", city: "Madurai" },
+    { slug: "pudukkottai", city: "Pudukkottai" },
+  ];
+
+  for (const { slug, city } of CITIES) {
+    test(`${city} names itself in the title, the h1 and the schema`, async ({ page }) => {
+      await skipVeil(page);
+      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+
+      await expect(page).toHaveTitle(new RegExp(`Bridal Makeup Artist in ${city}`));
+
+      const h1 = page.locator("h1");
+      await expect(h1).toHaveCount(1);
+      await expect(h1).toContainText(city);
+
+      const schema = await page.evaluate(() =>
+        [...document.querySelectorAll('script[type="application/ld+json"]')].flatMap((s) => {
+          try {
+            const j = JSON.parse(s.textContent ?? "{}");
+            return Array.isArray(j) ? j : [j];
+          } catch {
+            return [];
+          }
+        }),
+      );
+      const types = schema.map((s: Record<string, unknown>) => s["@type"]);
+      expect(types).toContain("Service");
+      expect(types).toContain("FAQPage");
+      expect(types).toContain("BreadcrumbList");
+
+      /**
+       * ONE BUSINESS, FOUR AREAS SERVED — NOT FOUR BUSINESSES.
+       *
+       * The obvious move on a city page is to emit a LocalBusiness for that
+       * city. It is also the move that gets a business flattened in local
+       * search: there is one premises, in Trichy, and four records with four
+       * addresses would claim four that do not exist. The city page's Service
+       * references the business by @id and varies `areaServed` instead.
+       */
+      const service = schema.find((s: Record<string, unknown>) => s["@type"] === "Service") as
+        | Record<string, never>
+        | undefined;
+      expect(service?.areaServed).toMatchObject({ "@type": "City", name: city });
+      expect(service?.provider).toHaveProperty("@id");
+      // No price exists, so no offers block may claim one.
+      expect(service).not.toHaveProperty("offers");
+
+      // The FAQ schema must answer exactly what the page answers.
+      const faq = schema.find((s: Record<string, unknown>) => s["@type"] === "FAQPage") as
+        | { mainEntity?: Array<{ name: string }> }
+        | undefined;
+      for (const q of faq?.mainEntity ?? []) {
+        await expect(page.getByRole("heading", { name: q.name, exact: true })).toBeVisible();
+      }
+    });
+  }
+
+  test("are four different pages, not one template four times", async ({ page }) => {
+    /**
+     * Shingled on eight-word windows, which is roughly how a duplicate-content
+     * detector sees a page. What overlap remains is the shared chrome — the
+     * services list, the closing block, the travel note — and the body copy of
+     * any two of these should have almost nothing in common.
+     */
+    const texts: Record<string, string> = {};
+    for (const { slug } of CITIES) {
+      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+      texts[slug] = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
+    }
+
+    const shingles = (t: string) => {
+      const w = t
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+      const s = new Set<string>();
+      for (let i = 0; i + 8 <= w.length; i++) s.add(w.slice(i, i + 8).join(" "));
+      return s;
+    };
+
+    const keys = Object.keys(texts);
+    for (let i = 0; i < keys.length; i++) {
+      for (let j = i + 1; j < keys.length; j++) {
+        const a = shingles(texts[keys[i]]);
+        const b = shingles(texts[keys[j]]);
+        const inter = [...a].filter((x) => b.has(x)).length;
+        const jaccard = inter / (a.size + b.size - inter);
+        expect(
+          jaccard,
+          `${keys[i]} and ${keys[j]} are ${(jaccard * 100).toFixed(0)}% the same page`,
+        ).toBeLessThan(0.25);
+      }
+    }
+  });
+
+  test("every city the site claims has a page, and is linked from every page", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // The footer prints the service areas on every page of the site — the
+    // single most-repeated internal link opportunity there is.
+    for (const { slug, city } of CITIES) {
+      const link = page.locator("footer").getByRole("link", { name: city, exact: true });
+      await expect(link, `${city} is linked in the footer`).toHaveCount(1);
+      await expect(link).toHaveAttribute("href", `/locations/${slug}`);
+    }
+    await expect(page.locator("footer").getByRole("link", { name: "Locations" })).toHaveCount(1);
+  });
+
+  test("the index reaches all four and the sitemap lists them", async ({ page, request }) => {
+    await page.goto("/locations", { waitUntil: "networkidle" });
+    for (const { slug } of CITIES) {
+      await expect(page.locator(`a[href="/locations/${slug}"]`).first()).toBeVisible();
+    }
+
+    const xml = await (await request.get("/sitemap.xml")).text();
+    for (const { slug } of CITIES) {
+      expect(xml, `${slug} in the sitemap`).toContain(`/locations/${slug}`);
+    }
+    expect(xml).toContain("/locations<");
+  });
+
+  test("invent nothing: no price, no count, no years, no address", async ({ page }) => {
+    /**
+     * A city page is exactly where the temptation to invent a business fact is
+     * strongest — "trusted by 200 Chennai brides", "packages from ₹15,000".
+     * None of that is knowable from anything the client has supplied.
+     */
+    for (const { slug } of CITIES) {
+      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+      const text = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
+
+      expect(text, "a price").not.toMatch(/₹|\bRs\.?\s?\d|\bINR\b/i);
+      expect(text, "a bride count").not.toMatch(/\b\d{2,}\+?\s+(brides|weddings|clients)\b/i);
+      expect(text, "years of experience").not.toMatch(/\b\d+\+?\s+years?\b/i);
+      expect(text, "a superlative claim").not.toMatch(/\bbest\b|\bno\.?\s?1\b|\btop\s+rated\b/i);
+      // Leftover editorial markers must never reach a visitor.
+      expect(text, "an unresolved marker").not.toMatch(/TODO|⟨|⟩|Lorem/);
+    }
+  });
+});

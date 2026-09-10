@@ -35,7 +35,7 @@ export const faqs: FAQItem[] = [
     id: "check-availability",
     question: "How do I check availability?",
     answer:
-      "Use Check Your Date. It takes six short steps — the date, the city, the events, what you need, and how to reach you — and it goes straight to Lana. If you would rather just ask, WhatsApp and Instagram reach the same person.",
+      "Use Check Your Date. It takes three short steps — your wedding and where it is, the events and what you need, and how to reach you — and it goes straight to Lana. If you would rather just ask, WhatsApp and Instagram reach the same person.",
     order: 2,
     published: true,
   },

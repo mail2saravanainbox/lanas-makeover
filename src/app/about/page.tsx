@@ -14,6 +14,7 @@ import TrustSignals from "@/components/sections/TrustSignals";
 import HerMorning from "@/components/sections/HerMorning";
 import Link from "next/link";
 import { citiesProse } from "@/content/site";
+import { locationForCity } from "@/content/locations";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Lana",
@@ -183,15 +184,31 @@ export default async function AboutPage() {
           </Reveal>
 
           <ul className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-4">
-            {settings.serviceAreas.map((city, i) => (
-              <li key={city}>
-                <Reveal delay={(i % 4) * 110}>
-                  <p className="border-t border-champagne/30 pt-5 font-display text-2xl text-ivory sm:text-3xl">
-                    {city}
-                  </p>
-                </Reveal>
-              </li>
-            ))}
+            {settings.serviceAreas.map((city, i) => {
+              const l = locationForCity(city);
+              return (
+                <li key={city}>
+                  <Reveal delay={(i % 4) * 110}>
+                    {/* Each city has a page about what a wedding there
+                        actually means for the morning. Naming them without
+                        linking them was the site's largest internal-link
+                        opportunity going spare. */}
+                    {l ? (
+                      <Link
+                        href={`/locations/${l.slug}`}
+                        className="group block border-t border-champagne/30 pt-5 font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-3xl"
+                      >
+                        {city}
+                      </Link>
+                    ) : (
+                      <p className="border-t border-champagne/30 pt-5 font-display text-2xl text-ivory sm:text-3xl">
+                        {city}
+                      </p>
+                    )}
+                  </Reveal>
+                </li>
+              );
+            })}
           </ul>
 
           <Reveal delay={460}>
