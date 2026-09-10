@@ -107,16 +107,16 @@ export default function RentalStrip({ index }: { index?: number }) {
               href="/rental-jewellery"
               data-cursor="view"
               aria-label={`${item.title} — see the rental collection`}
-              className="group relative aspect-[3/4] w-[38vw] shrink-0 overflow-hidden bg-ink-2 sm:w-[26vw] lg:w-[15rem]"
+              className="group relative aspect-[5/8] w-[38vw] shrink-0 overflow-hidden bg-ink-2 sm:w-[26vw] lg:w-[13.5rem]"
             >
               <Image
                 src={item.thumbnailUrl}
                 alt={item.alt}
                 fill
-                sizes="(max-width: 640px) 38vw, (max-width: 1024px) 26vw, 15rem"
+                sizes="(max-width: 640px) 38vw, (max-width: 1024px) 26vw, 13.5rem"
                 placeholder={item.blurDataURL ? "blur" : undefined}
                 blurDataURL={item.blurDataURL}
-                className="object-cover transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
+                className="object-contain transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
               />
             </Link>
           ))}

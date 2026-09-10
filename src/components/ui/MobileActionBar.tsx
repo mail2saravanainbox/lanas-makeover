@@ -142,12 +142,23 @@ export default function MobileActionBar({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track("whatsapp_click", { placement: "action-bar" })}
-            className="flex min-h-[52px] flex-1 items-center justify-center gap-2.5 rounded-full border border-ivory/20 px-4 text-[0.72rem] font-medium uppercase tracking-[0.2em] text-ivory transition-colors duration-[var(--d-base)] active:border-champagne/60 active:text-champagne"
+            /* WhatsApp's own green, on the glyph and on the border. The two
+               controls in this bar do different things and should not look
+               like a matched pair — the booking button is the house's ivory,
+               and this one is recognisably WhatsApp. */
+            style={{ borderColor: "color-mix(in oklab, #25D366 55%, transparent)" }}
+            className="flex min-h-[52px] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border px-3 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-ivory transition-colors duration-[var(--d-base)] active:text-champagne"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true">
               <path d="M12.04 2A9.9 9.9 0 0 0 2.1 11.9c0 1.75.46 3.46 1.34 4.96L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01A9.9 9.9 0 0 0 22 11.94 9.9 9.9 0 0 0 12.04 2Zm0 18.13h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.13.82.84-3.05-.2-.31a8.2 8.2 0 0 1-1.26-4.36 8.24 8.24 0 1 1 8.25 8.23Zm4.52-6.16c-.25-.13-1.46-.72-1.69-.8-.23-.09-.39-.13-.56.12-.16.25-.64.8-.79.97-.14.16-.29.18-.54.06-.25-.13-1.04-.39-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.19 3.7.59.26 1.04.41 1.4.52.59.19 1.12.16 1.54.1.47-.07 1.46-.6 1.66-1.17.21-.58.21-1.07.15-1.17-.06-.11-.22-.17-.47-.29Z" />
             </svg>
-            WhatsApp Lana
+            {/* "WhatsApp Lana" at 0.2em tracking wrapped onto two lines
+                beside a five-word booking CTA at 390px, which only became
+                visible the day a real number was configured and the control
+                rendered for the first time. One word, and the accessible name
+                carries the rest. */}
+            <span aria-hidden="true">WhatsApp</span>
+            <span className="sr-only">Message Lana on WhatsApp</span>
           </a>
         )}
 
@@ -155,7 +166,7 @@ export default function MobileActionBar({
           <Link
             href="/contact"
             onClick={() => track("booking_click", { placement: "action-bar" })}
-            className="flex min-h-[52px] flex-[1.15] items-center justify-center rounded-full bg-ivory px-4 text-center text-[0.72rem] font-medium uppercase tracking-[0.2em] text-ink transition-colors duration-[var(--d-base)] active:bg-champagne"
+            className="flex min-h-[52px] flex-[1.15] items-center justify-center whitespace-nowrap rounded-full bg-ivory px-3 text-center text-[0.7rem] font-medium uppercase tracking-[0.14em] text-ink transition-colors duration-[var(--d-base)] active:bg-champagne"
           >
             {cta}
           </Link>

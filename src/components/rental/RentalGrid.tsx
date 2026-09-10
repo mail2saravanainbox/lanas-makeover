@@ -84,9 +84,26 @@ export default function RentalGrid({ items }: { items: RentalItem[] }) {
               aria-label={`Open ${item.title}, ${i + 1} of ${items.length}`}
               className="group block w-full overflow-hidden bg-ink-2"
             >
-              {/* A fixed 3:4 box that exists before the image does, so a grid
-                  of twenty-four never reflows as they arrive. */}
-              <div className="relative aspect-[3/4] w-full overflow-hidden">
+              {/*
+                CONTAIN, NOT COVER — AND THIS IS THE WHOLE POINT OF THE PAGE.
+
+                These are catalogue photographs of a long haram, and their
+                aspect runs from 1:2.3 to 1:1.4. Covering a 3:4 tile with a
+                1:2.3 frame shows fifty-nine per cent of its height: the crop
+                takes the top of the necklace and the bottom of the jhumka,
+                which are the two things a bride is looking at. Cropping the
+                WIDTH instead is worse — the earrings stand at the left and
+                right edges of every one of these frames.
+
+                So nothing is cropped. The box is 5:8, which is close to the
+                median frame, and what is left over is letterboxed against the
+                same near-black the photographs are shot on, so it reads as
+                margin rather than as a gap.
+
+                The box is still fixed, so a grid of twenty-four never reflows
+                as the images arrive.
+              */}
+              <div className="relative aspect-[5/8] w-full overflow-hidden">
                 <Image
                   src={item.thumbnailUrl}
                   alt={item.alt}
@@ -94,7 +111,7 @@ export default function RentalGrid({ items }: { items: RentalItem[] }) {
                   sizes="(max-width: 640px) 48vw, (max-width: 1024px) 31vw, 23vw"
                   placeholder={item.blurDataURL ? "blur" : undefined}
                   blurDataURL={item.blurDataURL}
-                  className="object-cover transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
+                  className="object-contain transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
                 />
               </div>
             </button>

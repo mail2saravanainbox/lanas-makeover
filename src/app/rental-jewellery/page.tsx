@@ -63,7 +63,9 @@ export default async function Page() {
               <li key={c.slug}>
                 <Reveal delay={(i % 2) * 110} blur>
                   <Link href={`/rental-jewellery/${c.slug}`} data-cursor="view" className="group block">
-                    <div className="relative aspect-[4/5] w-full overflow-hidden bg-ink-2">
+                    {/* 5:8 and contain, for the same reason as the grid:
+                        a 1:2 frame in a 4:5 box loses a third of the necklace. */}
+                    <div className="relative aspect-[5/8] w-full overflow-hidden bg-ink-2">
                       {cover && (
                         <Image
                           src={cover.thumbnailUrl}
@@ -72,7 +74,7 @@ export default async function Page() {
                           sizes="(max-width: 640px) 92vw, 46vw"
                           placeholder={cover.blurDataURL ? "blur" : undefined}
                           blurDataURL={cover.blurDataURL}
-                          className="object-cover transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
+                          className="object-contain transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
                         />
                       )}
                     </div>
