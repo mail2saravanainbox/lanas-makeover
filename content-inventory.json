@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-09-10T14:28:02.348Z",
+  "note": "Phase 0 inventory. Source of truth for any future CMS migration.",
+  "routes": [
+    "/",
+    "/about",
+    "/admin",
+    "/bridal",
+    "/brides",
+    "/contact",
+    "/faq",
+    "/hair",
+    "/journal",
+    "/makeup",
+    "/portfolio",
+    "/privacy",
+    "/services",
+    "/terms",
+    "/admin/login",
+    "/brides/[slug]",
+    "/journal/[slug]",
+    "/portfolio/[collection]",
+    "/services/[slug]",
+    "/journal/category/[category]"
+  ],
+  "contentModules": {
+    "services": 6,
+    "faqs": 15,
+    "journalPosts": 6,
+    "testimonials": 1,
+    "brides": 3,
+    "collections": 9,
+    "timelineEntries": 7,
+    "trustSignals": 10
+  },
+  "portfolio": {
+    "total": 55,
+    "published": 55,
+    "withAlt": 55,
+    "withFocus": 54,
+    "humanTitles": 0,
+    "byCategory": {
+      "behind-scenes": 5,
+      "editorial": 8,
+      "engagement": 4,
+      "hair": 8,
+      "muhurtham": 5,
+      "reception": 4,
+      "ritual": 8,
+      "tamil-bridal": 11,
+      "jadai": 2
+    },
+    "filenameDerivedTitles": [
+      {
+        "slug": "bts-01-ritual",
+        "title": "Bts Ritual"
+      },
+      {
+        "slug": "bts-02-hands",
+        "title": "Bts Hands"
+      },
+      {
+        "slug": "bts-03-haldi-close",
+        "title": "Bts Haldi Close"
+      },
+      {
+        "slug": "editorial-01-hands-gold",
+        "title": "Editorial Hands Gold"
+      },
+      {
+        "slug": "bts-04-haldi-hands",
+        "title": "Bts Haldi Hands"
+      },
+      {
+        "slug": "editorial-02-pendant",
+        "title": "Editorial Pendant"
+      }
+    ]
+  },
+  "brandAssets": [
+    "public/brand/logo.webp",
+    "public/veil/veil-silk.webp",
+    "public/lana/portrait.webp"
+  ],
+  "images": {
+    "portfolioFiles": 114
+  }
+}
