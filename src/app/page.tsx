@@ -9,6 +9,8 @@ import ActBefore from "@/components/sections/ActBefore";
 import ActRitual from "@/components/sections/ActRitual";
 import BrideStories from "@/components/sections/BrideStories";
 import BridalWorlds from "@/components/sections/BridalWorlds";
+import RentalStrip from "@/components/sections/RentalStrip";
+import { rentalItems } from "@/content/rental";
 import ActArtist from "@/components/sections/ActArtist";
 import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
@@ -89,6 +91,10 @@ export default async function HomePage() {
     // returns null otherwise, so the number is never orphaned.
     transformation: transformation.length > 0,
     ceremonies: services.length > 0,
+    // A second line of business, so it is numbered like one — but it is a
+    // sideways rail, not a section, and costs about three quarters of a
+    // screen on a phone. See RentalStrip.
+    rental: rentalItems().length > 0,
     artist: true,
     investment: true,
     voices: testimonials.length > 0,
@@ -145,6 +151,13 @@ export default async function HomePage() {
       <SectionMark />
 
       <BridalWorlds index={n.ceremonies!} services={worlds} />
+
+      {/* ── THE JEWELLERY ────────────────────────────────────────────────
+          Placed after the worlds because it is the same question one step on:
+          she has just read what the morning is, and this is what she will be
+          wearing through it. A rail rather than a grid — the homepage came
+          down from 33 screens to 12 and is not going back up. */}
+      {renders.rental && <RentalStrip index={n.rental} />}
 
       <SectionMark />
 

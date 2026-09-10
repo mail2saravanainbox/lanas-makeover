@@ -1897,3 +1897,69 @@ test.describe("rental jewellery", () => {
     for (const { slug } of ROOMS) expect(xml).toContain(`/rental-jewellery/${slug}`);
   });
 });
+
+/**
+ * The homepage came down from 33.3 screens to 12.3 over the mobile audit. A
+ * second line of business still had to appear on it, and those two facts are
+ * only compatible in one direction: sideways. This is the guard that keeps it
+ * that way.
+ */
+test.describe("the jewellery on the homepage", () => {
+  test("is a rail, and costs under a screen", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const strip = page.locator("section:has(#rental-strip-title)");
+    await strip.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+
+    const screens = await strip.evaluate(
+      (el) => el.getBoundingClientRect().height / window.innerHeight,
+    );
+    expect(screens, `the strip is ${screens.toFixed(2)} screens tall`).toBeLessThanOrEqual(0.95);
+
+    // It scrolls sideways rather than growing downward. A grid of twelve would
+    // have been three screens on a phone and would have undone a quarter of
+    // the audit on its own.
+    const rail = strip.locator('div[class*="overflow-x-auto"]');
+    expect(await rail.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+
+    // The first thumbnail lines up with the heading above it. An earlier
+    // version did the gutter arithmetic by hand and produced no padding at
+    // all, which put the first set half off the left of a phone.
+    const offset = await strip.evaluate((el) => {
+      const r = el.querySelector('div[class*="overflow-x-auto"]');
+      const tile = r?.querySelector("a");
+      const head = el.querySelector("h2");
+      if (!tile || !head) return null;
+      return Math.round(tile.getBoundingClientRect().left - head.getBoundingClientRect().left);
+    });
+    expect(offset, "the rail is out of line with the heading").toBe(0);
+  });
+
+  test("adds a link, not a fourth booking button", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const strip = page.locator("section:has(#rental-strip-title)");
+    await expect(strip.getByRole("link", { name: /All \d+ sets/ })).toBeVisible();
+
+    /**
+     * The homepage already carries three inline booking controls and the
+     * sticky bar. A fourth here would be the eight-button mistake starting
+     * again — the finding that opened this whole audit.
+     */
+    await expect(strip.getByRole("link", { name: /Check Your Date/i })).toHaveCount(0);
+
+    // And the count is rendered from the catalogue, so it cannot outlive it.
+    const label = await strip.getByRole("link", { name: /All \d+ sets/ }).textContent();
+    const claimed = Number((label ?? "").replace(/\D/g, ""));
+    await page.goto("/rental-jewellery", { waitUntil: "networkidle" });
+    const counts = await page
+      .locator("main")
+      .getByText(/^\d+ sets$/)
+      .allTextContents();
+    const actual = counts.reduce((a, c) => a + Number(c.split(" ")[0]), 0);
+    expect(claimed, "the homepage claims a different number from the catalogue").toBe(actual);
+  });
+});
