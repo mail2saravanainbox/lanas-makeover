@@ -852,6 +852,46 @@ html.lm-veiled #lm-veil[data-veil="out"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   A THUMB IS NOT A CURSOR
+   ═══════════════════════════════════════════════════════════════════════════
+   A line of 14px text is about 20px tall. That is a perfectly good link for a
+   mouse and a poor one for a thumb, and the site had thirty-nine of them —
+   every footer column, every breadcrumb, every "other worlds" list, the
+   collection rail on /portfolio.
+
+   `.tap` gives one of those a 44px hit area (WCAG 2.5.5) WITHOUT changing how
+   it looks: the text stays where it is, the box around it grows. It applies
+   below lg only — above it there is a cursor, and 44px rows would put air
+   through footer columns that are correctly tight.
+
+   ── USE IT ON NAVIGATION, NOT ON PROSE ────────────────────────────────────
+   A link inside a sentence is exempt from the target-size rule precisely
+   because padding it would wreck the line it sits in. This is for links that
+   ARE controls: lists, rails, breadcrumbs, footers.
+
+   ── AND COLLAPSE THE GAP WHEN YOU DO ──────────────────────────────────────
+   A list of 23px links at space-y-3 becomes a list of 44px links, so the
+   spacing is already in the target. Pair `.tap` with `space-y-0 lg:space-y-3`
+   or the column grows by half again.
+
+   In @layer utilities so a Tailwind class can still win — the lesson `.btn`
+   taught, which sits outside every layer and beats an unprefixed `hidden`.
+   ═════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  @media (max-width: 63.999rem) {
+    .tap {
+      display: inline-flex;
+      align-items: center;
+      /* Left, not centre: the text must stay exactly where it was — this
+         grows the box around a link, it does not re-lay-out the column. */
+      justify-content: flex-start;
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    THE BOTTOM SHEET
    ═══════════════════════════════════════════════════════════════════════════
    A native <dialog> opened with showModal(). The browser gives the focus trap,

@@ -142,7 +142,7 @@ export default async function AboutPage() {
                       href={settings.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="link-wipe body-base !text-ivory/80 hover:!text-champagne"
+                      className="tap link-wipe body-base !text-ivory/80 hover:!text-champagne"
                     >
                       {settings.instagramHandle}
                     </a>
@@ -223,12 +223,12 @@ export default async function AboutPage() {
                 <Reveal delay={(i % 3) * 90}>
                   <Link
                     href={`/services/${s.slug}`}
-                    className="group flex items-baseline justify-between gap-4 border-b border-ivory/10 py-4"
+                    className="group flex min-h-11 items-baseline justify-between gap-4 border-b border-ivory/10 py-4"
                   >
                     <span className="font-display text-xl text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
                       {s.name}
                     </span>
-                    <span className="shrink-0 text-[0.7rem] uppercase tracking-[0.2em] text-champagne/70">
+                    <span className="shrink-0 text-[0.75rem] uppercase tracking-[0.2em] text-champagne/70">
                       View
                     </span>
                   </Link>

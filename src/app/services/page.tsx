@@ -51,12 +51,12 @@ export default async function ServicesPage() {
       <div className="shell pb-20">
         <Reveal>
           <h2 className="eyebrow mb-6">Disciplines</h2>
-          <ul className="flex flex-wrap gap-x-10 gap-y-4">
+          <ul className="flex flex-wrap gap-x-10 gap-y-0 lg:gap-y-4">
             {[bridal, makeup, hair].map((d) => (
               <li key={d.slug}>
                 <Link
                   href={`/${d.slug}`}
-                  className="link-wipe font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
+                  className="tap link-wipe font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
                 >
                   {d.eyebrow}
                 </Link>
@@ -97,7 +97,10 @@ export default async function ServicesPage() {
                       {String(i + 1).padStart(2, "0")} — {s.eyebrow}
                     </p>
                     <h2 className="display-md text-ivory">
-                      <Link href={`/services/${s.slug}`} className="link-wipe">
+                      {/* An inline <a> in a display heading is only as tall
+                          as the font's em box — 38px here, under the minimum,
+                          even though the heading looks twice that. */}
+                      <Link href={`/services/${s.slug}`} className="tap link-wipe">
                         {s.name}
                       </Link>
                     </h2>

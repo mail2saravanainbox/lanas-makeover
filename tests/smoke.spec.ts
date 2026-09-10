@@ -1412,3 +1412,130 @@ test.describe("the inner pages, on a phone", () => {
     ).toBe(1);
   });
 });
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  A THUMB IS NOT A CURSOR (Phase 6)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  A line of 14px text is about 20px tall, which is a fine link for a mouse
+ *  and a poor one for a thumb — and the site had thirty-nine of them. This is
+ *  the standing guard: it walks every page and fails on the first control a
+ *  bride would have to aim at.
+ */
+test.describe("every control is thumb-sized", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 1024, "mobile only");
+
+  for (const path of ["/", "/services", "/services/muhurtham", "/about", "/portfolio", "/contact", "/faq"]) {
+    test(`on ${path}`, async ({ page }) => {
+      await skipVeil(page);
+      await page.goto(path, { waitUntil: "networkidle" });
+      await page.waitForTimeout(500);
+
+      const small = await page.evaluate(() =>
+        [...document.querySelectorAll("a,button,input,select,textarea,summary,[role=button]")]
+          .filter((e) => {
+            const r = e.getBoundingClientRect();
+            if (r.width < 3 || r.height < 3) return false; // sr-only
+            const cs = getComputedStyle(e);
+            if (cs.visibility === "hidden") return false;
+            // The honeypot is parked off-screen, aria-hidden and untabbable:
+            // the one field on the site nobody should ever be able to hit.
+            if (e.closest("[aria-hidden=true]") || (e as HTMLElement).tabIndex < 0) return false;
+            return Math.min(r.width, r.height) < 44;
+          })
+          .map((e) => {
+            const r = e.getBoundingClientRect();
+            return `${e.tagName.toLowerCase()} "${(e.textContent || "").trim().slice(0, 24)}" ${Math.round(r.width)}x${Math.round(r.height)}`;
+          }),
+      );
+
+      expect(small, `controls under 44px on ${path}`).toEqual([]);
+    });
+  }
+});
+
+/**
+ * The theme is ivory on near-black and has never been in doubt, but the type
+ * carries a lot of alpha — /65, /70, /80 — and each of those is a step toward
+ * the ground. This checks what a bride actually sees, by compositing the text
+ * colour over the first ancestor that paints.
+ */
+test("nothing readable falls under the contrast minimum", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 1024, "mobile only");
+
+  await skipVeil(page);
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(600);
+
+  const bad = await page.evaluate(() => {
+    /**
+     * COMPUTED COLOURS ARE NOT ALWAYS rgb().
+     *
+     * Anything through color-mix() or an oklab token comes back as
+     * `oklab(0.94 0.001 0.013 / 0.65)`, and reading those three numbers as
+     * 0–255 sRGB makes every ratio come out at about 1.03 — a contrast audit
+     * that fails everything and therefore says nothing. The browser already
+     * knows how to resolve and composite any colour it can parse, so ask it:
+     * paint the ground, paint the text colour over it, read the pixel.
+     */
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 1;
+    const ctx = cv.getContext("2d", { willReadFrequently: true })!;
+    const px = (bg: string, fg?: string) => {
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, 1, 1);
+      if (fg) {
+        ctx.fillStyle = fg;
+        ctx.fillRect(0, 0, 1, 1);
+      }
+      const d = ctx.getImageData(0, 0, 1, 1).data;
+      return [d[0], d[1], d[2]];
+    };
+    const lum = (c: number[]) => {
+      const s = c.map((v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
+    };
+    /** The first ancestor that actually paints something opaque. */
+    const bgOf = (el: Element) => {
+      let n: Element | null = el;
+      while (n && n !== document.documentElement) {
+        const c = getComputedStyle(n).backgroundColor;
+        const a = px("rgb(255,0,255)", c);
+        const b = px("rgb(0,255,0)", c);
+        if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) < 12) return c;
+        n = n.parentElement;
+      }
+      return getComputedStyle(document.body).backgroundColor;
+    };
+
+    const out: string[] = [];
+    for (const el of document.querySelectorAll("p,span,a,li,h1,h2,h3,dt,dd,button,label,summary")) {
+      const txt = (el.textContent || "").trim();
+      if (!txt || el.children.length > 0) continue;
+      // A ghost word at 3.5% opacity is a depth cue, not text — it is
+      // aria-hidden and pointer-events-none, and the rule does not reach it.
+      if (el.closest("[aria-hidden=true]")) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.opacity === "0") continue;
+
+      const bg = bgOf(el);
+      const L1 = lum(px(bg, cs.color));
+      const L2 = lum(px(bg));
+      const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+
+      const size = parseFloat(cs.fontSize);
+      const large = size >= 24 || (size >= 18.66 && parseInt(cs.fontWeight, 10) >= 700);
+      const need = large ? 3 : 4.5;
+      if (ratio < need) out.push(`${ratio.toFixed(2)} < ${need} · ${size}px "${txt.slice(0, 30)}"`);
+    }
+    return [...new Set(out)];
+  });
+
+  expect(bad).toEqual([]);
+});

@@ -92,7 +92,7 @@ export default function Pricing({ index }: { index?: number }) {
                 display is driven by `group-open` and `lg:` instead, and the
                 summary loses its pointer and its chevron there. */}
             <details className="group [&>summary]:list-none">
-              <summary className="flex cursor-pointer items-center justify-between gap-4 border-b border-ivory/10 pb-4 lg:pointer-events-none lg:border-0 lg:pb-0">
+              <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4 border-b border-ivory/10 pb-4 lg:min-h-0 lg:pointer-events-none lg:border-0 lg:pb-0">
                 <h3 className="eyebrow !text-ivory/80">What affects the price</h3>
                 <span
                   aria-hidden="true"

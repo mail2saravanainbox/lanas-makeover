@@ -72,26 +72,26 @@ export default async function ContactPage() {
           <aside className="space-y-10 border-t border-ivory/12 pt-10 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
             <div>
               <h2 className="eyebrow mb-4">Direct</h2>
-              <ul className="space-y-3 text-sm text-ivory/80">
+              <ul className="space-y-0 text-sm text-ivory/80 lg:space-y-3">
                 <li>
                   <InstagramLink
                     href={settings.instagram}
                     placement="contact"
-                    className="link-wipe hover:text-champagne"
+                    className="tap link-wipe hover:text-champagne"
                   >
                     {settings.instagramHandle} — message on Instagram
                   </InstagramLink>
                 </li>
                 {settings.email && (
                   <li>
-                    <a href={`mailto:${settings.email}`} className="link-wipe hover:text-champagne">
+                    <a href={`mailto:${settings.email}`} className="tap link-wipe hover:text-champagne">
                       {settings.email}
                     </a>
                   </li>
                 )}
                 {tel && (
                   <li>
-                    <a href={tel} className="link-wipe hover:text-champagne">
+                    <a href={tel} className="tap link-wipe hover:text-champagne">
                       {settings.phone}
                     </a>
                   </li>

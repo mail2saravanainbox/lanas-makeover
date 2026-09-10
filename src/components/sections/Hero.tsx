@@ -111,7 +111,7 @@ export default function Hero({
           <Link
             href="/portfolio"
             data-cursor="view"
-            className="link-wipe self-start text-[0.8rem] uppercase tracking-[0.22em] text-ivory/75 hover:text-ivory lg:hidden"
+            className="tap link-wipe self-start text-[0.8rem] uppercase tracking-[0.22em] text-ivory/75 hover:text-ivory lg:hidden"
           >
             View the work &rarr;
           </Link>

@@ -229,7 +229,7 @@ export default function StagesMobile({ images }: { images: ImageRef[] }) {
           were written for a desktop column and run past 90 characters, and a
           screen reader should still get the whole sentence. */}
       <div className="mx-auto mt-5 w-[86vw]">
-        <p className="text-[0.72rem] uppercase tracking-[0.24em] text-champagne/80">
+        <p className="text-[0.75rem] uppercase tracking-[0.24em] text-champagne/80">
           {stage.index} &middot; {stage.name}
         </p>
         <p className="body-base mt-2 line-clamp-2 text-[0.95rem]">

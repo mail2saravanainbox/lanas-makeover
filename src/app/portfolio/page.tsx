@@ -45,12 +45,12 @@ export default async function PortfolioPage() {
 
       <nav aria-label="Collections" className="shell mb-16">
         <h2 className="eyebrow mb-6">Collections</h2>
-        <ul className="flex flex-wrap gap-x-7 gap-y-3">
+        <ul className="flex flex-wrap gap-x-7 gap-y-0 lg:gap-y-3">
           {collections.map((c) => (
             <li key={c.slug}>
               <Link
                 href={`/portfolio/${c.slug}`}
-                className="link-wipe font-display text-xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
+                className="tap link-wipe font-display text-xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
               >
                 {c.name}
               </Link>

@@ -80,12 +80,13 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             {COLUMNS.map((col) => (
               <nav key={col.title} aria-label={col.title}>
                 <h2 className="eyebrow mb-5">{col.title}</h2>
-                <ul className="space-y-3">
+                {/* space-y-0 below lg: the 44px hit area IS the spacing. */}
+                <ul className="space-y-0 lg:space-y-3">
                   {col.links.map((l) => (
                     <li key={l.href}>
                       <Link
                         href={l.href}
-                        className="link-wipe text-sm text-ivory/65 transition-colors duration-[var(--d-base)] hover:text-ivory"
+                        className="tap link-wipe text-sm text-ivory/65 transition-colors duration-[var(--d-base)] hover:text-ivory"
                       >
                         {l.label}
                       </Link>
@@ -136,11 +137,11 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             </p>
           </div>
 
-          <ul className="space-y-2 text-sm text-ivory/65">
+          <ul className="space-y-0 text-sm text-ivory/65 lg:space-y-2">
             <li>
               <InstagramLink
                 href={settings.instagram}
-                className="link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
+                className="tap link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
                 placement="footer"
               >
                 {settings.instagramHandle}
@@ -148,7 +149,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             </li>
             {settings.email && (
               <li>
-                <a href={`mailto:${settings.email}`} className="link-wipe hover:text-ivory">
+                <a href={`mailto:${settings.email}`} className="tap link-wipe hover:text-ivory">
                   {settings.email}
                 </a>
               </li>
@@ -157,7 +158,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               <li>
                 <a
                   href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}
-                  className="link-wipe hover:text-ivory"
+                  className="tap link-wipe hover:text-ivory"
                 >
                   {settings.phone}
                 </a>

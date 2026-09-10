@@ -139,13 +139,13 @@ export default async function BridalWorldPage({
             <nav aria-label="Breadcrumb" className="mb-6">
               <ol className="flex flex-wrap gap-2 text-[0.75rem] uppercase tracking-[0.24em] text-muted">
                 <li>
-                  <Link href="/" className="link-wipe hover:text-ivory">
+                  <Link href="/" className="tap link-wipe hover:text-ivory">
                     Home
                   </Link>
                 </li>
                 <li aria-hidden="true">·</li>
                 <li>
-                  <Link href="/services" className="link-wipe hover:text-ivory">
+                  <Link href="/services" className="tap link-wipe hover:text-ivory">
                     Services
                   </Link>
                 </li>
@@ -204,7 +204,7 @@ export default async function BridalWorldPage({
         <section aria-label={`${service.name} gallery`} className="pb-24">
           <div className="shell mb-12 flex flex-wrap items-baseline justify-between gap-4">
             <h2 className="display-sm text-ivory">Selected work</h2>
-            <Link href="/portfolio" className="link-wipe eyebrow !text-champagne">
+            <Link href="/portfolio" className="tap link-wipe eyebrow !text-champagne">
               The full archive
             </Link>
           </div>
@@ -227,12 +227,12 @@ export default async function BridalWorldPage({
         <h2 id="other-worlds" className="eyebrow mb-8">
           Other worlds
         </h2>
-        <ul className="flex flex-wrap gap-x-10 gap-y-4">
+        <ul className="flex flex-wrap gap-x-10 gap-y-0 lg:gap-y-4">
           {others.map((s) => (
             <li key={s.slug}>
               <Link
                 href={`/services/${s.slug}`}
-                className="link-wipe font-display text-2xl text-ivory hover:text-champagne"
+                className="tap link-wipe font-display text-2xl text-ivory hover:text-champagne"
               >
                 {s.name}
               </Link>

@@ -169,7 +169,7 @@ export default function ActArtist({
             <Reveal delay={900}>
               <Link
                 href="/about#her-morning"
-                className="link-wipe mt-10 inline-block text-[0.8rem] uppercase tracking-[0.22em] text-champagne hover:text-ivory"
+                className="tap link-wipe mt-10 inline-block text-[0.8rem] uppercase tracking-[0.22em] text-champagne hover:text-ivory"
               >
                 How a bridal morning runs with Lana &rarr;
               </Link>

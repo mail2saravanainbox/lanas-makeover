@@ -39,7 +39,7 @@ export default function PageHeader({
                       {b.name}
                     </span>
                   ) : (
-                    <Link href={b.href} className="link-wipe hover:text-ivory">
+                    <Link href={b.href} className="tap link-wipe hover:text-ivory">
                       {b.name}
                     </Link>
                   )}

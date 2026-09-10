@@ -166,7 +166,7 @@ export default function MobileNav({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => track("instagram_click", { placement: "mobile-nav" })}
-              className="link-wipe"
+              className="tap link-wipe"
             >
               {siteSettings.instagramHandle}
             </a>
