@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { PortfolioItem } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
@@ -71,7 +72,18 @@ export default async function BridalWorldPage({
    * are no plain `bridal` photographs, so this grid was empty on the two
    * services that needed it most.
    */
-  const items = (() => {
+  /**
+   * SELECTED, AND CAPPED AT SIX.
+   *
+   * This grid paginates at twelve, and twelve full-bleed photographs is six and
+   * a half screens on a phone — most of the page, for a strip headed "Selected
+   * work" that sits under the prose someone came to read. The same twelve also
+   * appear on each of the other five service pages and again on /portfolio, so
+   * the archive was being shown seven times over.
+   *
+   * Six is a selection. The full archive is one link away and is named as such.
+   */
+  const items = ((): PortfolioItem[] => {
     const own = all.filter((i) => i.category === service.category);
     if (own.length > 0) return own;
     for (const c of serviceNeighbours(service.category)) {
@@ -79,7 +91,7 @@ export default async function BridalWorldPage({
       if (near.length > 0) return near;
     }
     return [];
-  })();
+  })().slice(0, 6);
   const others = services.filter((s) => s.slug !== service.slug);
 
   /**
@@ -190,8 +202,11 @@ export default async function BridalWorldPage({
 
       {items.length > 0 ? (
         <section aria-label={`${service.name} gallery`} className="pb-24">
-          <div className="shell mb-12">
+          <div className="shell mb-12 flex flex-wrap items-baseline justify-between gap-4">
             <h2 className="display-sm text-ivory">Selected work</h2>
+            <Link href="/portfolio" className="link-wipe eyebrow !text-champagne">
+              The full archive
+            </Link>
           </div>
           <PortfolioGrid items={items} showFilters={false} />
         </section>

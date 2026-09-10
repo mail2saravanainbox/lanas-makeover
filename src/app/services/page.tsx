@@ -67,7 +67,7 @@ export default async function ServicesPage() {
       </div>
 
       <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
-        <ul className="space-y-28 sm:space-y-40">
+        <ul className="space-y-16 sm:space-y-28 lg:space-y-40">
           {services.map((s, i) => (
             <li key={s.slug} id={s.slug} className="scroll-mt-32">
               <article
@@ -104,7 +104,17 @@ export default async function ServicesPage() {
                     <p className="body-lg mt-7 max-w-lg">{s.summary}</p>
                   </Reveal>
 
-                  <div className="mt-8 space-y-5">
+                  {/* ── THE INDEX IS AN INDEX, BELOW lg ──────────────────
+                      Every service's full prose and its Includes list are
+                      rendered here AND on /services/<slug>, which is the
+                      canonical page for them. On a desktop, side by side with
+                      the photograph, that is the editorial layout. Linearised
+                      onto a phone it is thirteen screens to choose between six
+                      things, with the same words a tap away.
+
+                      Nothing is deleted: the copy below is on the service page
+                      already, and the link to it is right there. */}
+                  <div className="mt-8 hidden space-y-5 lg:block">
                     {s.description.map((p, j) => (
                       <Reveal key={j} delay={100 + j * 90}>
                         <p className="body-base max-w-lg">{p}</p>
@@ -112,7 +122,7 @@ export default async function ServicesPage() {
                     ))}
                   </div>
 
-                  <Reveal delay={340}>
+                  <Reveal delay={340} className="hidden lg:block">
                     <h3 className="eyebrow mb-5 mt-12">Includes</h3>
                     <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
                       {s.includes.map((inc) => (
@@ -129,7 +139,12 @@ export default async function ServicesPage() {
 
                   <Reveal delay={440}>
                     <div className="mt-10 flex flex-wrap gap-4">
-                      <Link href="/contact" className="btn">
+                      {/* Six booking buttons down one scroll is the same
+                          mistake the homepage made with eight. The sticky bar
+                          carries this intent on mobile, and the page still ends
+                          with ClosingCTA. Unlayered `.btn` beats an unprefixed
+                          `hidden`, so both halves need the bang. */}
+                      <Link href="/contact" className="btn !hidden lg:!inline-flex">
                         {settings.bookingCta}
                       </Link>
                       {/* §10, §44 — the same two words on every service. */}
@@ -146,8 +161,8 @@ export default async function ServicesPage() {
 
         <Reveal>
           <p className="body-base mt-24 max-w-2xl border-l border-champagne/30 pl-5">
-            Pricing, packages and travel terms are confirmed directly, per date and per city.
-            Pricing and travel terms are confirmed per date and per city — send your date to get a figure for your wedding.
+            Pricing, packages and travel terms are confirmed directly, per date and per city —
+            send your date to get a figure for your wedding.
           </p>
         </Reveal>
       </div>

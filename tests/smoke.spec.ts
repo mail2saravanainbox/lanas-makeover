@@ -148,7 +148,7 @@ async function waitForHydration(page: Page, selector = "form") {
 }
 
 /** The step indicator, which is also the flow's live region. */
-const stepMarker = (page: Page, n: number) => page.getByText(`Step ${n} of 6`);
+const stepMarker = (page: Page, n: number) => page.getByText(`Step ${n} of 3`);
 
 const onStep = (page: Page, n: number) =>
   expect(stepMarker(page, n)).toBeVisible({ timeout: 20_000 });
@@ -159,7 +159,7 @@ const onStep = (page: Page, n: number) =>
  * The enquiry is server-rendered, so its buttons exist in the HTML a moment
  * before React attaches handlers to them. Playwright will happily click one in
  * that gap, and the click does nothing at all — which showed up as a rare,
- * genuinely confusing "Step 2 of 6 not found" on a fully working flow.
+ * genuinely confusing "Step 2 of 3 not found" on a fully working flow.
  *
  * The retry is guarded by a check for the target step, so an advance that DID
  * register but rendered slowly is never clicked a second time and never skips
@@ -175,8 +175,13 @@ async function advanceTo(page: Page, n: number) {
 }
 
 /**
- * Walks the six-step enquiry (§12) from the date to the submit button.
+ * Walks the three-step enquiry (§12) from the date to the submit button.
  * Returns nothing; the caller asserts on whatever state it lands in.
+ *
+ * Six panels still exist and still own their own fields; they are grouped two
+ * to a step. The date and the city are one question asked twice, and so are
+ * "which events" and "what do you need" — pairing them halves the taps between
+ * a bride and a sent enquiry without moving a single field name.
  */
 async function completeBookingFlow(page: Page, city = "Trichy") {
   const advance = (n: number) => advanceTo(page, n);
@@ -185,41 +190,33 @@ async function completeBookingFlow(page: Page, city = "Trichy") {
   await waitForHydration(page);
   await onStep(page, 1);
 
-  // 01 date
+  // 01 the wedding — date, then city. The four cities are radio chips, not a
+  // free-text field: a real radio visually replaced by its own label, so the
+  // test clicks what a visitor clicks.
   await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await chip(page, city).click();
   await advance(2);
 
-  // 02 location — the four cities are radio chips, not a free-text field.
-  // The control is a real radio, visually replaced by its own label, so the
-  // test clicks what a visitor clicks: the chip.
-  await chip(page, city).click();
+  // 02 the day — events, then services.
+  await chip(page, "Muhurtham").click();
+  await chip(page, "Bridal Makeup").click();
   await advance(3);
 
-  // 03 events
-  await chip(page, "Muhurtham").click();
-  await advance(4);
-
-  // 04 services
-  await chip(page, "Bridal Makeup").click();
-  await advance(5);
-
-  // 05 details — name and phone are the only required fields.
-  await page.getByLabel("Name *").fill("Test Enquiry");
-  await page.getByLabel("Phone *").fill("9876543210");
-  await advance(6);
-
-  // 06 review.
+  // 03 you — name and phone are the only required fields, and the review is
+  // on this step rather than behind one more tap.
   //
   // The endpoint silently drops anything submitted within three seconds of
-  // the first interaction — no human fills six steps that fast, but Playwright
+  // the first interaction — no human fills the form that fast, but Playwright
   // does. Waiting past the gate is what makes this test exercise the real
   // path rather than the spam trap.
+  await page.getByLabel("Name *").fill("Test Enquiry");
+  await page.getByLabel("Phone *").fill("9876543210");
   await expect(page.getByText("Ready to send.")).toBeVisible();
   await page.waitForTimeout(3200);
   await page.getByRole("button", { name: "Check availability" }).click();
 }
 
-test("the six-step enquiry will not advance past an empty required step", async ({ page }) => {
+test("the enquiry will not advance past an empty required step", async ({ page }) => {
   await page.goto("/contact");
 
   await onStep(page, 1);
@@ -235,16 +232,27 @@ test("the six-step enquiry will not advance past an empty required step", async 
 
   await onStep(page, 1);
 
+  /**
+   * The date is filled but the city is not, and both live on step one now.
+   * One Continue guards two questions, so it must still refuse — and name the
+   * one that is missing rather than the one that is already answered.
+   */
   await page.getByLabel("Wedding date *").fill("2027-05-14");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByText("Please choose the city, or")).toBeVisible();
+  await expect(page.getByText("Please choose your wedding date.")).toHaveCount(0);
+  await onStep(page, 1);
+
+  await chip(page, "Trichy").click();
   await advanceTo(page, 2);
 });
 
 test("the enquiry offers the four service locations as cities", async ({ page }) => {
   await page.goto("/contact");
   await waitForHydration(page);
+  // Step one, not step two: the city now sits under the date rather than
+  // behind a tap of its own.
   await onStep(page, 1);
-  await page.getByLabel("Wedding date *").fill("2027-05-14");
-  await advanceTo(page, 2);
 
   for (const city of ["Chennai", "Trichy", "Pudukkottai", "Madurai"]) {
     await expect(chip(page, city)).toBeVisible();
@@ -262,22 +270,24 @@ test("going back through the enquiry does not lose what was entered", async ({ p
   await onStep(page, 1);
 
   await page.getByLabel("Wedding date *").fill("2027-05-14");
-  await advanceTo(page, 2);
-
   await chip(page, "Madurai").click();
   await expect(page.getByRole("radio", { name: "Madurai" })).toBeChecked();
+  await advanceTo(page, 2);
+
+  await chip(page, "Muhurtham").click();
 
   await page.getByRole("button", { name: "Back" }).click();
   await onStep(page, 1);
   await expect(page.getByLabel("Wedding date *")).toHaveValue("2027-05-14");
+  await expect(page.getByRole("radio", { name: "Madurai" })).toBeChecked();
 
   await advanceTo(page, 2);
-  await expect(page.getByRole("radio", { name: "Madurai" })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "Muhurtham" })).toBeChecked();
 });
 
 test("the enquiry admits that no inbox is connected", async ({ page }) => {
-  // The slowest test in the suite by design: it walks six steps AND waits out
-  // the endpoint's three-second spam gate before submitting.
+  // The slowest test in the suite by design: it walks the whole enquiry AND
+  // waits out the endpoint's three-second spam gate before submitting.
   test.slow();
 
   await completeBookingFlow(page);
@@ -860,45 +870,71 @@ test.describe("the sticky action bar", () => {
   });
 });
 
+/**
+ * On a phone every axis but the first lives behind the Filters sheet, so a
+ * test that clicks chips has to say which surface it is clicking on. Above lg
+ * the panel is the page itself and there is no sheet to open.
+ *
+ * Returns the surface to query chips in, and a way to put it away again.
+ */
+async function filterSurface(page: Page) {
+  const open = page.getByRole("button", { name: /^Filters/ });
+  if (await open.isVisible().catch(() => false)) {
+    await open.click();
+    const sheet = page.locator("dialog.lm-sheet");
+    await expect(sheet).toBeVisible();
+    return {
+      surface: sheet,
+      close: async () => {
+        await page.keyboard.press("Escape");
+        await expect(sheet).toBeHidden();
+      },
+    };
+  }
+  return { surface: page.locator("main"), close: async () => {} };
+}
+
 test.describe("portfolio filtering", () => {
   test("offers combinable facets and reports the result count", async ({ page }) => {
     await page.goto("/portfolio");
+    const { surface } = await filterSurface(page);
 
     // Every axis the archive can genuinely fill (§15).
     for (const axis of ["Look", "Event", "Hair", "Category"]) {
-      await expect(page.getByRole("group", { name: axis })).toBeVisible();
+      await expect(surface.getByRole("group", { name: axis }).first()).toBeVisible();
     }
 
-    const status = page.locator('[role="status"]').first();
+    const status = surface.locator('[role="status"]').first();
     const unfiltered = await status.textContent();
 
-    await page.getByRole("button", { name: "Muhurtham", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Muhurtham", exact: true })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    const chip = surface.getByRole("button", { name: "Muhurtham", exact: true }).first();
+    await chip.click();
+    await expect(chip).toHaveAttribute("aria-pressed", "true");
     await expect(status).not.toHaveText(unfiltered ?? "");
     await expect(status).toContainText("1 filter");
   });
 
   test("a combination with no work shows a way out, not an empty grid", async ({ page }) => {
     await page.goto("/portfolio");
+    const { surface, close } = await filterSurface(page);
 
     // Muhurtham frames are not filed under Hair — an intersection with
     // nothing in it, which is exactly the state §46 is about.
-    await page.getByRole("button", { name: "Muhurtham", exact: true }).click();
-    await page.getByRole("button", { name: "Hair", exact: true }).click();
+    await surface.getByRole("button", { name: "Muhurtham", exact: true }).first().click();
+    await surface.getByRole("button", { name: "Hair", exact: true }).first().click();
+    await close();
 
     await expect(page.getByText("No looks found for this combination.")).toBeVisible();
 
-    const clear = page.getByRole("button", { name: "Clear filters" }).last();
+    const clear = page.getByRole("button", { name: /^Clear/ }).last();
     await clear.click();
 
     await expect(page.getByText("No looks found for this combination.")).toBeHidden();
-    await expect(page.getByRole("button", { name: "Muhurtham", exact: true })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+
+    const { surface: again } = await filterSurface(page);
+    await expect(
+      again.getByRole("button", { name: "Muhurtham", exact: true }).first(),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 });
 
@@ -1232,5 +1268,147 @@ test.describe("the ritual, on a phone", () => {
      * connection fetches two photographs, not eight.
      */
     expect(fetched.size, `fetched ${[...fetched].join(", ")}`).toBeLessThanOrEqual(3);
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE INNER PAGES, ON A PHONE (Phase 5)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+test.describe("the inner pages, on a phone", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 1024, "mobile only");
+
+  test("the services index is an index, not six service pages", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/services", { waitUntil: "networkidle" });
+
+    // Every service still names itself and links to its own page …
+    await expect(page.getByRole("link", { name: "View service" })).toHaveCount(6);
+
+    // … but its prose and its Includes list are not rendered here as well.
+    // They are on /services/<slug>, which is one tap away and is where a
+    // crawler and a bride both already expect to find them.
+    expect(
+      await page.getByRole("heading", { name: "Includes" }).evaluateAll((els) =>
+        els.filter((e) => e.getBoundingClientRect().height > 0).length,
+      ),
+      "Includes lists painting on the index",
+    ).toBe(0);
+
+    /**
+     * ONE BOOKING CONTROL, NOT SIX.
+     *
+     * Six "Check Your Date" buttons down one scroll is the mistake the
+     * homepage made with eight. The sticky bar carries this intent on a phone,
+     * and the page still ends with the closing CTA.
+     */
+    const cta = await page.getByRole("link", { name: /Check Your Date/i }).evaluateAll((els) =>
+      els.filter((e) => {
+        const r = e.getBoundingClientRect();
+        // Painting, in the page itself — not the sticky bar and not the nav
+        // drawer, both of which are places she went looking for it.
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          !e.closest("[data-action-bar]") &&
+          !!e.closest("main") &&
+          !e.closest("nav")
+        );
+      }).length,
+    );
+    expect(cta, "inline booking links on /services").toBeLessThanOrEqual(1);
+  });
+
+  test("a service page shows a selection, and says where the rest is", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/services/muhurtham", { waitUntil: "networkidle" });
+
+    const gallery = page.locator('section[aria-label$="gallery"]');
+    if ((await gallery.count()) === 0) test.skip(true, "no work filed under this world yet");
+
+    // Twelve full-bleed photographs was six and a half screens under the prose
+    // someone came to read — and the same twelve appear on the other five
+    // service pages and again on /portfolio.
+    const shown = await gallery.locator("img").count();
+    expect(shown, "photographs under Selected work").toBeLessThanOrEqual(6);
+
+    await expect(gallery.getByRole("link", { name: "The full archive" })).toBeVisible();
+    expect(await gallery.evaluate((el) => el.getBoundingClientRect().height / window.innerHeight))
+      .toBeLessThanOrEqual(4);
+  });
+
+  test("the archive filter is one rail and a sheet", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/portfolio", { waitUntil: "networkidle" });
+
+    const open = page.getByRole("button", { name: /^Filters/ });
+    await expect(open).toBeVisible();
+
+    // Closed, the sheet's chips are display:none and so are not a second copy
+    // of every control in the accessibility tree.
+    const sheet = page.locator("dialog.lm-sheet");
+    await expect(sheet).toBeHidden();
+
+    await open.click();
+    await expect(sheet).toBeVisible();
+
+    // It is a sheet: full width, sitting on the bottom edge.
+    const box = await sheet.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { w: Math.round(r.width), gap: Math.round(window.innerHeight - r.bottom) };
+    });
+    expect(box.w).toBe(390);
+    expect(box.gap).toBe(0);
+
+    // Filtering from inside the sheet moves the count, which is the whole
+    // reason to leave it open while tapping.
+    const status = sheet.locator('[role="status"]');
+    const before = await status.textContent();
+    await sheet.getByRole("button", { name: "Muhurtham" }).first().click();
+    await expect(status).not.toHaveText(before ?? "");
+    await expect(status).toContainText("filter");
+
+    // showModal() means Escape is the browser's, not ours.
+    await page.keyboard.press("Escape");
+    await expect(sheet).toBeHidden();
+
+    // And the count comes back with the button, so she can see one is on.
+    await expect(open).toContainText("1");
+  });
+
+  test("about states the service area once, not twice", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/about", { waitUntil: "networkidle" });
+
+    /**
+     * "Four cities — bridal makeup and hair across Chennai, Trichy,
+     * Pudukkottai and Madurai" and the travel note were rendered in the trust
+     * section word for word, about a screen and a half after the Locations
+     * section had said both at display size. The same fact twice on one page
+     * reads as padding, not as reassurance.
+     */
+    const trust = page.locator("section:has(#trust-title)");
+    await expect(trust.getByRole("heading", { name: "Four cities" })).toHaveCount(0);
+    await expect(trust.getByRole("heading", { name: "Travel", exact: true })).toHaveCount(0);
+    // The signals that are NOT a repeat of the section above are still here.
+    await expect(trust.getByRole("heading", { name: /Natural/ })).toBeVisible();
+
+    // The section that DOES carry them is still there and still complete.
+    await expect(page.locator("#locations-title")).toBeVisible();
+    for (const city of ["Chennai", "Trichy", "Pudukkottai", "Madurai"]) {
+      await expect(page.locator("#locations-title ~ ul, section:has(#locations-title) ul").getByText(city, { exact: true })).toHaveCount(1);
+    }
+
+    // The travel note survives, once — in the page. The footer carries it on
+    // every page and is not what "twice on this page" meant.
+    expect(
+      await page.evaluate(
+        () =>
+          ((document.querySelector("main") as HTMLElement | null)?.innerText.match(
+            /Travel available across Tamil Nadu/g,
+          ) ?? []).length,
+      ),
+    ).toBe(1);
   });
 });

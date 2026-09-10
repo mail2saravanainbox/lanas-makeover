@@ -12,8 +12,26 @@ import { sectionEyebrow } from "@/lib/utils";
  * Returns null on an empty set rather than rendering an empty heading, which
  * is the behaviour every optional section on this site shares.
  */
-export default function TrustSignals({ index }: { index?: number }) {
-  const signals = publishedTrustSignals();
+export default function TrustSignals({
+  index,
+  omit = [],
+}: {
+  index?: number;
+  /**
+   * Labels this page has already made a section out of.
+   *
+   * On /about, "Four cities" and "Travel" were rendered here word for word
+   * about a screen and a half after the Locations section said the same two
+   * things at display size — the same fact twice on one page, which reads as
+   * padding rather than as reassurance.
+   *
+   * Nothing leaves trust.ts. The signal is withheld from ONE page that has
+   * already made it, so the day this section appears anywhere else it arrives
+   * complete.
+   */
+  omit?: string[];
+}) {
+  const signals = publishedTrustSignals().filter((s) => !omit.includes(s.label));
   if (signals.length === 0) return null;
 
   return (

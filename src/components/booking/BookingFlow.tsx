@@ -8,7 +8,7 @@ import { waLink } from "@/lib/whatsapp";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  CHECK YOUR DATE — the six-step enquiry (§12)
+ *  CHECK YOUR DATE — the three-step enquiry (§12)
  * ═══════════════════════════════════════════════════════════════════════════
  *  Replaces a single page of eleven fields. The same information, asked in the
  *  order a bride actually thinks about it, and never more than one decision on
@@ -21,8 +21,8 @@ import { waLink } from "@/lib/whatsapp";
  *    05 DETAILS   name and phone required; nothing else is
  *    06 REVIEW    what she said, then CHECK AVAILABILITY
  *
- *  WHY STEPS AND NOT A LONG FORM. Eleven fields on a phone is a wall. Six
- *  screens of one or two fields is a conversation — and it lets the date, the
+ *  WHY STEPS AND NOT A LONG FORM. Eleven fields on a phone is a wall. A few
+ *  screens of two or three fields is a conversation — and it lets the date, the
  *  single fact that decides whether any of this is possible, be asked first
  *  rather than eighth.
  *
@@ -44,7 +44,13 @@ import { waLink } from "@/lib/whatsapp";
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-const EVENTS = ["Engagement", "Muhurtham", "Reception", "Haldi", "Other"] as const;
+const EVENTS = [
+  "Engagement",
+  "Muhurtham",
+  "Reception",
+  "Haldi",
+  "Other",
+] as const;
 
 const SERVICES = [
   "Bridal Makeup",
@@ -95,7 +101,38 @@ const EMPTY: Values = {
 
 type Status = "idle" | "sending" | "sent" | "recorded" | "error";
 
-const STEPS = ["Date", "Location", "Events", "Services", "Details", "Review"] as const;
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  SIX PANELS, THREE STEPS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  The six panels below are unchanged and so are their field names — this is
+ *  the payload the API, the store and the CRM mapping all agree on, and none
+ *  of it moves.
+ *
+ *  What moves is how many times she has to tap Continue. A wedding date and
+ *  the city it is in are one question asked twice; so are "which events" and
+ *  "what do you need". Six taps to send an enquiry is five more chances to
+ *  leave, and on a phone each one was a near-empty screen.
+ *
+ *  PANELS[step] is the panels that render together. Validation stays keyed to
+ *  the PANEL, because a panel is what owns a set of fields — GUARDED, the
+ *  submit re-check and the review's Edit links all still speak in panels, and
+ *  `stepOf` is the only translation.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+const STEPS = ["The wedding", "The day", "You"] as const;
+
+const PANELS: readonly (readonly number[])[] = [
+  [0, 1], // date · location
+  [2, 3], // events · services
+  [4, 5], // details · review
+];
+
+/** The step a given panel is rendered on. */
+function stepOf(panel: number): number {
+  const i = PANELS.findIndex((p) => p.includes(panel));
+  return i < 0 ? 0 : i;
+}
 
 /** The steps that can fail validation. The two multi-selects cannot. */
 const GUARDED = [0, 1, 4] as const;
@@ -108,7 +145,8 @@ const chip =
   "inline-flex min-h-11 cursor-pointer items-center rounded-full border px-5 py-3 text-[0.75rem] uppercase tracking-[0.2em] transition-colors duration-[var(--d-base)] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-champagne";
 
 const chipOn = "border-champagne bg-champagne text-ink";
-const chipOff = "border-ivory/22 text-ivory/75 hover:border-ivory/50 hover:text-ivory";
+const chipOff =
+  "border-ivory/22 text-ivory/75 hover:border-ivory/50 hover:text-ivory";
 
 /**
  * PHONE (§48). The same rule as the API route, so the client and the server
@@ -127,7 +165,9 @@ function phoneLooksReal(input: string): boolean {
 export default function BookingFlow() {
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<Values>(EMPTY);
-  const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>(
+    {},
+  );
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
@@ -146,29 +186,35 @@ export default function BookingFlow() {
     }
   }
 
-  const set = useCallback(<K extends keyof Values>(key: K, value: Values[K]) => {
-    begin();
-    setValues((v) => ({ ...v, [key]: value }));
-    setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
-  }, []);
+  const set = useCallback(
+    <K extends keyof Values>(key: K, value: Values[K]) => {
+      begin();
+      setValues((v) => ({ ...v, [key]: value }));
+      setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
+    },
+    [],
+  );
 
   const toggle = useCallback((key: "events" | "services", value: string) => {
     begin();
     setValues((v) => ({
       ...v,
-      [key]: v[key].includes(value) ? v[key].filter((x) => x !== value) : [...v[key], value],
+      [key]: v[key].includes(value)
+        ? v[key].filter((x) => x !== value)
+        : [...v[key], value],
     }));
   }, []);
 
   /** The city as it will actually be sent — the chip, or what she typed. */
-  const resolvedCity = values.city === OTHER_CITY ? values.cityOther.trim() : values.city;
+  const resolvedCity =
+    values.city === OTHER_CITY ? values.cityOther.trim() : values.city;
 
   /**
    * Validation lives with the step it guards, so `next()` can refuse to
    * advance and the review step can re-check everything before a submission
    * that would otherwise fail server-side and lose her place.
    */
-  const validate = useCallback(
+  const validatePanel = useCallback(
     (which: number): Partial<Record<keyof Values, string>> => {
       const e: Partial<Record<keyof Values, string>> = {};
 
@@ -177,7 +223,8 @@ export default function BookingFlow() {
       }
 
       if (which === 1) {
-        if (!values.city) e.city = "Please choose the city, or “Other location”.";
+        if (!values.city)
+          e.city = "Please choose the city, or “Other location”.";
         else if (values.city === OTHER_CITY && !values.cityOther.trim()) {
           e.cityOther = "Please tell us where the wedding is.";
         }
@@ -185,12 +232,21 @@ export default function BookingFlow() {
 
       if (which === 4) {
         if (!values.name.trim()) e.name = "Please tell us your name.";
-        if (!values.phone.trim()) e.phone = "A phone number is how you will hear back.";
-        else if (!phoneLooksReal(values.phone)) e.phone = "That number doesn’t look right.";
-        if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email.trim())) {
+        if (!values.phone.trim())
+          e.phone = "A phone number is how you will hear back.";
+        else if (!phoneLooksReal(values.phone))
+          e.phone = "That number doesn’t look right.";
+        if (
+          values.email.trim() &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email.trim())
+        ) {
           e.email = "That email address doesn’t look right.";
         }
-        if (!values.sameWhatsapp && values.whatsapp.trim() && !phoneLooksReal(values.whatsapp)) {
+        if (
+          !values.sameWhatsapp &&
+          values.whatsapp.trim() &&
+          !phoneLooksReal(values.whatsapp)
+        ) {
           e.whatsapp = "That WhatsApp number doesn’t look right.";
         }
       }
@@ -206,8 +262,36 @@ export default function BookingFlow() {
     requestAnimationFrame(() => headingRef.current?.focus());
   }, []);
 
+  /** Every panel on this step, merged — one Continue guards two questions. */
+  const validateStep = useCallback(
+    (n: number) =>
+      (PANELS[n] ?? []).reduce(
+        (acc, panel) => ({ ...acc, ...validatePanel(panel) }),
+        {} as Partial<Record<keyof Values, string>>,
+      ),
+    [validatePanel],
+  );
+
+  /**
+   * "Edit" on the review. The details panel now shares a step with the review,
+   * so changing step is often a no-op — what she actually needs is to be taken
+   * to the question, which is why this scrolls as well as navigates.
+   */
+  function edit(panel: number) {
+    goTo(stepOf(panel));
+    requestAnimationFrame(() => {
+      const el = formRef.current?.querySelector<HTMLElement>(
+        `[data-panel="${panel}"]`,
+      );
+      el?.scrollIntoView({ block: "start", behavior: "smooth" });
+      el?.querySelector<HTMLElement>("input, textarea, select")?.focus({
+        preventScroll: true,
+      });
+    });
+  }
+
   function next() {
-    const e = validate(step);
+    const e = validateStep(step);
     setErrors(e);
     if (Object.keys(e).length > 0) {
       const first = Object.keys(e)[0];
@@ -223,12 +307,13 @@ export default function BookingFlow() {
     // Every guarded step re-checked, not only the last: she may have gone
     // back and cleared something after passing it the first time.
     const all = GUARDED.reduce(
-      (acc, i) => ({ ...acc, ...validate(i) }),
+      (acc, i) => ({ ...acc, ...validatePanel(i) }),
       {} as Partial<Record<keyof Values, string>>,
     );
     if (Object.keys(all).length > 0) {
       setErrors(all);
-      goTo(GUARDED.find((i) => Object.keys(validate(i)).length > 0) ?? 0);
+      const bad = GUARDED.find((i) => Object.keys(validatePanel(i)).length > 0);
+      goTo(bad === undefined ? 0 : stepOf(bad));
       return;
     }
 
@@ -256,7 +341,11 @@ export default function BookingFlow() {
         }),
       });
 
-      const body = (await res.json()) as { ok?: boolean; delivered?: boolean; error?: string };
+      const body = (await res.json()) as {
+        ok?: boolean;
+        delivered?: boolean;
+        error?: string;
+      };
 
       if (!res.ok || !body.ok) {
         setStatus("error");
@@ -269,8 +358,15 @@ export default function BookingFlow() {
       }
 
       const delivered = body.delivered === true;
-      track("booking_complete", { city: resolvedCity, events: values.events.join("|"), delivered });
-      track("contact_submit", { weddingType: values.events.join("|"), delivered });
+      track("booking_complete", {
+        city: resolvedCity,
+        events: values.events.join("|"),
+        delivered,
+      });
+      track("contact_submit", {
+        weddingType: values.events.join("|"),
+        delivered,
+      });
 
       if (delivered) {
         setStatus("sent");
@@ -365,14 +461,20 @@ export default function BookingFlow() {
           <dl className="mt-10 divide-y divide-ivory/10 border-y border-ivory/10">
             {[
               ["Date", values.weddingDate],
-              ["Location", [resolvedCity, values.venue].filter(Boolean).join(" · ")],
+              [
+                "Location",
+                [resolvedCity, values.venue].filter(Boolean).join(" · "),
+              ],
               ["Events", values.events.join(", ")],
               ["Services", values.services.join(", ")],
               ["You", [values.name, values.phone].filter(Boolean).join(" · ")],
             ]
               .filter(([, v]) => v)
               .map(([label, value]) => (
-                <div key={label} className="flex items-baseline justify-between gap-6 py-3.5">
+                <div
+                  key={label}
+                  className="flex items-baseline justify-between gap-6 py-3.5"
+                >
                   <dt className="eyebrow shrink-0">{label}</dt>
                   <dd className="text-right text-sm text-ivory/85">{value}</dd>
                 </div>
@@ -386,7 +488,9 @@ export default function BookingFlow() {
               href={continueHref}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => track("whatsapp_click", { placement: "booking-success" })}
+              onClick={() =>
+                track("whatsapp_click", { placement: "booking-success" })
+              }
               className="btn"
             >
               WhatsApp Lana
@@ -404,7 +508,9 @@ export default function BookingFlow() {
             href={siteSettings.instagram}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => track("instagram_click", { placement: "booking-success" })}
+            onClick={() =>
+              track("instagram_click", { placement: "booking-success" })
+            }
             className="btn btn-ghost"
           >
             {siteSettings.instagramHandle}
@@ -415,6 +521,8 @@ export default function BookingFlow() {
   }
 
   const last = step === STEPS.length - 1;
+  /** Is this panel on the step being shown? */
+  const onStep = (panel: number) => PANELS[step]?.includes(panel) ?? false;
 
   return (
     <form ref={formRef} onSubmit={onSubmit} noValidate className="max-w-2xl">
@@ -449,12 +557,14 @@ export default function BookingFlow() {
           tabIndex={-1}
           autoComplete="off"
           value={values.company}
-          onChange={(e) => setValues((v) => ({ ...v, company: e.target.value }))}
+          onChange={(e) =>
+            setValues((v) => ({ ...v, company: e.target.value }))
+          }
         />
       </div>
 
       {/* ── Progress ───────────────────────────────────────────────────────
-          Six marks rather than a percentage: she can see how much is left,
+          Three marks rather than a percentage: she can see how much is left,
           and that it is short. The line beneath is what a screen reader
           hears when the step changes. */}
       <div className="mb-10">
@@ -480,11 +590,14 @@ export default function BookingFlow() {
       </div>
 
       {/* ── 01 DATE ────────────────────────────────────────────────────────── */}
-      {step === 0 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">What’s your wedding date?</legend>
+      {onStep(0) && (
+        <fieldset data-panel="0">
+          <legend className="display-sm font-display text-ivory">
+            What’s your wedding date?
+          </legend>
           <p className="body-base measure-note mt-3">
-            If the date isn’t fixed yet, give the closest you have — it can be changed later.
+            If the date isn’t fixed yet, give the closest you have — it can be
+            changed later.
           </p>
 
           <div className="mt-9">
@@ -498,7 +611,9 @@ export default function BookingFlow() {
               value={values.weddingDate}
               onChange={(e) => set("weddingDate", e.target.value)}
               aria-invalid={errors.weddingDate ? true : undefined}
-              aria-describedby={errors.weddingDate ? "err-weddingDate" : undefined}
+              aria-describedby={
+                errors.weddingDate ? "err-weddingDate" : undefined
+              }
               className={cx(field, "max-w-xs [color-scheme:dark]")}
             />
             <FieldError id="err-weddingDate" message={errors.weddingDate} />
@@ -507,18 +622,29 @@ export default function BookingFlow() {
       )}
 
       {/* ── 02 LOCATION ────────────────────────────────────────────────────── */}
-      {step === 1 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">Where is your wedding?</legend>
-          <p className="body-base measure-note mt-3">{siteSettings.travelNote}</p>
+      {onStep(1) && (
+        <fieldset data-panel="1" className="mt-16">
+          <legend className="display-sm font-display text-ivory">
+            Where is your wedding?
+          </legend>
+          <p className="body-base measure-note mt-3">
+            {siteSettings.travelNote}
+          </p>
 
           <div className="mt-9">
             <p className="eyebrow mb-4" id="city-label">
               City *
             </p>
-            <div className="flex flex-wrap gap-2.5" role="group" aria-labelledby="city-label">
+            <div
+              className="flex flex-wrap gap-2.5"
+              role="group"
+              aria-labelledby="city-label"
+            >
               {[...serviceCities, OTHER_CITY].map((c) => (
-                <label key={c} className={cx(chip, values.city === c ? chipOn : chipOff)}>
+                <label
+                  key={c}
+                  className={cx(chip, values.city === c ? chipOn : chipOff)}
+                >
                   {/* A real radio, visually replaced. The keyboard and the
                       screen reader get the native control; the eye gets the
                       chip. `sr-only` rather than `hidden` — a hidden input is
@@ -550,7 +676,9 @@ export default function BookingFlow() {
                   value={values.cityOther}
                   onChange={(e) => set("cityOther", e.target.value)}
                   aria-invalid={errors.cityOther ? true : undefined}
-                  aria-describedby={errors.cityOther ? "err-cityOther" : undefined}
+                  aria-describedby={
+                    errors.cityOther ? "err-cityOther" : undefined
+                  }
                   className={field}
                 />
                 <FieldError id="err-cityOther" message={errors.cityOther} />
@@ -576,11 +704,14 @@ export default function BookingFlow() {
       )}
 
       {/* ── 03 EVENTS ──────────────────────────────────────────────────────── */}
-      {step === 2 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">Which events?</legend>
+      {onStep(2) && (
+        <fieldset data-panel="2">
+          <legend className="display-sm font-display text-ivory">
+            Which events?
+          </legend>
           <p className="body-base measure-note mt-3">
-            Choose as many as apply. Each event is a different look and a different morning.
+            Choose as many as apply. Each event is a different look and a
+            different morning.
           </p>
           <CheckGrid
             name="events"
@@ -592,12 +723,14 @@ export default function BookingFlow() {
       )}
 
       {/* ── 04 SERVICES ────────────────────────────────────────────────────── */}
-      {step === 3 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">What do you need?</legend>
+      {onStep(3) && (
+        <fieldset data-panel="3" className="mt-16">
+          <legend className="display-sm font-display text-ivory">
+            What do you need?
+          </legend>
           <p className="body-base measure-note mt-3">
-            Say how many people need makeup, not only the bride — it decides how the morning is
-            timed. There is room for that on the next step.
+            Say how many people need makeup, not only the bride — it decides how
+            the morning is timed. There is room for that on the next step.
           </p>
           <CheckGrid
             name="services"
@@ -609,9 +742,11 @@ export default function BookingFlow() {
       )}
 
       {/* ── 05 DETAILS ─────────────────────────────────────────────────────── */}
-      {step === 4 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">How do we reach you?</legend>
+      {onStep(4) && (
+        <fieldset data-panel="4">
+          <legend className="display-sm font-display text-ivory">
+            How do we reach you?
+          </legend>
           <p className="body-base measure-note mt-3">
             A name and a number is enough. Everything else is optional.
           </p>
@@ -679,7 +814,9 @@ export default function BookingFlow() {
                     value={values.whatsapp}
                     onChange={(e) => set("whatsapp", e.target.value)}
                     aria-invalid={errors.whatsapp ? true : undefined}
-                    aria-describedby={errors.whatsapp ? "err-whatsapp" : undefined}
+                    aria-describedby={
+                      errors.whatsapp ? "err-whatsapp" : undefined
+                    }
                     className={field}
                   />
                   <FieldError id="err-whatsapp" message={errors.whatsapp} />
@@ -742,26 +879,40 @@ export default function BookingFlow() {
       )}
 
       {/* ── 06 REVIEW ──────────────────────────────────────────────────────── */}
-      {step === 5 && (
-        <fieldset>
-          <legend className="display-sm font-display text-ivory">Ready to send.</legend>
+      {onStep(5) && (
+        <fieldset data-panel="5" className="mt-16">
+          <legend className="display-sm font-display text-ivory">
+            Ready to send.
+          </legend>
           <p className="body-base measure-note mt-3">
             You will be told plainly whether the date is open.
           </p>
 
           <dl className="mt-9 divide-y divide-ivory/10 border-y border-ivory/10">
-            <Row label="Date" value={values.weddingDate} onEdit={() => goTo(0)} />
+            <Row
+              label="Date"
+              value={values.weddingDate}
+              onEdit={() => edit(0)}
+            />
             <Row
               label="Location"
               value={[resolvedCity, values.venue].filter(Boolean).join(" · ")}
-              onEdit={() => goTo(1)}
+              onEdit={() => edit(1)}
             />
-            <Row label="Events" value={values.events.join(", ")} onEdit={() => goTo(2)} />
-            <Row label="Services" value={values.services.join(", ")} onEdit={() => goTo(3)} />
+            <Row
+              label="Events"
+              value={values.events.join(", ")}
+              onEdit={() => edit(2)}
+            />
+            <Row
+              label="Services"
+              value={values.services.join(", ")}
+              onEdit={() => edit(3)}
+            />
             <Row
               label="You"
               value={[values.name, values.phone].filter(Boolean).join(" · ")}
-              onEdit={() => goTo(4)}
+              onEdit={() => edit(4)}
             />
           </dl>
         </fieldset>
@@ -812,7 +963,11 @@ export default function BookingFlow() {
       </div>
 
       {/* The one place a submission failure is reported (§45). */}
-      <p role="status" aria-live="polite" className="mt-6 min-h-[1.5rem] text-sm text-rose">
+      <p
+        role="status"
+        aria-live="polite"
+        className="mt-6 min-h-[1.5rem] text-sm text-rose"
+      >
         {status === "error" ? message : ""}
       </p>
 
@@ -827,7 +982,9 @@ export default function BookingFlow() {
             href={waLink()!}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => track("whatsapp_click", { placement: "booking-step" })}
+            onClick={() =>
+              track("whatsapp_click", { placement: "booking-step" })
+            }
             className="link-wipe text-champagne hover:text-ivory"
           >
             Or message on WhatsApp &rarr;
@@ -884,7 +1041,15 @@ function CheckGrid({
 }
 
 /** One reviewed answer, with a way back to the step that set it. */
-function Row({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
+function Row({
+  label,
+  value,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  onEdit: () => void;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-6 py-4">
       <dt className="eyebrow shrink-0">{label}</dt>

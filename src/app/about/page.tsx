@@ -182,11 +182,11 @@ export default async function AboutPage() {
             </h2>
           </Reveal>
 
-          <ul className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-4">
             {settings.serviceAreas.map((city, i) => (
               <li key={city}>
                 <Reveal delay={(i % 4) * 110}>
-                  <p className="border-t border-champagne/30 pt-5 font-display text-3xl text-ivory">
+                  <p className="border-t border-champagne/30 pt-5 font-display text-2xl text-ivory sm:text-3xl">
                     {city}
                   </p>
                 </Reveal>
@@ -249,8 +249,10 @@ export default async function AboutPage() {
           chose to read about her is already reading. */}
       <HerMorning entries={timeline} />
 
-      {/* Why brides choose Lana — verified signals only (§19). */}
-      <TrustSignals />
+      {/* Why brides choose Lana — verified signals only (§19). The two
+          location signals are withheld here because the section above IS
+          them, at display size, with a heading counted from the same list. */}
+      <TrustSignals omit={["Four cities", "Travel"]} />
 
       <Testimonials items={testimonials} />
       <ClosingCTA settings={settings} />
