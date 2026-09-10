@@ -985,7 +985,7 @@ export default function BookingFlow() {
             onClick={() =>
               track("whatsapp_click", { placement: "booking-step" })
             }
-            className="link-wipe text-champagne hover:text-ivory"
+            className="tap link-wipe text-champagne hover:text-ivory"
           >
             Or message on WhatsApp &rarr;
           </a>

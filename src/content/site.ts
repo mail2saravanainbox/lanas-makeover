@@ -56,9 +56,19 @@ export const siteSettings: SiteSettings = {
   instagram: "https://www.instagram.com/lanasmakeover/",
   instagramHandle: "@lanasmakeover",
 
-  // TODO(client): replace with the real business number in E.164 format.
+  /**
+   * The business WhatsApp number, supplied by Lana.
+   *
+   * A ten-digit Indian mobile — `waNumber()` in src/lib/whatsapp.ts adds the
+   * 91 so the wa.me link is dialable from outside India. Not a secret: it is
+   * printed on the site on purpose. NEXT_PUBLIC_WHATSAPP_NUMBER still wins if
+   * it is set, so it can be changed without a deploy.
+   */
+  whatsapp: "9884740036",
+
+  // TODO(client): a landline or a separate number to publish for calls, if
+  // there is one. Left empty means no `tel:` link renders anywhere.
   phone: "",
-  whatsapp: "",
   // TODO(client): replace with the real business enquiry inbox.
   email: "",
 

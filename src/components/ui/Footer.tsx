@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
+import SocialCtas from "./SocialCtas";
 import JasmineMark from "./JasmineMark";
 
 /**
@@ -12,7 +13,10 @@ import JasmineMark from "./JasmineMark";
  * cover. A footer is a map, not an index: navigation, locations, contact,
  * legal — and the same one booking CTA the rest of the site uses.
  */
-const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string }> }> = [
+const COLUMNS: Array<{
+  title: string;
+  links: Array<{ href: string; label: string }>;
+}> = [
   {
     title: "Navigation",
     links: [
@@ -46,8 +50,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             {/* The positioning line, verbatim, in the same words as the hero. */}
             <p className="eyebrow mb-6">Bridal Makeup &amp; Hair Artist</p>
             <p className="display-md max-w-md text-ivory">
-              Your story{" "}
-              <br className="hidden lg:block" />
+              Your story <br className="hidden lg:block" />
               <span className="italic-serif text-champagne">starts here.</span>
             </p>
             {/* Desktop only. On a phone the sticky action bar carries this
@@ -137,34 +140,52 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             </p>
           </div>
 
-          <ul className="space-y-0 text-sm text-ivory/65 lg:space-y-2">
-            <li>
-              <InstagramLink
-                href={settings.instagram}
-                className="tap link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
-                placement="footer"
-              >
-                {settings.instagramHandle}
-              </InstagramLink>
-            </li>
-            {settings.email && (
+          <div className="lg:text-right">
+            {/* ── THE TWO CHANNELS ───────────────────────────────────────
+                Labelled here rather than icon-only: the footer has the room,
+                and a word beside the glyph is the difference between a mark
+                and a control someone presses. Same component as the header,
+                so the pair cannot drift. */}
+            <SocialCtas
+              placement="footer"
+              variant="labelled"
+              className="lg:justify-end"
+            />
+
+            <ul className="mt-6 space-y-0 text-sm text-ivory/65 lg:space-y-2">
+              {/* The handle, not just the word "Instagram": it is how a bride
+                  finds the account when she is already inside the app. */}
               <li>
-                <a href={`mailto:${settings.email}`} className="tap link-wipe hover:text-ivory">
-                  {settings.email}
-                </a>
-              </li>
-            )}
-            {settings.phone && (
-              <li>
-                <a
-                  href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}
-                  className="tap link-wipe hover:text-ivory"
+                <InstagramLink
+                  href={settings.instagram}
+                  className="tap link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory lg:justify-end"
+                  placement="footer-handle"
                 >
-                  {settings.phone}
-                </a>
+                  {settings.instagramHandle}
+                </InstagramLink>
               </li>
-            )}
-          </ul>
+              {settings.email && (
+                <li>
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="tap link-wipe hover:text-ivory"
+                  >
+                    {settings.email}
+                  </a>
+                </li>
+              )}
+              {settings.phone && (
+                <li>
+                  <a
+                    href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}
+                    className="tap link-wipe hover:text-ivory"
+                  >
+                    {settings.phone}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
 
         <div className="mt-14 flex flex-col gap-3 text-[0.75rem] uppercase tracking-[0.22em] text-muted sm:flex-row sm:items-center sm:justify-between">

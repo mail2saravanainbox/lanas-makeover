@@ -100,19 +100,20 @@ test.describe("the homepage introduces itself in frame one", () => {
      * only the wordmark and the menu button on a phone — so both are allowed
      * here; what is asserted is that the focus is inside the header and on a
      * real destination, not on nothing.
+     *
+     * WhatsApp and Instagram joined the header when a real number was
+     * configured, and on a phone the third tab lands on one of them. That is
+     * a good place to land: both are primary channels for this business.
      */
-    const reachable = [
-      "/contact",
-      "/portfolio",
-      "/services",
-      "/journal",
-      "/about",
-      "/faq",
-      "/",
+    const internal = ["/contact", "/portfolio", "/services", "/journal", "/about", "/faq", "/"];
+    const href = focused!.href;
+    const ok =
       // The menu button is a button, not a link, and has no href.
-      null,
-    ];
-    expect(reachable).toContain(focused!.href);
+      href === null ||
+      internal.includes(href) ||
+      href.startsWith("https://wa.me/") ||
+      href.startsWith("https://www.instagram.com/");
+    expect(ok, `focus landed on ${JSON.stringify(focused)}`).toBe(true);
   });
 });
 
@@ -1164,14 +1165,57 @@ test.describe("the sticky action bar behaviour", () => {
     });
   });
 
-  test("renders no WhatsApp control while no number is configured", async ({ page }) => {
+  test("every WhatsApp link points at the configured number", async ({ page }) => {
     /**
-     * The default state of this repo. A wa.me link built from an unset or
-     * placeholder number opens a chat with nobody, which costs the enquiry and
-     * the trust — so every WhatsApp affordance checks first.
+     * This test used to assert the opposite — that NO wa.me link existed —
+     * because the repo shipped without a number and every affordance is
+     * written to render nothing rather than build a link that opens a chat
+     * with nobody. A number is configured now, so the guarantee it protects
+     * has moved: not "no link", but "no link to the wrong place".
+     *
+     * The failure it still catches is the placeholder. `91XXXXXXXXXX`
+     * survives a digit-strip as "91", and a link to wa.me/91 costs the
+     * enquiry AND the trust. `waNumber()` rejects anything under ten digits;
+     * this is the end-to-end proof that it did.
      */
     await page.goto("/");
-    expect(await page.locator('a[href*="wa.me"]').count()).toBe(0);
+
+    const links = await page.locator('a[href*="wa.me"]').evaluateAll((els) =>
+      els.map((e) => e.getAttribute("href") ?? ""),
+    );
+    expect(links.length, "WhatsApp affordances on the homepage").toBeGreaterThan(0);
+
+    for (const href of links) {
+      // Digits only, country code included, long enough to be a real number.
+      expect(href, `malformed WhatsApp link: ${href}`).toMatch(
+        /^https:\/\/wa\.me\/\d{12,15}\?text=/,
+      );
+    }
+    // One number across the whole site, not one per component.
+    expect(new Set(links.map((h) => h.split("?")[0])).size).toBe(1);
+  });
+
+  test("both channels are in the header and the footer", async ({ page }) => {
+    await page.goto("/");
+
+    // The header has room for exactly one of each — two 44px icons beside the
+    // wordmark and the menu button, which is what fits at 390px.
+    const header = page.locator("header");
+    await expect(header.locator('a[href*="wa.me"]')).toHaveCount(1);
+    await expect(header.locator('a[href*="instagram.com"]')).toHaveCount(1);
+
+    // The footer carries the labelled pair, and the handle underneath it —
+    // "Instagram" is the control, "@lanasmakeover" is how she finds the
+    // account once she is already inside the app. So: at least one each.
+    const footer = page.locator("footer");
+    await expect(footer.locator('a[href*="wa.me"]')).toHaveCount(1);
+    expect(await footer.locator('a[href*="instagram.com"]').count()).toBeGreaterThanOrEqual(1);
+
+    // Both regions offer a pressable control, not just a line of text.
+    for (const region of [header, footer]) {
+      const box = await region.locator('a[href*="wa.me"]').boundingBox();
+      expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(44);
+    }
   });
 });
 

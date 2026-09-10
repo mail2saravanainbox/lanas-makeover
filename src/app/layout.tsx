@@ -13,7 +13,6 @@ import BrushCursor from "@/components/ui/BrushCursor";
 import BrandVeil from "@/components/ui/BrandVeil";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
-import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import MobileActionBar from "@/components/ui/MobileActionBar";
 import PageTransition from "@/components/ui/PageTransition";
 import AnalyticsScripts from "@/components/ui/Analytics";
@@ -142,10 +141,20 @@ export default async function RootLayout({
           <Footer settings={settings} />
         </div>
 
-        {/* Desktop only. On a phone the same action lives in the sticky bar
-            below, and two WhatsApp affordances stacked in one corner is one
-            too many. */}
-        <WhatsAppButton href={whatsapp} />
+        {/* ── THE FLOATING BUBBLE IS RETIRED ────────────────────────────
+            It was desktop-only and appeared after 0.7 of a viewport of
+            scroll. That was correct while the header carried no WhatsApp
+            control that anyone could see — but the header is `fixed`, and it
+            now carries WhatsApp permanently, so from the moment the bubble
+            arrived there were two of the same control on screen at once.
+
+            This only became visible the day a real number was configured:
+            before that both rendered null and the duplication was invisible.
+
+            The component is kept, not deleted — turning it back on is one
+            line — and every other WhatsApp affordance is unchanged: the
+            header, the sticky bar on mobile, the enquiry, the closing block
+            and the footer. */}
 
         {/* §33 — two actions, always in reach, mobile only. */}
         <MobileActionBar cta={settings.bookingCta} whatsapp={whatsapp} />
