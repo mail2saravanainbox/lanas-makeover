@@ -120,9 +120,12 @@ export default function ActBefore({
         <ParallaxFrame className="relative mx-auto w-full max-w-lg" strength={1}>
           <Reveal blur>
             <div className="relative aspect-[3/4]">
-              {/* Background layer */}
+              {/* Background layer. Hidden on a phone: the three planes are a
+                  depth composition built for a wide frame, and at 390px they
+                  overlap into clutter rather than layering. The principal
+                  plane below carries the section alone. */}
               <div
-                className="absolute -left-[7%] -top-[6%] h-[70%] w-[62%]"
+                className="absolute -left-[7%] -top-[6%] hidden h-[70%] w-[62%] lg:block"
                 style={{
                   transform:
                     "translate3d(calc(var(--px) * -22px), calc(var(--py) * -18px + var(--sy) * -32px), 0)",
@@ -152,9 +155,9 @@ export default function ActBefore({
                 />
               </div>
 
-              {/* Foreground fragment */}
+              {/* Foreground fragment — hidden on a phone, same reason. */}
               <div
-                className="absolute -bottom-[8%] -right-[8%] z-20 h-[38%] w-[44%] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)]"
+                className="absolute -bottom-[8%] -right-[8%] z-20 hidden h-[38%] w-[44%] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)] lg:block"
                 style={{
                   transform:
                     "translate3d(calc(var(--px) * 34px), calc(var(--py) * 26px + var(--sy) * 46px), 0)",

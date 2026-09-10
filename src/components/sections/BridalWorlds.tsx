@@ -53,13 +53,24 @@ export default function BridalWorlds({
           </Reveal>
         </div>
 
-        <div className="mt-16 space-y-5">
+        {/* ── ONE 2×2 GRID ON A PHONE ────────────────────────────────────
+            Two full-bleed 16:7 panels and two cards is a desktop composition:
+            it makes muhurtham and bridal hair the headline and reception and
+            engagement the follow-up, which is the right emphasis on a wide
+            screen. Linearised onto 390px it becomes four stacked blocks over
+            roughly three screens, all reading as equals anyway.
+
+            On mobile the panels take the same square tile as the cards and the
+            four sit in one 2×2 grid — a chooser, which is what the section is
+            for. The summary line goes with it: four sentences of body copy in
+            a grid of thumbnails is not a chooser. */}
+        <div className="mt-16 grid grid-cols-2 gap-3 lg:block lg:space-y-5">
           {panels.map((s) => (
             <Reveal key={s.slug}>
               <Link
                 href={`/services/${s.slug}`}
                 data-cursor="view"
-                className="group relative block aspect-[16/10] w-full overflow-hidden sm:aspect-[16/7]"
+                className="group relative block aspect-[4/5] w-full overflow-hidden lg:aspect-[16/7]"
               >
                 <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]">
                   <EditorialImage
@@ -70,16 +81,20 @@ export default function BridalWorlds({
                   />
                 </div>
                 <span className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent" />
-                <span className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-                  <span className="eyebrow mb-3 block !text-champagne/80">{s.eyebrow}</span>
-                  <span className="display-md block text-ivory">{s.name}</span>
-                  <span className="body-base measure-note mt-3 block">{s.summary}</span>
+                <span className="absolute inset-x-0 bottom-0 p-4 lg:p-10">
+                  <span className="eyebrow mb-2 hidden !text-champagne/80 lg:mb-3 lg:block">
+                    {s.eyebrow}
+                  </span>
+                  <span className="font-display text-xl leading-tight text-ivory lg:display-md lg:block">
+                    {s.name}
+                  </span>
+                  <span className="body-base measure-note mt-3 hidden lg:block">{s.summary}</span>
                 </span>
               </Link>
             </Reveal>
           ))}
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="contents lg:grid lg:grid-cols-2 lg:gap-5">
             {cards.map((s, i) => (
               <Reveal key={s.slug} delay={i * 130}>
                 <WorldCard

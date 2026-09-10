@@ -206,10 +206,15 @@ export default function FinalMirror({
               <p className="italic-serif mt-6 text-[clamp(1.1rem,2vw,1.6rem)] text-champagne">
                 Your story starts here.
               </p>
+              {/* Desktop only. The closing block is one section below this
+                  and asks the same question; on a phone the two land within a
+                  screen of each other. */}
               <Link
                 href="/contact"
                 onClick={() => track("booking_click", { placement: "final-mirror" })}
-                className="btn mt-11"
+                // `!`: .btn is declared outside a cascade layer, so an
+                // unprefixed `hidden` loses to it and the button stayed visible.
+                className="btn mt-11 !hidden lg:!inline-flex"
                 tabIndex={reduced || beat === 3 ? 0 : -1}
               >
                 {cta}

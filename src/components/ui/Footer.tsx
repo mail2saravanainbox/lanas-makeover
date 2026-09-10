@@ -21,7 +21,9 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
       { href: "/about", label: "About" },
       { href: "/journal", label: "Journal" },
       { href: "/faq", label: "FAQ" },
-      { href: "/contact", label: "Check Your Date" },
+      // "Check Your Date" is deliberately not in this list: the sticky bar on
+      // mobile and the button above on desktop both already point at it, and
+      // a third made the footer the fourth place it appeared.
     ],
   },
   {
@@ -44,22 +46,29 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             {/* The positioning line, verbatim, in the same words as the hero. */}
             <p className="eyebrow mb-6">Bridal Makeup &amp; Hair Artist</p>
             <p className="display-md max-w-md text-ivory">
-              Your story
-              <br />
+              Your story{" "}
+              <br className="hidden lg:block" />
               <span className="italic-serif text-champagne">starts here.</span>
             </p>
-            <Link href="/contact" className="btn mt-10">
+            {/* Desktop only. On a phone the sticky action bar carries this
+                exact link, permanently, two thumb-widths below it. */}
+            <Link href="/contact" className="btn mt-10 !hidden lg:!inline-flex">
               {settings.bookingCta}
             </Link>
           </div>
 
-          <div className="grid gap-10 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-3 lg:gap-10">
             {/* §3 — the four service locations, stated on every page of the
                 site. One business, four areas served: the heading says so, so
                 the list cannot be read as four branches. */}
             <div>
               <h2 className="eyebrow mb-5">Serving</h2>
-              <ul className="space-y-3">
+              {/* One line on a phone, four rows from `lg`. Four cities stacked
+                  vertically is four rows of a footer for four words. */}
+              <p className="text-sm text-ivory/65 lg:hidden">
+                {settings.serviceAreas.join(" · ")}
+              </p>
+              <ul className="hidden space-y-3 lg:block">
                 {settings.serviceAreas.map((city) => (
                   <li key={city} className="text-sm text-ivory/65">
                     {city}

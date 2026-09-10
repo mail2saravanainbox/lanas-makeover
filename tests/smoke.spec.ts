@@ -359,8 +359,12 @@ test("the homepage numbers its sections contiguously from 01", async ({
 
   expect(
     numbered.length,
-    "at least eight numbered sections",
-  ).toBeGreaterThanOrEqual(8);
+    // Was eight. The mobile audit removed the duplicated trust block from the
+    // homepage (it is verbatim on /about) and moved "Her morning" to /about,
+    // so the floor moves with it. The assertion that matters is the one below:
+    // whatever renders, the numbers run 01..n with no gaps.
+    "at least six numbered sections",
+  ).toBeGreaterThanOrEqual(6);
 
   const values = numbered.map((t) => Number(t.slice(0, 2)));
   // No gaps: sections that render nothing (no brides, no testimonials) must
@@ -722,7 +726,13 @@ test("the hero answers what, where and what next in frame one", async ({ page })
 
   // Both CTAs, and only one of them primary.
   await expect(hero.getByRole("link", { name: "Check Your Date" })).toBeVisible();
-  await expect(hero.getByRole("link", { name: "View the work" })).toBeVisible();
+  /**
+   * The secondary action is one control at each width, not two: a ghost button
+   * from `lg` up, and a plain text link on a phone, where two filled buttons
+   * stacked read as two equal choices. The name carries an arrow on mobile,
+   * hence the regex rather than an exact string.
+   */
+  await expect(hero.getByRole("link", { name: /View the work/ }).first()).toBeVisible();
 
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });

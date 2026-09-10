@@ -86,14 +86,16 @@ export default function WorldCard({
             {String(index).padStart(2, "0")}
           </span>
 
-          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
-            <p className="eyebrow mb-3 !text-champagne/80">{eyebrow}</p>
-            <h3 className="font-display text-3xl leading-none text-ivory transition-transform duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1">
+          <div className="absolute inset-x-0 bottom-0 p-4 lg:p-7">
+            <p className="eyebrow mb-3 hidden !text-champagne/80 lg:block">{eyebrow}</p>
+            <h3 className="font-display text-xl leading-tight text-ivory lg:text-3xl lg:leading-none transition-transform duration-[var(--d-base)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-1">
               {name}
             </h3>
-            {/* Always visible. Hiding the one sentence that explains the
-                ceremony behind a hover meant it did not exist on any phone. */}
-            <p className="body-base mt-3">{summary}</p>
+            {/* Desktop only now — not hidden behind a hover, which was the
+                original sin here, but genuinely absent on a phone where these
+                four are a 2×2 chooser rather than four descriptions. The
+                sentence lives on the service page the tile opens. */}
+            <p className="body-base mt-3 hidden lg:block">{summary}</p>
           </div>
         </div>
       </div>

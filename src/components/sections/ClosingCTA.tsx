@@ -74,7 +74,12 @@ export default function ClosingCTA({
         </div>
 
         <Reveal delay={220}>
-          <dl className="space-y-8 border-t border-ink/15 pt-10 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
+          {/* ── DESKTOP ONLY ──────────────────────────────────────────────
+              Based in / Travel / Instagram — all three are in the footer, one
+              section below this. On a phone that is the same three facts twice
+              inside a single screen of scrolling; on desktop the list is the
+              right-hand rail of a two-column closing spread. */}
+          <dl className="hidden space-y-8 border-t border-ink/15 pt-10 lg:block lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
             <div>
               <dt className="eyebrow !text-muted-ivory mb-3">Based in</dt>
               <dd className="font-display text-2xl">{settings.location}</dd>

@@ -69,8 +69,11 @@ export default function ActArtist({
 
           {/* Her hands at work — the slot the deleted Atelier section held.
               A photograph OF the work, where the portrait above is of her. */}
+          {/* Hidden on a phone: the portrait above already establishes her,
+              and a second image here is a screen of scrolling for a repeat of
+              the same idea. */}
           {working && (
-            <Reveal delay={160}>
+            <Reveal delay={160} className="hidden lg:block">
               <div className="relative mt-6 aspect-[3/2] w-full overflow-hidden">
                 <EditorialImage
                   image={working}
@@ -112,7 +115,14 @@ export default function ActArtist({
             ))}
           </div>
 
-          <Reveal delay={640}>
+          {/* ── THE FACT LIST, DESKTOP ONLY ───────────────────────────────
+              Every entry repeats something the phone has already been told:
+              "Based in Trichy" is in the footer, travel is in the footer and
+              the FAQ, the Instagram handle is in the header and the footer,
+              and the discipline line restates the H1. On desktop it reads as
+              a masthead beside the biography; on a phone it is the fourth
+              telling. */}
+          <Reveal delay={640} className="hidden lg:block">
             <dl className="mt-14 grid gap-x-10 gap-y-8 border-t border-ivory/12 pt-10 sm:grid-cols-2">
               <div>
                 <dt className="eyebrow mb-3">Based in</dt>
@@ -150,38 +160,20 @@ export default function ActArtist({
             </Link>
           </Reveal>
 
-          {/* ── Her morning ─────────────────────────────────────────────── */}
+          {/* ── HER MORNING LIVES ON /about NOW ────────────────────────────
+              Seven timestamped steps used to sit here, which on a phone was
+              the longest block on the homepage and the last thing between a
+              visitor and everything below it. It is one section on /about
+              instead, and this is the door to it. */}
           {entries.length > 0 && (
-            <div className="mt-[var(--s-12)] border-t border-ivory/12 pt-[var(--s-8)]">
-              <Reveal>
-                <h3 id="morning-title" className="display-sm text-ivory">
-                  Her morning.
-                </h3>
-                <p className="body-base measure-note mt-4">
-                  The wedding is a public event. The morning before it is not — it is the last
-                  few hours in which she is only herself. The order is fixed; the hours are
-                  not, because every morning is timed backwards from the muhurtham itself.
-                </p>
-              </Reveal>
-
-              <ol className="relative mt-10 border-l border-ivory/12 pl-8 sm:pl-12">
-                {entries.map((e, i) => (
-                  <li key={`${e.time}-${i}`} className="relative pb-12 last:pb-0">
-                    <Reveal delay={i * 90}>
-                      <span
-                        aria-hidden="true"
-                        className="absolute -left-[calc(2rem+3.5px)] top-2 block h-[7px] w-[7px] rounded-full bg-champagne sm:-left-[calc(3rem+3.5px)]"
-                      />
-                      <p className="text-[0.75rem] uppercase tracking-[0.28em] text-champagne/80">
-                        {e.time}
-                      </p>
-                      <h4 className="display-sm mt-3 text-ivory">{e.title}</h4>
-                      {e.note && <p className="body-base measure-note mt-3">{e.note}</p>}
-                    </Reveal>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <Reveal delay={900}>
+              <Link
+                href="/about#her-morning"
+                className="link-wipe mt-10 inline-block text-[0.8rem] uppercase tracking-[0.22em] text-champagne hover:text-ivory"
+              >
+                How a bridal morning runs with Lana &rarr;
+              </Link>
+            </Reveal>
           )}
         </div>
       </div>

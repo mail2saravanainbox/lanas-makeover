@@ -29,8 +29,8 @@ export default function Pricing({ index }: { index?: number }) {
         <Reveal>
           <p className="eyebrow mb-8">{sectionEyebrow(index, "The investment")}</p>
           <h2 id="pricing-title" className="display-md max-w-[16ch] text-ivory">
-            What it
-            <br />
+            What it{" "}
+            <br className="hidden lg:block" />
             <span className="italic-serif text-champagne">costs.</span>
           </h2>
         </Reveal>
@@ -80,15 +80,42 @@ export default function Pricing({ index }: { index?: number }) {
           </Reveal>
 
           <Reveal delay={240}>
-            <h3 className="eyebrow mb-6">What moves the number</h3>
-            <ul className="space-y-4">
-              {pricing.factors.map((f) => (
-                <li key={f} className="flex gap-4 text-sm leading-relaxed text-ivory/70">
-                  <span aria-hidden="true" className="mt-2.5 h-px w-5 shrink-0 bg-champagne/50" />
-                  {f}
-                </li>
-              ))}
-            </ul>
+            {/* ── FIVE FACTORS, COLLAPSED ON A PHONE ────────────────────────
+                The list is genuinely useful to a bride budgeting a wedding and
+                it is five paragraphs of scrolling to reach the next section.
+                `<details>` because it is the native disclosure: keyboard
+                operable, announced correctly, works without JavaScript, and
+                its content stays in the DOM for search.
+
+                From `lg` up it is always open. `open` is an HTML boolean
+                attribute and cannot be made responsive, so the list's own
+                display is driven by `group-open` and `lg:` instead, and the
+                summary loses its pointer and its chevron there. */}
+            <details className="group [&>summary]:list-none">
+              <summary className="flex cursor-pointer items-center justify-between gap-4 border-b border-ivory/10 pb-4 lg:pointer-events-none lg:border-0 lg:pb-0">
+                <h3 className="eyebrow !text-ivory/80">What affects the price</h3>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-champagne/70 transition-transform duration-[var(--d-base)] group-open:rotate-45 lg:hidden"
+                >
+                  <svg width="13" height="13" viewBox="0 0 14 14">
+                    <path d="M7 0v14M0 7h14" stroke="currentColor" strokeWidth="1" fill="none" />
+                  </svg>
+                </span>
+              </summary>
+
+              {/* Explicit, rather than trusting the UA rule that hides a
+                  closed details' children — Tailwind's reset was overriding
+                  it and the list stayed open on a phone. */}
+              <ul className="mt-6 hidden space-y-4 group-open:block lg:block">
+                {pricing.factors.map((f) => (
+                  <li key={f} className="flex gap-4 text-sm leading-relaxed text-ivory/70">
+                    <span aria-hidden="true" className="mt-2.5 h-px w-5 shrink-0 bg-champagne/50" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </details>
           </Reveal>
         </div>
       </div>

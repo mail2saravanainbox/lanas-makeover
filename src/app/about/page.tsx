@@ -11,6 +11,7 @@ import Testimonials from "@/components/sections/Testimonials";
 import ClosingCTA from "@/components/sections/ClosingCTA";
 import KolamGrid from "@/components/sections/KolamGrid";
 import TrustSignals from "@/components/sections/TrustSignals";
+import HerMorning from "@/components/sections/HerMorning";
 import Link from "next/link";
 import { citiesProse } from "@/content/site";
 
@@ -23,10 +24,11 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function AboutPage() {
   const provider = content();
-  const [settings, testimonials, services] = await Promise.all([
+  const [settings, testimonials, services, timeline] = await Promise.all([
     provider.getSiteSettings(),
     provider.getTestimonials(),
     provider.getServices(),
+    provider.getTimeline(),
   ]);
   const slots = getImageSlots();
 
@@ -242,6 +244,10 @@ export default async function AboutPage() {
           </Reveal>
         </section>
       )}
+
+      {/* Moved from the homepage: one copy, and it lives where someone who
+          chose to read about her is already reading. */}
+      <HerMorning entries={timeline} />
 
       {/* Why brides choose Lana — verified signals only (§19). */}
       <TrustSignals />

@@ -14,7 +14,6 @@ import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
 import ClosingCTA from "@/components/sections/ClosingCTA";
-import TrustSignals from "@/components/sections/TrustSignals";
 import Pricing from "@/components/sections/Pricing";
 import Transformation from "@/components/sections/Transformation";
 import SectionMark from "@/components/ui/SectionMark";
@@ -91,7 +90,6 @@ export default async function HomePage() {
     transformation: transformation.length > 0,
     ceremonies: services.length > 0,
     artist: true,
-    trust: true,
     investment: true,
     voices: testimonials.length > 0,
     mirror: true,
@@ -160,11 +158,12 @@ export default async function HomePage() {
 
       <SectionMark />
 
-      {/* §19 and §11 — the two questions a bride asks once she believes the
-          work: can I rely on her, and can I afford her. Both answer with what
-          is actually known and neither invents a figure. */}
-      <TrustSignals index={n.trust} />
+      {/* "What you can count on" used to sit here as well as on /about —
+          the same four signals, the same words, twice on one site.
 
+          TODO(client): replace with testimonials / a proof block. That is the
+          thing this slot actually wants and the thing there is nothing to
+          fill it with yet: there are zero published testimonials. */}
       <Pricing index={n.investment} />
 
       <Testimonials index={n.voices} items={testimonials} />

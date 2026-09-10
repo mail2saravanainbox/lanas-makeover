@@ -79,7 +79,10 @@ export default function Hero({
           padding drops to clear the sticky action bar rather than sitting
           behind it. ────────────────────────────────────────────────────── */}
       <div className="shell relative z-10 pb-[calc(11vh+var(--action-bar-h))] pt-[calc(var(--nav-h)+3rem)] sm:pb-[14vh] sm:pt-[calc(var(--nav-h)+4rem)]">
-        <p className="wordmark wordmark-mobile display-lg uppercase leading-[0.95] text-ivory">
+        {/* The name is already in the header on every screen, and on a phone
+            the header, this line and the footer logo made three. Desktop keeps
+            it: there it is the masthead of a full-height editorial frame. */}
+        <p className="wordmark wordmark-mobile display-lg hidden uppercase leading-[0.95] text-ivory lg:block">
           {brand.replace(/'s/i, "’s")}
         </p>
 
@@ -93,7 +96,7 @@ export default function Hero({
         <p className="eyebrow mt-5 !text-ivory/75">Natural · HD · South Indian Bridal</p>
         <p className="eyebrow mt-2.5 !text-champagne/70">{citiesDotted()}</p>
 
-        <p className="italic-serif display-sm mt-7 max-w-[24ch] text-balance text-champagne sm:mt-8">
+        <p className="italic-serif display-sm mt-7 hidden max-w-[24ch] text-balance text-champagne sm:mt-8 lg:block">
           Before she becomes a bride&hellip;
         </p>
 
@@ -103,10 +106,19 @@ export default function Hero({
           <MagneticCta href="/contact" placement="hero" className="btn w-full sm:w-auto">
             {cta}
           </MagneticCta>
+          {/* One button, one link. Two filled buttons stacked on a phone read
+              as two equal choices; the work is a detour, not the ask. */}
           <Link
             href="/portfolio"
             data-cursor="view"
-            className="btn btn-ghost w-full sm:w-auto"
+            className="link-wipe self-start text-[0.8rem] uppercase tracking-[0.22em] text-ivory/75 hover:text-ivory lg:hidden"
+          >
+            View the work &rarr;
+          </Link>
+          <Link
+            href="/portfolio"
+            data-cursor="view"
+            className="btn btn-ghost hidden lg:inline-flex"
           >
             View the work
           </Link>
@@ -116,7 +128,7 @@ export default function Hero({
       {/* Scroll cue — the same 48px line device as before. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3"
+        className="pointer-events-none absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-3 lg:flex"
         style={{ opacity: "max(0, calc(1 - var(--p) * 6))" }}
       >
         <span className="text-[0.75rem] uppercase tracking-[0.24em] text-muted">Scroll</span>
