@@ -23,6 +23,7 @@ const COLUMNS: Array<{
     links: [
       { href: "/portfolio", label: "Work" },
       { href: "/services", label: "Services" },
+      { href: "/rental-jewellery", label: "Jewellery Rental" },
       // The four city pages hang off this. Without one strong site-wide link
       // to the index they are four orphans reachable only from a footer list.
       { href: "/locations", label: "Locations" },

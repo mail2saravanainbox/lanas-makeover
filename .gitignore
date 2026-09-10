@@ -50,6 +50,13 @@ next-env.d.ts
 /content/incoming/*
 !/content/incoming/README.md
 
+# Rental jewellery staging. Same rule, and the same reason: this folder held
+# 432 MB of extracted catalogue pages, and 452 MB of PDFs in this repository
+# once failed GitHub's 100 MB limit and then Vercel's. Only the optimised
+# WebPs under public/rental are committed.
+/content/rental-incoming/*
+!/content/rental-incoming/README.md
+
 # Saved-webpage reference material kept locally; never part of the site.
 Protofolio image*
 

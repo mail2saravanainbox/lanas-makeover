@@ -8,6 +8,7 @@
 
 # Local scratch that has no business in a deployment.
 content/incoming/
+content/rental-incoming/
 test-results/
 playwright-report/
 MOBILE_AUDIT_PLAN.md

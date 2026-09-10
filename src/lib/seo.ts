@@ -379,3 +379,63 @@ export function cityServiceSchema(input: {
     },
   };
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE JEWELLERY RENTAL SCHEMA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  A second Service on the same business, not a second business — the same
+ *  rule the city pages follow, and for the same reason.
+ *
+ *  ── AND NOT Product / Offer, WHICH IS THE OBVIOUS MISTAKE ─────────────────
+ *  A hundred and thirty-three photographs of jewellery look like a catalogue,
+ *  and the reflex is to emit a Product per set. Product without `offers` earns
+ *  nothing, and `offers` requires a price. There is no price: rental terms are
+ *  settled per date and per city, and inventing a number to satisfy a schema
+ *  validator would put a figure in a search result that Lana never quoted.
+ *
+ *  So the collection is described as what it is — a rental service, with a
+ *  CollectionPage per room — and the sets themselves are ImageObjects, which
+ *  is honest about what a photograph of a necklace actually is.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export function rentalServiceSchema(): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Bridal jewellery rental",
+    description: `Bridal jewellery on rent across ${citiesProse()} — temple jewellery, American diamond sets, chokers and haram.`,
+    url: absoluteUrl("/rental-jewellery"),
+    serviceType: "Bridal jewellery rental",
+    category: "Jewellery rental",
+    provider: { "@id": absoluteUrl("/#business") },
+    areaServed: [
+      ...siteSettings.serviceAreas.map((name) => ({ "@type": "City", name })),
+      { "@type": "AdministrativeArea", name: "Tamil Nadu" },
+    ],
+  };
+}
+
+export function rentalCategorySchema(input: {
+  name: string;
+  slug: string;
+  description: string;
+  count: number;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${input.name} on rent`,
+    description: input.description,
+    url: absoluteUrl(`/rental-jewellery/${input.slug}`),
+    isPartOf: { "@id": absoluteUrl("/#business") },
+    about: { "@id": absoluteUrl("/#business") },
+    // Counted from the catalogue, so a rich result cannot claim a collection
+    // larger than the one on the page.
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: input.count,
+      itemListOrder: "https://schema.org/ItemListUnordered",
+    },
+  };
+}

@@ -12,7 +12,8 @@
     "import:portrait": "node scripts/import-portrait.mjs",
     "compute:focus": "node scripts/compute-focus.mjs",
     "build:veil": "node scripts/build-veil.mjs",
-    "build:logo": "node scripts/build-logo.mjs"
+    "build:logo": "node scripts/build-logo.mjs",
+    "import:rental": "node scripts/import-rental.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

@@ -1741,3 +1741,159 @@ test.describe("the city pages", () => {
     }
   });
 });
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE RENTAL JEWELLERY CATALOGUE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  133 photographs from five supplier catalogues. Every product frame arrived
+ *  with an internal stock code burned into it in bold white type — M201, AD07,
+ *  C030 — in an inconsistent corner. The codes were found and painted out
+ *  before import.
+ *
+ *  The two things that must never regress are here: no code reaches a bride,
+ *  and no price is ever implied.
+ */
+test.describe("rental jewellery", () => {
+  const ROOMS = [
+    { slug: "temple-jewellery", name: "Temple Jewellery" },
+    { slug: "american-diamond-sets", name: "American Diamond" },
+    { slug: "choker-and-necklace-sets", name: "Choker & Necklace" },
+    { slug: "on-the-bride", name: "On the Bride" },
+  ];
+
+  test("the index offers every room, with a count taken from the catalogue", async ({
+    page,
+  }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery", { waitUntil: "networkidle" });
+
+    for (const { slug } of ROOMS) {
+      await expect(page.locator(`a[href="/rental-jewellery/${slug}"]`).first()).toBeVisible();
+    }
+
+    // The counts are rendered from the JSON, never typed — so they cannot
+    // outlive the photographs behind them.
+    const counts = await page
+      .locator("main")
+      .getByText(/^\d+ sets$/)
+      .allTextContents();
+    expect(counts).toHaveLength(ROOMS.length);
+    for (const c of counts) expect(Number(c.split(" ")[0])).toBeGreaterThan(0);
+  });
+
+  for (const { slug, name } of ROOMS) {
+    test(`${name} renders, pages, and opens a set full size`, async ({ page }) => {
+      await skipVeil(page);
+      await page.goto(`/rental-jewellery/${slug}`, { waitUntil: "networkidle" });
+
+      await expect(page.locator("h1")).toHaveCount(1);
+
+      /**
+       * TWENTY-FOUR AT A TIME, NOT FIFTY-SIX.
+       *
+       * The largest room holds fifty-six sets. Putting all of them in the DOM
+       * would make the first paint of that page cost twice what the smallest
+       * one does, on a phone, for photographs nobody has scrolled to.
+       */
+      const tiles = page.locator("main ul li button[aria-label^='Open']");
+      const n = await tiles.count();
+      expect(n).toBeGreaterThan(0);
+      expect(n, "sets rendered before paging").toBeLessThanOrEqual(24);
+
+      // Opening one gives the full frame in a real modal.
+      await tiles.first().click();
+      const box = page.locator("dialog.lm-lightbox");
+      await expect(box).toBeVisible();
+      await expect(box.locator("img")).toBeVisible();
+      await expect(box.locator('[aria-live="polite"]')).toContainText(/1 of \d+/);
+
+      // Arrow keys compare without closing — the whole point of the control.
+      await page.keyboard.press("ArrowRight");
+      await expect(box.locator('[aria-live="polite"]')).toContainText(/2 of \d+/);
+      await expect(box).toBeVisible();
+
+      // showModal() means Escape is the browser's.
+      await page.keyboard.press("Escape");
+      await expect(box).toBeHidden();
+    });
+  }
+
+  test("no stock code survives, and no price is implied", async ({ page }) => {
+    for (const { slug } of ROOMS) {
+      await skipVeil(page);
+      await page.goto(`/rental-jewellery/${slug}`, { waitUntil: "networkidle" });
+
+      const text = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
+
+      /**
+       * A stock code is a warehouse reference. It means nothing to a bride and
+       * printing it invites her to ask for "M201" rather than to describe what
+       * she wants — the opposite of the conversation this site is for. The
+       * shapes are the four families in the supplier books.
+       */
+      expect(text, "a stock code in the copy").not.toMatch(/\b(?:M\d{3}|AD\d{2}|C\d{3})\b/);
+
+      // Nor may one hide in an alt attribute, which is where a careless
+      // import would put it.
+      const alts = await page.locator("main img").evaluateAll((els) =>
+        els.map((e) => e.getAttribute("alt") ?? ""),
+      );
+      for (const a of alts) {
+        expect(a, `stock code in alt: ${a}`).not.toMatch(/\b(?:M\d{3}|AD\d{2}|C\d{3})\b/);
+        expect(a.length, "an empty alt on a catalogue photograph").toBeGreaterThan(10);
+      }
+
+      // No price exists. Rental terms are settled per date and per city, and a
+      // figure on this page would be one Lana never quoted.
+      expect(text, "a price").not.toMatch(/₹|\bRs\.?\s?\d|\bINR\b|\bper day\b/i);
+    }
+  });
+
+  test("the schema describes a service, not a shop", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery/temple-jewellery", { waitUntil: "networkidle" });
+
+    const schema = await page.evaluate(() =>
+      [...document.querySelectorAll('script[type="application/ld+json"]')].flatMap((s) => {
+        try {
+          const j = JSON.parse(s.textContent ?? "{}");
+          return Array.isArray(j) ? j : [j];
+        } catch {
+          return [];
+        }
+      }),
+    );
+    const types = schema.map((s: Record<string, unknown>) => s["@type"]);
+    expect(types).toContain("CollectionPage");
+
+    /**
+     * Product/Offer is the obvious mistake here. Product without `offers`
+     * earns nothing, and `offers` requires a price — so emitting one would
+     * mean inventing a figure to satisfy a validator, and that figure would
+     * appear in a search result.
+     */
+    expect(types).not.toContain("Product");
+    expect(types).not.toContain("Offer");
+    expect(JSON.stringify(schema)).not.toContain('"price"');
+  });
+
+  test("is reachable from the header and the footer of every page", async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.locator("footer").getByRole("link", { name: "Jewellery Rental" }),
+    ).toHaveCount(1);
+
+    if ((page.viewportSize()?.width ?? 0) >= 1024) {
+      await expect(
+        page.locator("header").getByRole("link", { name: "Jewellery", exact: true }),
+      ).toBeVisible();
+    }
+  });
+
+  test("the sitemap lists the catalogue", async ({ request }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    expect(xml).toContain("/rental-jewellery<");
+    for (const { slug } of ROOMS) expect(xml).toContain(`/rental-jewellery/${slug}`);
+  });
+});

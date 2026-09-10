@@ -28,6 +28,10 @@ const BASE_LINKS: NavLink[] = [
   // CTA uses, so a visitor who read "View the work" recognises where it went.
   { href: "/portfolio", label: "Work" },
   { href: "/services", label: "Services" },
+  // Jewellery rental is a second line of business, not a sub-page of the
+  // makeup work — a bride looking to rent a haram will not find it under
+  // "Services", and most of them arrive looking for exactly that.
+  { href: "/rental-jewellery", label: "Jewellery" },
   { href: "/about", label: "About" },
   { href: "/journal", label: "Journal" },
   { href: "/faq", label: "FAQ" },
@@ -95,13 +99,13 @@ export default function Nav({
         >
           <Link
             href="/"
-            className="group flex min-h-11 items-center gap-3 font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-[1.05rem]"
+            className="group flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap font-display text-[0.85rem] uppercase leading-none tracking-[0.28em] text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-[1.05rem]"
           >
             <BrandMark className="shrink-0 text-champagne/70 transition-colors duration-[var(--d-base)] group-hover:text-champagne" />
             {brand}
           </Link>
 
-          <ul className="hidden items-center gap-9 lg:flex">
+          <ul className="hidden items-center gap-5 lg:flex xl:gap-8">
             {links.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
@@ -110,7 +114,7 @@ export default function Nav({
                     href={link.href}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-                      "link-wipe block py-3 text-[0.8rem] font-medium uppercase tracking-[0.26em] transition-colors duration-[var(--d-base)]",
+                      "link-wipe block whitespace-nowrap py-3 text-[0.72rem] font-medium uppercase tracking-[0.18em] transition-colors duration-[var(--d-base)] xl:text-[0.8rem] xl:tracking-[0.24em]",
                       active ? "text-champagne" : "text-ivory/70 hover:text-ivory",
                     )}
                   >
@@ -150,7 +154,7 @@ export default function Nav({
               // `!` throughout: .btn is declared outside a cascade layer in
               // globals.css, and unlayered rules beat Tailwind's layered
               // utilities — a plain `hidden` here does nothing at all.
-              className="btn !hidden lg:!inline-flex lg:!px-6 lg:!py-3 lg:!text-[0.75rem]"
+              className="btn !hidden whitespace-nowrap lg:!inline-flex lg:!px-5 lg:!py-3 lg:!text-[0.7rem] xl:!px-6 xl:!text-[0.75rem]"
             >
               {cta}
             </Link>

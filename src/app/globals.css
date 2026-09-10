@@ -951,3 +951,50 @@ html.lm-veiled #lm-veil[data-veil="out"] {
     opacity: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE RENTAL LIGHTBOX
+   ═══════════════════════════════════════════════════════════════════════════
+   Same native <dialog> as the filter sheet, centred rather than pinned to the
+   bottom. `margin: auto` with the fixed inset is what centres a dialog whose
+   width is not known in advance; the UA stylesheet's own centring does not
+   survive `max-width: none`.
+   ═════════════════════════════════════════════════════════════════════════ */
+.lm-lightbox {
+  margin: auto;
+  max-width: min(92vw, 62rem);
+  max-height: 92dvh;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  position: fixed;
+  inset: 0;
+}
+
+.lm-lightbox::backdrop {
+  background: color-mix(in oklab, var(--color-ink) 88%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.lm-lightbox__panel {
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lm-lightbox[open] .lm-lightbox__panel {
+    animation: lm-lightbox-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lm-lightbox[open]::backdrop {
+    animation: lm-fade-in 260ms ease-out;
+  }
+}
+
+@keyframes lm-lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}

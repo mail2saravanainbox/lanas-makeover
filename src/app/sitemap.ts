@@ -3,6 +3,7 @@ import { content } from "@/lib/content/provider";
 import { absoluteUrl } from "@/lib/seo";
 import { collections } from "@/content/collections";
 import { locations } from "@/content/locations";
+import { rentalCategories } from "@/content/rental-categories";
 
 /**
  * Dynamic sitemap (§46). Only published content is ever listed — the provider
@@ -28,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/makeup"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/services"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/locations"), priority: 0.85, changeFrequency: "monthly" },
+    { url: absoluteUrl("/rental-jewellery"), priority: 0.9, changeFrequency: "monthly" },
     { url: absoluteUrl("/brides"), priority: 0.8, changeFrequency: "monthly" },
     { url: absoluteUrl("/journal"), priority: 0.8, changeFrequency: "weekly" },
     { url: absoluteUrl("/about"), priority: 0.7, changeFrequency: "yearly" },
@@ -46,6 +48,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      */
     ...locations.map((l) => ({
       url: absoluteUrl(`/locations/${l.slug}`),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    })),
+    /**
+     * The rental rooms. High priority: "bridal jewellery rental" is a
+     * separate line of business with its own searches, and these are the only
+     * pages on the site that answer them.
+     */
+    ...rentalCategories.map((c) => ({
+      url: absoluteUrl(`/rental-jewellery/${c.slug}`),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.85,

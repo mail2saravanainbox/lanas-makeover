@@ -222,6 +222,28 @@ export interface Testimonial {
   published: boolean;
 }
 
+/**
+ * A jewellery set available to rent.
+ *
+ * Deliberately thin. There is no price, no stock count and no availability
+ * flag, because none of that was supplied — and a rental catalogue that
+ * invents any of the three is worse than one that says nothing and asks.
+ */
+export interface RentalItem {
+  id: string;
+  slug: string;
+  category: string;
+  title: string;
+  alt: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  width: number;
+  height: number;
+  blurDataURL?: string;
+  sortOrder: number;
+  published: boolean;
+}
+
 export interface FAQItem {
   id: string;
   question: string;
