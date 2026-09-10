@@ -1,0 +1,15 @@
+# Vercel CLI deploys read THIS file, not .gitignore — a direct `vercel --prod`
+# uploads the working directory, so anything large sitting here is uploaded
+# even when git ignores it. 452 MB of PDFs in this folder failed the 100 MB
+# per-file limit and blocked a deploy until this existed.
+*.pdf
+*.mov
+*.zip
+
+# Local scratch that has no business in a deployment.
+content/incoming/
+test-results/
+playwright-report/
+MOBILE_AUDIT_PLAN.md
+INTEGRATION_PLAN.md
+content-inventory.json
