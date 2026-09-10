@@ -192,7 +192,7 @@ export async function POST(request: Request) {
    *
    * The honeypot above catches the naive bots. This catches the ones that fill
    * it correctly: `startedAt` is stamped when the flow is first interacted
-   * with, and no human completes six steps in under three seconds. Silently
+   * with, and no human completes the enquiry in under three seconds. Silently
    * accepted rather than rejected, for the same reason as the honeypot — a
    * script that learns which rule it tripped simply adjusts.
    *
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
      * under its own marker, where it can be found and answered.
      */
     console.warn("[enquiry:trapped]", {
-      reason: "submitted faster than a human fills six steps",
+      reason: "submitted faster than a human fills the enquiry",
       elapsedMs: Date.now() - startedAt,
       payload,
     });

@@ -456,7 +456,7 @@ export default function BookingFlow() {
 
         {/* Not delivered means she is the one who has to carry it. Her own
             answers stay on screen so she can copy them into WhatsApp or
-            Instagram rather than retyping six steps from memory. */}
+            Instagram rather than retyping the whole enquiry from memory. */}
         {!arrived && (
           <dl className="mt-10 divide-y divide-ivory/10 border-y border-ivory/10">
             {[

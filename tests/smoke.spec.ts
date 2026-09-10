@@ -1963,3 +1963,110 @@ test.describe("the jewellery on the homepage", () => {
     expect(claimed, "the homepage claims a different number from the catalogue").toBe(actual);
   });
 });
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE CASCADE-LAYER TRAP
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  globals.css declares component classes that set `display` — `.btn`,
+ *  `.link-wipe`, `.line-mask`. Declared OUTSIDE a cascade layer they beat every
+ *  Tailwind utility, no matter how specific, so `className="btn hidden
+ *  lg:inline-flex"` hides nothing and the control paints at every width.
+ *
+ *  That shipped four times: the header CTA, the mirror CTA, the services CTA,
+ *  and finally the hero — where it put two "View the work" controls on top of
+ *  each other on the first screen of the site, and survived an entire mobile
+ *  audit because nothing looked broken, there was just one button too many.
+ *
+ *  Those classes are in `@layer components` now. This is the guard that says
+ *  so, in the only terms that matter: no control appears twice.
+ */
+test("no control is rendered twice in the same place", async ({ page }) => {
+  const ROUTES = [
+    "/",
+    "/about",
+    "/services",
+    "/portfolio",
+    "/contact",
+    "/faq",
+    "/bridal",
+    "/hair",
+    "/makeup",
+    "/locations/chennai",
+    "/rental-jewellery",
+    "/rental-jewellery/temple-jewellery",
+    "/journal",
+  ];
+  const wide = (page.viewportSize()?.width ?? 0) >= 1024;
+
+  for (const route of ROUTES) {
+    await skipVeil(page);
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(300);
+
+    const dupes = await page.evaluate(() => {
+      const seen = new Map<string, number>();
+      for (const a of document.querySelectorAll("main a, header a")) {
+        const r = a.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4) continue;
+        if (getComputedStyle(a).visibility === "hidden") continue;
+        // A closed drawer, a closed dialog and the sticky bar's own copy are
+        // all legitimately the same link somewhere else.
+        if (a.closest("[inert],[aria-hidden=true],dialog:not([open]),[data-action-bar],nav[aria-label='Quick actions']")) {
+          continue;
+        }
+        const label = (a.textContent ?? "").trim().toLowerCase().replace(/[→\s]+/g, " ").trim();
+        const href = a.getAttribute("href");
+        if (!label || !href) continue;
+        const scope = a.closest("section,header") ?? document.body;
+        const key = `${scope.tagName}${scope.getAttribute("aria-labelledby") ?? ""}|${href}|${label}`;
+        seen.set(key, (seen.get(key) ?? 0) + 1);
+      }
+      return [...seen.entries()]
+        .filter(([, n]) => n > 1)
+        .map(([k, n]) => `${n}× ${k.split("|").slice(1).join(" ")}`);
+    });
+
+    /**
+     * /services on DESKTOP genuinely offers one booking button per service —
+     * six of them, in one list, by design. Below lg they are all hidden and
+     * the sticky bar carries the intent, which is what Phase 5 established.
+     */
+    const expected = wide && route === "/services" ? 1 : 0;
+    expect(dupes, `${route} at ${page.viewportSize()?.width}px: ${dupes.join(" · ")}`).toHaveLength(
+      expected,
+    );
+  }
+});
+
+/**
+ * The three discipline pages are what disciplines.ts itself calls "the site's
+ * primary organic-search surfaces". Each section carried `{ alt, tone, seed }`
+ * and no `src`, so EditorialImage fell through to PlaceholderPlate and painted
+ * a coloured gradient — four empty plates per page, above a gallery of the
+ * real work, on three indexed pages.
+ */
+test.describe("the discipline pages show photographs, not plates", () => {
+  for (const route of ["/bridal", "/hair", "/makeup"]) {
+    test(route, async ({ page }) => {
+      await skipVeil(page);
+      await page.goto(route, { waitUntil: "networkidle" });
+      await page.waitForTimeout(600);
+
+      const plates = await page.evaluate(
+        () =>
+          [...document.querySelectorAll("main svg")].filter((s) => {
+            const r = s.getBoundingClientRect();
+            // The kolam is decorative line-work and is allowed; a placeholder
+            // plate is a large filled block standing in for a photograph.
+            return r.width > 150 && r.height > 150 && !s.closest("[class*='pointer-events-none']");
+          }).length,
+      );
+      expect(plates, "placeholder plates standing in for photographs").toBe(0);
+
+      // And every section has a real image above its prose.
+      const imgs = await page.locator("main img").count();
+      expect(imgs).toBeGreaterThanOrEqual(4);
+    });
+  }
+});

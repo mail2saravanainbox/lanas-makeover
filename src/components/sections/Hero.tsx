@@ -108,6 +108,15 @@ export default function Hero({
           </MagneticCta>
           {/* One button, one link. Two filled buttons stacked on a phone read
               as two equal choices; the work is a detour, not the ask. */}
+          {/* ── ONE OF THESE, NOT BOTH ────────────────────────────────────
+              A quiet text link on a phone, where the hero already carries a
+              filled booking button and a second pill would compete with it;
+              the ghost button from `lg` up, where there is room for two.
+
+              These stacked on every phone until `.btn` was moved into a
+              cascade layer: unlayered, it beat Tailwind's `hidden`, so the
+              desktop button never hid. Two "View the work" controls, one
+              above the other, on the first screen of the site. */}
           <Link
             href="/portfolio"
             data-cursor="view"
@@ -115,11 +124,7 @@ export default function Hero({
           >
             View the work &rarr;
           </Link>
-          <Link
-            href="/portfolio"
-            data-cursor="view"
-            className="btn btn-ghost hidden lg:inline-flex"
-          >
+          <Link href="/portfolio" data-cursor="view" className="btn btn-ghost hidden lg:inline-flex">
             View the work
           </Link>
         </div>

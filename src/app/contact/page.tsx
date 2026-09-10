@@ -64,8 +64,8 @@ export default async function ContactPage() {
               WhatsApp Lana
             </a>
             <p className="body-base mt-4">
-              Fastest for a straight date check. The six steps beside it are better when there
-              is more than one event to plan.
+              Fastest for a straight date check. The three steps beside it are better when
+              there is more than one event to plan.
             </p>
           </div>
         )}

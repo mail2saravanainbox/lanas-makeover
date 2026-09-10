@@ -382,77 +382,101 @@
 }
 
 /* Line-by-line masked headline reveal */
-.line-mask {
-  display: block;
-  overflow: hidden;
-}
+/* Layered for the same reason as .link-wipe: it sets `display`. */
+@layer components {
+  .line-mask {
+    display: block;
+    overflow: hidden;
+  }
 
-.line-mask > span {
-  display: block;
-  transform: translate3d(0, 105%, 0);
-  transition: transform var(--d-slow) var(--ease-silk);
-  transition-delay: var(--reveal-delay, 0ms);
-  will-change: transform;
-}
+  .line-mask > span {
+    display: block;
+    transform: translate3d(0, 105%, 0);
+    transition: transform var(--d-slow) var(--ease-silk);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: transform;
+  }
 
-[data-reveal="in"] .line-mask > span,
-.line-mask[data-reveal="in"] > span {
-  transform: none;
+  [data-reveal="in"] .line-mask > span,
+  .line-mask[data-reveal="in"] > span {
+    transform: none;
+  }
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 
-.btn {
-  --btn-fg: var(--color-ink);
-  --btn-bg: var(--color-ivory);
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  padding: 1.05rem 2.1rem;
-  min-height: 44px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--btn-fg);
-  background: var(--btn-bg);
-  border: 1px solid var(--btn-bg);
-  border-radius: 999px;
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    color var(--d-base) var(--ease-silk),
-    border-color var(--d-base) var(--ease-silk),
-    background-color var(--d-base) var(--ease-silk);
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   .btn — AND WHY IT LIVES IN A LAYER
+   ═══════════════════════════════════════════════════════════════════════════
+   This block used to sit outside every cascade layer. Unlayered rules beat
+   layered ones no matter how specific, so `.btn` beat every Tailwind utility
+   — and `className="btn hidden lg:inline-flex"` did nothing at all. The
+   button stayed visible at every width.
 
-.btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--color-champagne);
-  transform: translate3d(0, 101%, 0);
-  transition: transform var(--d-base) var(--ease-silk);
-}
+   That bug shipped three times: the header CTA, the mirror CTA, and the
+   services CTA all had to be rewritten with `!hidden lg:!inline-flex` once
+   someone noticed. The fourth was in the hero, where it put two "View the
+   work" controls on top of each other on every phone, and it survived a
+   whole mobile audit because nothing was broken enough to look wrong — just
+   one button too many.
 
-.btn:hover::before,
-.btn:focus-visible::before {
-  transform: none;
-}
+   Inside `@layer components`, utilities win, which is what anyone writing
+   `hidden` next to `btn` expects. The `!` prefixes already in the codebase
+   keep working; they are simply no longer load-bearing.
+   ═════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  .btn {
+    --btn-fg: var(--color-ink);
+    --btn-bg: var(--color-ivory);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 1.05rem 2.1rem;
+    min-height: 44px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--btn-fg);
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-bg);
+    border-radius: 999px;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      color var(--d-base) var(--ease-silk),
+      border-color var(--d-base) var(--ease-silk),
+      background-color var(--d-base) var(--ease-silk);
+  }
 
-.btn-ghost {
-  --btn-fg: var(--on-page);
-  --btn-bg: transparent;
-  border-color: color-mix(in srgb, var(--on-page) 32%, transparent);
-}
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-champagne);
+    transform: translate3d(0, 101%, 0);
+    transition: transform var(--d-base) var(--ease-silk);
+  }
 
-.btn-ghost:hover,
-.btn-ghost:focus-visible {
-  color: var(--color-ink);
-  border-color: var(--color-champagne);
+  .btn:hover::before,
+  .btn:focus-visible::before {
+    transform: none;
+  }
+
+  .btn-ghost {
+    --btn-fg: var(--on-page);
+    --btn-bg: transparent;
+    border-color: color-mix(in srgb, var(--on-page) 32%, transparent);
+  }
+
+  .btn-ghost:hover,
+  .btn-ghost:focus-visible {
+    color: var(--color-ink);
+    border-color: var(--color-champagne);
+  }
 }
 
 /* The entire budget for silk-red: a 4px dot marking where you are. */
@@ -468,61 +492,72 @@ nav[aria-label="Primary"] [aria-current="page"]::before {
 }
 
 /* Understated text link with a wiping underline */
-.link-wipe {
-  position: relative;
-  display: inline-block;
-  padding-bottom: 0.2em;
-}
+/* IN A LAYER, BECAUSE IT SETS `display`.
 
-.link-wipe::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform var(--d-base) var(--ease-silk);
-}
+   Unlayered, `.link-wipe { display: inline-block }` beat Tailwind's `hidden`,
+   so `className="link-wipe … lg:hidden"` never hid anything from `lg` up. That
+   left the hero's mobile text link painting on desktop underneath the ghost
+   button meant to replace it — the same failure as `.btn`, one class along.
 
-.link-wipe:hover::after,
-.link-wipe:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-/* ── Touch targets ─────────────────────────────────────────────────────────
-   Inline text links measure 20–29px tall, which fails WCAG 2.5.8's 24px
-   minimum on the smaller ones. A ::before with negative inset expands the
-   TOUCHABLE area without moving a single pixel of layout — padding would push
-   the wiping underline away from its text.
-
-   Coarse pointers only: a mouse does not need it, and the extra box would
-   overlap neighbouring links on a dense desktop footer.
-
-   [aria-current] is excluded because ::before there is the silk-red dot on the
-   active nav link. ───────────────────────────────────────────────────────── */
-
-@media (pointer: coarse) {
-  /* Real box height first — a pseudo-element hit area loses to any sibling
-     that overlaps and paints later, which is exactly what happens in a dense
-     footer list. Padding is not subtle, but it is not conditional either. */
+   Any rule in this file that sets `display` belongs in a layer for exactly
+   this reason. */
+@layer components {
   .link-wipe {
-    padding-block: 0.3rem 0.5rem;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.2em;
   }
 
-  /* Keep the wiping underline against the text, not at the padding edge. */
   .link-wipe::after {
-    bottom: 0.3rem;
-  }
-
-  /* And widen the target sideways, where padding would disturb inline flow. */
-  .link-wipe:not([aria-current="page"])::before {
     content: "";
     position: absolute;
-    inset: -0.15rem -0.3rem;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--d-base) var(--ease-silk);
+  }
+
+  .link-wipe:hover::after,
+  .link-wipe:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* ── Touch targets ─────────────────────────────────────────────────────────
+     Inline text links measure 20–29px tall, which fails WCAG 2.5.8's 24px
+     minimum on the smaller ones. A ::before with negative inset expands the
+     TOUCHABLE area without moving a single pixel of layout — padding would push
+     the wiping underline away from its text.
+
+     Coarse pointers only: a mouse does not need it, and the extra box would
+     overlap neighbouring links on a dense desktop footer.
+
+     [aria-current] is excluded because ::before there is the silk-red dot on the
+     active nav link. ───────────────────────────────────────────────────────── */
+
+  @media (pointer: coarse) {
+    /* Real box height first — a pseudo-element hit area loses to any sibling
+       that overlaps and paints later, which is exactly what happens in a dense
+       footer list. Padding is not subtle, but it is not conditional either. */
+    .link-wipe {
+      padding-block: 0.3rem 0.5rem;
+    }
+
+    /* Keep the wiping underline against the text, not at the padding edge. */
+    .link-wipe::after {
+      bottom: 0.3rem;
+    }
+
+    /* And widen the target sideways, where padding would disturb inline flow. */
+    .link-wipe:not([aria-current="page"])::before {
+      content: "";
+      position: absolute;
+      inset: -0.15rem -0.3rem;
+    }
   }
 }
 

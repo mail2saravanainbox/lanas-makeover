@@ -38,6 +38,28 @@ export default function DisciplinePage({
 }) {
   const related = services.filter((s) => config.relatedServices.includes(s.slug));
 
+  /**
+   * ── THE SECTION PLATES WERE NEVER GIVEN A PHOTOGRAPH ─────────────────────
+   * Each section carried `{ alt, tone, seed }` and no `src`, so EditorialImage
+   * fell through to PlaceholderPlate and painted a coloured gradient. Three
+   * indexed landing pages — the ones disciplines.ts itself calls "the site's
+   * primary organic-search surfaces" — showed four empty plates each, above a
+   * gallery of the real work.
+   *
+   * The photographs were there the whole time: `items` is this discipline's
+   * own categories. The sections take the first few and the grid below takes
+   * the rest, so nothing appears twice on the page — the same rule the slot
+   * allocator applies everywhere else (§7).
+   *
+   * If the archive is ever too thin to feed both, the plates come back rather
+   * than the gallery being emptied to fill them. A section with a plate in it
+   * is a design that has not been finished; a gallery with two photographs in
+   * it looks like a business with no work.
+   */
+  const canFeedSections = items.length >= config.sections.length + 4;
+  const sectionItems = canFeedSections ? items.slice(0, config.sections.length) : [];
+  const gridItems = canFeedSections ? items.slice(config.sections.length) : items;
+
   return (
     <>
       <PageHeader
@@ -67,10 +89,21 @@ export default function DisciplinePage({
                     style={{ transform: "translate3d(0, calc(var(--sy) * 20px), 0)" }}
                   >
                     <EditorialImage
-                      image={{ alt: `${s.heading} — placeholder plate`, tone: s.tone, seed: s.seed }}
+                      image={
+                        sectionItems[i]
+                          ? {
+                              src: sectionItems[i].imageUrl,
+                              alt: sectionItems[i].alt,
+                              width: sectionItems[i].width,
+                              height: sectionItems[i].height,
+                              blurDataURL: sectionItems[i].blurDataURL,
+                              focus: sectionItems[i].focus,
+                            }
+                          : { alt: `${s.heading} — placeholder plate`, tone: s.tone, seed: s.seed }
+                      }
                       className="h-full w-full"
                       sizes="(max-width: 1024px) 92vw, 46vw"
-                      decorative
+                      decorative={!sectionItems[i]}
                     />
                   </div>
                 </Reveal>
@@ -115,12 +148,15 @@ export default function DisciplinePage({
         )}
       </div>
 
-      {items.length > 0 && (
+      {gridItems.length > 0 && (
         <section aria-label="Selected work" className="pb-28 sm:pb-36">
-          <div className="shell mb-12">
+          <div className="shell mb-12 flex flex-wrap items-baseline justify-between gap-4">
             <h2 className="display-sm text-ivory">Selected work</h2>
+            <Link href="/portfolio" className="tap link-wipe eyebrow !text-champagne">
+              The full archive
+            </Link>
           </div>
-          <PortfolioGrid items={items} showFilters={false} />
+          <PortfolioGrid items={gridItems} showFilters={false} />
         </section>
       )}
 
