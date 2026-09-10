@@ -58,3 +58,8 @@ Protofolio image*
 /playwright-report
 /blob-report
 /.playwright
+
+# Scans and exports that live in this folder but are not part of the site.
+# 452 MB of them were swept into a commit by `git add -A` and rejected by
+# GitHub's 100 MB file limit. They stay on disk; git simply ignores them.
+*.pdf

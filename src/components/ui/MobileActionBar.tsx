@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
+import { cx } from "@/lib/utils";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -27,10 +29,24 @@ import { track } from "@/lib/analytics";
  *  in the bar — no number configured either — the bar does not render at all,
  *  and `.page-content` stops reserving space for it (see globals.css).
  *
+ *  WHEN IT SHOWS (§audit phase 3). Not immediately: the hero already carries
+ *  the same button, and a bar duplicating a control that is on screen is a
+ *  bar in the way. It arrives once the hero has left, tracked with an
+ *  IntersectionObserver on the hero itself rather than a scroll listener —
+ *  the position that matters is the hero's, not a pixel count.
+ *
+ *  Then it hides on the way down and returns on the way up, because on the
+ *  way down a reader is reading. Throttled to 24px so a thumb tremor cannot
+ *  flicker it, and via rAF so the scroll handler never lays out.
+ *
  *  ACCESSIBILITY. Two real controls, 52px tall against a 44px minimum, with
  *  their own accessible names, inside a labelled landmark. `safe-area-inset-
  *  bottom` keeps them clear of the iPhone home indicator; without it the
  *  bottom 34px of the bar is not tappable at all on modern iOS.
+ *
+ *  When it is out of view it is `inert` and `aria-hidden`, so a keyboard or a
+ *  screen reader never lands on a control nobody can see. Under reduced
+ *  motion it appears and disappears without the slide.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export default function MobileActionBar({
@@ -47,15 +63,76 @@ export default function MobileActionBar({
   // button that does nothing.
   const showBooking = pathname !== "/contact";
 
+  const [shown, setShown] = useState(false);
+  const lastY = useRef(0);
+  const ticking = useRef(false);
+  /** Null until measured; the bar stays down until the hero has been seen. */
+  const pastHero = useRef(false);
+
+  useEffect(() => {
+    if (!showBooking && !whatsapp) return;
+
+    const hero = document.querySelector("[data-hero]");
+
+    // No hero on this route — inner pages have none — so the bar is simply
+    // available from the top. Deferred a frame rather than set here: a
+    // synchronous setState in an effect body is a cascading render, and this
+    // is the one case with no observer callback to carry it.
+    let raf = 0;
+    if (!hero) {
+      pastHero.current = true;
+      raf = requestAnimationFrame(() => setShown(true));
+    }
+
+    const io = hero
+      ? new IntersectionObserver(
+          ([entry]) => {
+            pastHero.current = !entry.isIntersecting;
+            setShown(pastHero.current);
+            lastY.current = window.scrollY;
+          },
+          { threshold: 0 },
+        )
+      : null;
+    io?.observe(hero!);
+
+    const onScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        ticking.current = false;
+        if (!pastHero.current) return;
+        const y = window.scrollY;
+        const delta = y - lastY.current;
+        // 24px of deliberate travel, not a thumb tremor.
+        if (Math.abs(delta) < 24) return;
+        lastY.current = y;
+        setShown(delta < 0 || y < 80);
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      io?.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [showBooking, whatsapp, pathname]);
+
   if (!showBooking && !whatsapp) return null;
 
   return (
     <nav
       aria-label="Quick actions"
-      data-action-bar=""
       // lg:hidden — the desktop header already carries both of these, and a
       // bar pinned across a 27-inch display would be a phone habit on a Mac.
-      className="fixed inset-x-0 bottom-0 z-[58] lg:hidden"
+      data-action-bar=""
+      inert={!shown ? true : undefined}
+      aria-hidden={!shown ? true : undefined}
+      className={cx(
+        "fixed inset-x-0 bottom-0 z-[58] transition-transform duration-[var(--d-base)] ease-[var(--ease-silk)] motion-reduce:transition-none lg:hidden",
+        shown ? "translate-y-0" : "translate-y-full",
+      )}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="flex items-stretch gap-2 border-t border-ivory/12 bg-ink/92 px-3 py-2.5 backdrop-blur-xl">

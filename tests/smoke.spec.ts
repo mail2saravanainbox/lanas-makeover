@@ -12,6 +12,23 @@ function isDesktop(page: Page): boolean {
   return (page.viewportSize()?.width ?? 0) >= 1024;
 }
 
+/**
+ * Skip the opening.
+ *
+ * While the veil is up it sets `overflow: hidden` on the document, so a test
+ * that scrolls does not move and anything gated on scroll position never
+ * fires. Any test measuring scroll behaviour must call this first.
+ */
+async function skipVeil(page: Page) {
+  await page.addInitScript(() => {
+    try {
+      sessionStorage.setItem("lm:veil", "1");
+    } catch {
+      /* private mode */
+    }
+  });
+}
+
 test.describe("the homepage introduces itself in frame one", () => {
   test("wordmark, booking CTA and (desktop) nav links are visible at scroll 0", async ({
     page,
@@ -35,9 +52,10 @@ test.describe("the homepage introduces itself in frame one", () => {
      */
     const cta = isDesktop(page)
       ? header.getByRole("link", { name: "Check Your Date" })
-      : page
-          .getByRole("navigation", { name: "Quick actions" })
-          .getByRole("link", { name: "Check Your Date" });
+      // On a phone the header CTA was removed (it made three in one frame) and
+      // the sticky bar deliberately stays down while the hero is on screen —
+      // so the button in frame one is the hero's own.
+      : page.locator("[data-hero]").getByRole("link", { name: "Check Your Date" });
     await expect(cta).toBeVisible();
 
     if (isDesktop(page)) {
@@ -322,9 +340,13 @@ test("at 390px the header fits and the booking CTA is always in reach", async ({
    * is pinned, so the CTA is reachable at every scroll position rather than
    * only at the top.
    */
-  const cta = page
-    .getByRole("navigation", { name: "Quick actions" })
-    .getByRole("link", { name: "Check Your Date" });
+  /**
+   * At scroll 0 the reachable CTA is the HERO's. The sticky bar deliberately
+   * stays down while the hero — carrying the identical button — is on screen;
+   * a bar duplicating a control already in view is a bar in the way. The bar's
+   * own arrival is covered by "the sticky action bar behaviour".
+   */
+  const cta = page.locator("[data-hero]").getByRole("link", { name: "Check Your Date" });
   await expect(cta).toBeVisible();
 
   const ctaBox = (await cta.boundingBox())!;
@@ -683,12 +705,31 @@ test("the ritual loads two frames up front and all eight by the end", async ({
   // Two, not eight: the whole point of the deferral.
   expect(fetched.size).toBeLessThanOrEqual(3);
 
-  const height = await page.evaluate(
-    () => document.documentElement.scrollHeight,
-  );
-  for (let y = 0; y < height; y += 400) {
-    await page.evaluate((v) => window.scrollTo(0, v), y);
-    await page.waitForTimeout(60);
+  /**
+   * SCROLL THROUGH THE RITUAL, NOT PAST IT.
+   *
+   * This used to step the whole document in fixed 400px jumps. That worked
+   * while the homepage was 33 screens tall; the mobile audit took it to under
+   * 17, and the same loop then crossed the ritual's sticky track in a handful
+   * of jumps — too fast for each stage to become active and request its frame.
+   * The test began failing for a page that had got better.
+   *
+   * It now walks the section itself, in twenty-four steps, which is what a
+   * reader does and what the assertion below actually claims.
+   */
+  const track = await page.evaluate(() => {
+    const el = document.querySelector('[aria-labelledby="ritual-title"], #ritual-title')
+      ?.closest("section");
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top + window.scrollY, height: el.scrollHeight };
+  });
+  expect(track, "the ritual section was not found").not.toBeNull();
+
+  const steps = 24;
+  for (let i = 0; i <= steps; i++) {
+    await page.evaluate((v) => window.scrollTo(0, v), track!.top + (track!.height * i) / steps);
+    await page.waitForTimeout(110);
   }
 
   // Every frame arrives by the time the reader has been through the section,
@@ -751,14 +792,25 @@ test.describe("the sticky action bar", () => {
   test("is present on mobile and does not cover the end of the page", async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) >= 1024, "mobile only");
 
+    await skipVeil(page);
     await page.goto("/");
-    const bar = page.getByRole("navigation", { name: "Quick actions" });
-    await expect(bar).toBeVisible();
+
+    /**
+     * Located by attribute, not by role.
+     *
+     * While the bar is down it is `aria-hidden`, which removes it from the
+     * accessibility tree — so `getByRole` cannot see it, by design. And it IS
+     * down here: this test jumps 2000px in one go, which is a downward scroll,
+     * and hiding on the way down is the behaviour. Its arrival is asserted in
+     * "the sticky action bar behaviour"; what matters here is the reservation.
+     */
+    const bar = page.locator("nav[data-action-bar]");
+    await expect(bar).toBeAttached();
 
     // The one booking CTA, at a real touch size (§14 — 44px minimum).
-    const cta = bar.getByRole("link", { name: "Check Your Date" });
-    await expect(cta).toBeVisible();
+    const cta = bar.getByRole("link", { name: "Check Your Date", includeHidden: true });
     const box = await cta.boundingBox();
+    expect(box, "the bar's CTA has no box").not.toBeNull();
     expect(box!.height).toBeGreaterThanOrEqual(44);
 
     /**
@@ -1010,5 +1062,71 @@ test.describe("the logo", () => {
     expect(og.status()).toBe(200);
     // Satori cannot decode WebP; a broken embed silently yields a tiny image.
     expect((await og.body()).byteLength).toBeGreaterThan(50_000);
+  });
+});
+
+
+/**
+ * PHASE 3 — the sticky action bar's behaviour, not just its presence.
+ *
+ * The bar is only useful when it is not in the way: absent while the hero (and
+ * its identical button) is on screen, present past it, gone on the way down
+ * because on the way down a reader is reading, back on the way up.
+ */
+test.describe("the sticky action bar behaviour", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 1024, "mobile only");
+
+  const state = (page: Page) =>
+    page.evaluate(() => {
+      const n = document.querySelector('nav[aria-label="Quick actions"]');
+      if (!n) return null;
+      return {
+        inert: n.hasAttribute("inert"),
+        hidden: n.hasAttribute("aria-hidden"),
+        onScreen: n.getBoundingClientRect().top < window.innerHeight - 10,
+      };
+    });
+
+  test("stays out of the way until the hero has gone, then follows scroll direction", async ({
+    page,
+  }) => {
+    await skipVeil(page);
+    await page.goto("/");
+    await page.waitForTimeout(900);
+
+    // The hero carries the same button; a bar duplicating it is a bar in the way.
+    expect(await state(page), "bar should be down while the hero is visible").toMatchObject({
+      inert: true,
+      onScreen: false,
+    });
+
+    await page.evaluate(() => window.scrollTo(0, 2000));
+    await page.waitForTimeout(700);
+    expect(await state(page), "bar should arrive past the hero").toMatchObject({
+      inert: false,
+      onScreen: true,
+    });
+
+    await page.evaluate(() => window.scrollTo(0, 3400));
+    await page.waitForTimeout(700);
+    expect(await state(page), "bar should retreat while reading downward").toMatchObject({
+      inert: true,
+    });
+
+    await page.evaluate(() => window.scrollTo(0, 2600));
+    await page.waitForTimeout(700);
+    expect(await state(page), "bar should return on the way back up").toMatchObject({
+      inert: false,
+    });
+  });
+
+  test("renders no WhatsApp control while no number is configured", async ({ page }) => {
+    /**
+     * The default state of this repo. A wa.me link built from an unset or
+     * placeholder number opens a chat with nobody, which costs the enquiry and
+     * the trust — so every WhatsApp affordance checks first.
+     */
+    await page.goto("/");
+    expect(await page.locator('a[href*="wa.me"]').count()).toBe(0);
   });
 });

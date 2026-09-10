@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import { cx } from "@/lib/utils";
-import { serviceCities, siteSettings, whatsappEnquiry, whatsappLink } from "@/content/site";
+import { serviceCities, siteSettings, whatsappEnquiry } from "@/content/site";
+import { waLink } from "@/lib/whatsapp";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -322,7 +323,7 @@ export default function BookingFlow() {
 
   const continueHref = useMemo(
     () =>
-      whatsappLink(
+      waLink(
         whatsappEnquiry({
           date: values.weddingDate,
           city: resolvedCity,
@@ -814,6 +815,25 @@ export default function BookingFlow() {
       <p role="status" aria-live="polite" className="mt-6 min-h-[1.5rem] text-sm text-rose">
         {status === "error" ? message : ""}
       </p>
+
+      {/* ── THE OTHER DOOR, ON EVERY STEP ──────────────────────────────────
+          A bride who stalls on step 3 of 6 should not have to finish the form
+          to find the alternative. Offered throughout rather than only on the
+          confirmation screen — and rendered at all only when a real number is
+          configured. */}
+      {waLink() && (
+        <p className="mt-8 border-t border-ivory/10 pt-6 text-sm">
+          <a
+            href={waLink()!}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track("whatsapp_click", { placement: "booking-step" })}
+            className="link-wipe text-champagne hover:text-ivory"
+          >
+            Or message on WhatsApp &rarr;
+          </a>
+        </p>
+      )}
     </form>
   );
 }

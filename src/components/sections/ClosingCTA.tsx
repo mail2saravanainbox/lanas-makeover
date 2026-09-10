@@ -1,5 +1,5 @@
-import { whatsappLink } from "@/content/site";
 import { sectionEyebrow } from "@/lib/utils";
+import { waLink } from "@/lib/whatsapp";
 import type { SiteSettings } from "@/lib/types";
 import Reveal from "@/components/ui/Reveal";
 import SplitLines from "@/components/ui/SplitLines";
@@ -22,7 +22,7 @@ export default function ClosingCTA({
   index?: number;
   settings: SiteSettings;
 }) {
-  const whatsapp = whatsappLink();
+  const whatsapp = waLink();
   return (
     <section className="relative overflow-hidden bg-ivory py-28 text-ink sm:py-40 surface-ivory" aria-labelledby="cta-title">
       <KolamGrid
@@ -66,7 +66,7 @@ export default function ClosingCTA({
                   rel="noopener noreferrer"
                   className="btn btn-ghost !border-ink/25 !text-ink hover:!text-ink"
                 >
-                  Ask on WhatsApp
+                  WhatsApp Lana
                 </a>
               )}
             </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { content } from "@/lib/content/provider";
-import { citiesProse, whatsappLink, telLink } from "@/content/site";
+import { citiesProse, telLink } from "@/content/site";
+import { waLink } from "@/lib/whatsapp";
 import { breadcrumbSchema, localBusinessSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import BookingFlow from "@/components/booking/BookingFlow";
@@ -17,7 +18,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function ContactPage() {
   const settings = await content().getSiteSettings();
-  const whatsapp = whatsappLink();
+  const whatsapp = waLink();
   const tel = telLink();
 
   return (
@@ -95,18 +96,10 @@ export default async function ContactPage() {
                     </a>
                   </li>
                 )}
-                {whatsapp && (
-                  <li>
-                    <a
-                      href={whatsapp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="link-wipe hover:text-champagne"
-                    >
-                      WhatsApp
-                    </a>
-                  </li>
-                )}
+                {/* No WhatsApp entry here: the button at the head of this
+                    rail is the same link, a few centimetres above, and the
+                    enquiry flow beside it offers it on every step. Three
+                    doors to one room. */}
               </ul>
 
               {!settings.email && !tel && (

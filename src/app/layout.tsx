@@ -5,7 +5,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 import { content } from "@/lib/content/provider";
-import { whatsappLink } from "@/content/site";
+import { waLink } from "@/lib/whatsapp";
 import { localBusinessSchema, pageMetadata, seoConfig } from "@/lib/seo";
 
 import SmoothScroll from "@/components/ui/SmoothScroll";
@@ -86,9 +86,16 @@ export default async function RootLayout({
   const settings = await content().getSiteSettings();
   // "Brides" only earns a nav link once there is a bride story behind it.
   const hasBrides = (await content().getBrides()).length > 0;
-  // Resolved once here rather than in four components. Null until a real
-  // business number is configured — every consumer renders nothing on null.
-  const whatsapp = whatsappLink();
+  /**
+   * Resolved once here rather than in four components. Null until a real
+   * business number is configured — every consumer renders nothing on null.
+   *
+   * Now reads NEXT_PUBLIC_WHATSAPP_NUMBER first (see lib/whatsapp.ts), which
+   * also rejects the `91XXXXXXXXXX` placeholder from the setup docs: it
+   * survives digit-stripping as "91", and a two-digit number builds a link
+   * that opens a chat with nobody.
+   */
+  const whatsapp = waLink();
 
   return (
     <html

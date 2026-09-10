@@ -251,13 +251,15 @@ export const siteSettings: SiteSettings = {
   showPlaceholderBadges: true,
 };
 
-/** Convenience: WhatsApp deep link, or null when no number is configured. */
-export function whatsappLink(message?: string): string | null {
-  const digits = siteSettings.whatsapp.replace(/[^\d]/g, "");
-  if (!digits) return null;
-  const text = message ?? `Hello ${siteSettings.brandName}, I'd like to check your availability.`;
-  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
-}
+/**
+ * ⚠ SUPERSEDED by `src/lib/whatsapp.ts`, which is the single implementation:
+ * it reads NEXT_PUBLIC_WHATSAPP_NUMBER as well as this file, and rejects a
+ * number too short to be real — this version accepted the `91XXXXXXXXXX`
+ * placeholder, which strips to "91" and builds a link to nobody.
+ *
+ * Kept only so `whatsappEnquiry` below has a companion in the same file for
+ * anything still importing from here. Nothing in src/ does.
+ */
 
 /** Convenience: tel: link, or null when no number is configured. */
 export function telLink(): string | null {

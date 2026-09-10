@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { onScrollY } from "@/lib/motion/scheduler";
 
@@ -12,6 +13,7 @@ import { onScrollY } from "@/lib/motion/scheduler";
  * clear of content, and is a real link with a real accessible name.
  */
 export default function WhatsAppButton({ href }: { href: string | null }) {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(
@@ -24,6 +26,9 @@ export default function WhatsAppButton({ href }: { href: string | null }) {
   );
 
   if (!href) return null;
+  // Not on /contact. That page already offers WhatsApp at the head of its
+  // rail and on every step of the enquiry; a floating bubble makes three.
+  if (pathname === "/contact") return null;
 
   return (
     <a
