@@ -74,7 +74,15 @@ export default function WorldCard({
           {/* Legibility scrim — always, never conditional */}
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent opacity-90 transition-opacity duration-[var(--d-base)] group-hover:opacity-75" />
 
-          <span className="absolute right-5 top-5 font-mono text-[0.75rem] tracking-[0.24em] text-ivory/55">
+          {/* Decorative. The whole card is one link, so without aria-hidden
+              this number is read into its accessible name and the link
+              announces as "03 The Evening Reception …" — which is also why
+              cards 03/04 read differently from the 01/02 panels, whose markup
+              has no index at all. */}
+          <span
+            aria-hidden="true"
+            className="absolute right-5 top-5 font-mono text-[0.75rem] tracking-[0.24em] text-ivory/55"
+          >
             {String(index).padStart(2, "0")}
           </span>
 

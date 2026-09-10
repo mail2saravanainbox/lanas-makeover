@@ -149,15 +149,14 @@ export default async function AboutPage() {
               </dl>
             </Reveal>
 
-            {settings.contentIsPlaceholder && (
-              <Reveal delay={560}>
-                <p className="body-base mt-12 border-l border-champagne/30 pl-5">
-                  This biography is written strictly from what the public profile states. No
-                  years of experience, training, award or client list is claimed here because
-                  none has been supplied.
-                </p>
-              </Reveal>
-            )}
+            {/* An internal note used to sit here, explaining to the client
+                that no credential had been provided. It was a message TO the
+                client, rendered ON the client's own website, where every
+                bride could read it. Removed.
+
+                TODO(client): a single credential line belongs here when there
+                is one to make — years working, brides, training. Nothing is
+                rendered until then, because the alternative is inventing it. */}
           </div>
         </div>
       </section>

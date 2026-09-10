@@ -417,10 +417,29 @@ export default function BookingFlow() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} noValidate className="max-w-2xl">
-      {/* Honeypot (§49) — bots fill it, humans never see it. `hidden` rather
-          than off-screen, and tabIndex -1, so it is unreachable by keyboard
-          and invisible to a screen reader as well as to the eye. */}
-      <div className="hidden" aria-hidden="true">
+      {/* ── HONEYPOT ─────────────────────────────────────────────────────────
+          OFF-SCREEN, not `display: none`.
+
+          A hidden field is only a trap if the bot fills it, and the crude
+          ones skip anything with `display: none` precisely because it is the
+          obvious tell. Moving it off-screen keeps it invisible to people
+          while leaving it in the layout for anything filling the form
+          programmatically.
+
+          Still unreachable by every other route: aria-hidden for screen
+          readers, tabIndex -1 for the keyboard, autoComplete off so no
+          password manager offers to fill it. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "auto",
+          width: 1,
+          height: 1,
+          overflow: "hidden",
+        }}
+      >
         <label htmlFor="company">Company</label>
         <input
           id="company"

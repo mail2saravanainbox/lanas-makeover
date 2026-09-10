@@ -8,9 +8,17 @@ import BookingLink from "./BookingLink";
 
 /** YOUR STORY STARTS HERE (§27) */
 export default function ClosingCTA({
-  index = 11,
+  index,
   settings,
 }: {
+  /**
+   * Only the homepage numbers its sections. This used to default to eleven,
+   * so every inner page — services, about, faq, portfolio, each collection,
+   * each service, the disciplines — announced itself as the eleventh section
+   * of eleven, on pages that have four.
+   *
+   * Undefined now means "no number", which `sectionEyebrow` already handles.
+   */
   index?: number;
   settings: SiteSettings;
 }) {

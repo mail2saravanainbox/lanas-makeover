@@ -161,7 +161,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
           <p>
             © {year} {settings.brandName}
           </p>
-          <p>Designed as a bridal editorial experience</p>
+          {/* TODO(client): a build credit goes here if one is ever wanted. */}
         </div>
 
         {/* The public "Preview build" notice was removed at the client's

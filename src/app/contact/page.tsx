@@ -111,8 +111,7 @@ export default async function ContactPage() {
 
               {!settings.email && !tel && (
                 <p className="body-base mt-5">
-                  Instagram direct message is the fastest route until a business number and
-                  enquiry inbox are published here.
+                  Message on Instagram, or send the form below.
                 </p>
               )}
             </div>

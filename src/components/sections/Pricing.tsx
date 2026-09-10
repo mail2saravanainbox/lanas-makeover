@@ -71,11 +71,6 @@ export default function Pricing({ index }: { index?: number }) {
                   {pricing.qualifier} Send the date and the events and you will be given a figure
                   for your wedding rather than a range that turns out not to apply to it.
                 </p>
-                {siteSettings.showPlaceholderBadges && (
-                  <p className="mt-6 text-[0.7rem] uppercase tracking-[0.22em] text-muted">
-                    Indicative pricing not yet published
-                  </p>
-                )}
               </div>
             )}
 

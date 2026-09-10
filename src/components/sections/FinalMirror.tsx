@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
-import { clamp, sectionEyebrow } from "@/lib/utils";
+import { clamp, cx, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
 import { track } from "@/lib/analytics";
 
@@ -107,8 +107,16 @@ export default function FinalMirror({
         {sectionEyebrow(index, "The mirror")}
       </p>
 
-      <div ref={trackRef} className="relative h-[200vh]">
-        <div className="sticky top-0 flex h-[100dvh] items-center justify-center overflow-hidden">
+      {/* No 200vh scroll track and no viewport lock under reduced motion:
+          there is nothing to scrub, and a 100dvh box with overflow hidden
+          would clip a stanza that is now taller than it. */}
+      <div ref={trackRef} className={cx("relative", !reduced && "h-[200vh]")}>
+        <div
+          className={cx(
+            "flex items-center justify-center",
+            reduced ? "relative" : "sticky top-0 h-[100dvh] overflow-hidden",
+          )}
+        >
           {/* The portrait, held behind everything */}
           <div
             ref={portraitRef}
@@ -121,39 +129,63 @@ export default function FinalMirror({
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink" />
           </div>
 
-          {/* The three lines */}
-          <div className="shell relative z-10 text-center">
+          {/**
+           * TWO LAYOUTS, ONE MARKUP.
+           *
+           * Animated, the four beats are stacked absolutely at the same point
+           * and cross-faded. Under reduced motion every one of them was given
+           * `opacity: 1` — and they were still absolutely positioned, so all
+           * four rendered on top of each other as unreadable overlapping type.
+           *
+           * With reduced motion the beats now run in normal flow instead, as
+           * the stanza they are.
+           */}
+          <div
+            className={cx(
+              "shell relative z-10 text-center",
+              reduced && "flex flex-col items-center gap-8 py-16",
+            )}
+          >
             <p
-              className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance text-ivory"
+              className={cx(
+                "display-lg mx-auto max-w-[18ch] text-balance text-ivory",
+                reduced ? "relative" : "absolute inset-x-0 top-1/2 -translate-y-1/2",
+              )}
               ref={(el) => {
                 lineRefs.current[0] = el;
               }}
               style={{ opacity: reduced ? 1 : 0 }}
-              aria-hidden={!reduced && beat !== 0}
+              aria-hidden="true"
             >
               And then, she looked
               <br /> in the mirror.
             </p>
 
             <p
-              className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance text-ivory"
+              className={cx(
+                "display-lg mx-auto max-w-[18ch] text-balance text-ivory",
+                reduced ? "relative" : "absolute inset-x-0 top-1/2 -translate-y-1/2",
+              )}
               ref={(el) => {
                 lineRefs.current[1] = el;
               }}
               style={{ opacity: reduced ? 1 : 0 }}
-              aria-hidden={!reduced && beat !== 1}
+              aria-hidden="true"
             >
               She didn’t see
               <br /> someone else.
             </p>
 
             <p
-              className="display-lg absolute inset-x-0 top-1/2 mx-auto max-w-[18ch] -translate-y-1/2 text-balance"
+              className={cx(
+                "display-lg mx-auto max-w-[18ch] text-balance",
+                reduced ? "relative" : "absolute inset-x-0 top-1/2 -translate-y-1/2",
+              )}
               ref={(el) => {
                 lineRefs.current[2] = el;
               }}
               style={{ opacity: reduced ? 1 : 0 }}
-              aria-hidden={!reduced && beat !== 2}
+              aria-hidden="true"
             >
               <span className="italic-serif text-champagne">She saw herself.</span>
             </p>
@@ -161,12 +193,12 @@ export default function FinalMirror({
             {/* Resolution */}
             <div
               ref={endRef}
-              className="absolute inset-x-0 top-1/2"
+              className={cx(reduced ? "relative" : "absolute inset-x-0 top-1/2")}
               style={{
                 opacity: reduced ? 1 : 0,
-                transform: reduced ? "translateY(-50%)" : "translateY(calc(-50% + 24px))",
+                transform: reduced ? "none" : "translateY(calc(-50% + 24px))",
               }}
-              aria-hidden={!reduced && beat !== 3}
+              aria-hidden="true"
             >
               <p className="display-md uppercase tracking-[0.14em] text-ivory">
                 {brand.replace(/'s/i, "’s")}
@@ -185,7 +217,15 @@ export default function FinalMirror({
             </div>
           </div>
 
-          {/* Screen-reader linear version — the story without the scrubbing */}
+          {/* ── THE ONLY ACCESSIBLE COPY OF THE POEM ────────────────────────
+              The four layers above are now unconditionally `aria-hidden`. They
+              are a visual device — the same sentences, cross-faded — and they
+              used to be announced as well as this paragraph, so the poem was
+              read out twice. Under reduced motion it was worse: every layer
+              got `opacity: 1`, none was hidden, and all four were announced.
+
+              The visual overlap that caused is fixed in the same pass — see
+              `reduced` in the layer styles. */}
           <p className="sr-only">
             And then, she looked in the mirror. She didn’t see someone else. She saw herself.{" "}
             {brand}. Your story starts here.

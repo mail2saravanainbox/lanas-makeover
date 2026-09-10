@@ -147,7 +147,7 @@ export default async function ServicesPage() {
         <Reveal>
           <p className="body-base mt-24 max-w-2xl border-l border-champagne/30 pl-5">
             Pricing, packages and travel terms are confirmed directly, per date and per city.
-            Nothing is quoted on this page because nothing has been quoted to us.
+            Pricing and travel terms are confirmed per date and per city — send your date to get a figure for your wedding.
           </p>
         </Reveal>
       </div>
