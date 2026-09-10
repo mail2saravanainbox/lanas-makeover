@@ -53,6 +53,19 @@ export const siteSettings: SiteSettings = {
    */
   travelNote: "Travel available across Tamil Nadu, subject to availability and travel terms.",
 
+  /**
+   * HOW LONG A BRIDE WAITS FOR AN ANSWER.
+   *
+   * Supplied by Lana. It is one of the strongest conversion lines a service
+   * site has — the question behind "should I send this" is almost always "will
+   * anyone reply" — and it is worth exactly nothing if it is not true.
+   *
+   * Set to "" and every place that renders it disappears rather than falling
+   * back to something vaguer. A soft promise is worse than none: it still sets
+   * an expectation, and it still gets missed.
+   */
+  replyTime: "within 24 hours",
+
   instagram: "https://www.instagram.com/lanasmakeover/",
   instagramHandle: "@lanasmakeover",
 

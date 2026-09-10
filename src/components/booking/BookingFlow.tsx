@@ -885,7 +885,8 @@ export default function BookingFlow() {
             Ready to send.
           </legend>
           <p className="body-base measure-note mt-3">
-            You will be told plainly whether the date is open.
+            You will be told plainly whether the date is open
+            {siteSettings.replyTime ? `, ${siteSettings.replyTime}` : ""}.
           </p>
 
           <dl className="mt-9 divide-y divide-ivory/10 border-y border-ivory/10">

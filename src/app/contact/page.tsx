@@ -36,7 +36,9 @@ export default async function ContactPage() {
       <PageHeader
         eyebrow="Check your date"
         titleLines={["Your story", "starts here."]}
-        intro="Six short steps: the date, the city, the events, what you need, and how to reach you. You will be told plainly whether the date is open."
+        intro={`Three short steps: your wedding and where it is, the events and what you need, and how to reach you. You will be told plainly whether the date is open${
+          settings.replyTime ? `, ${settings.replyTime}` : ""
+        }.`}
         breadcrumb={[
           { name: "Home", href: "/" },
           { name: "Contact", href: "/contact" },

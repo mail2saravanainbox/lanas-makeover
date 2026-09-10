@@ -1,0 +1,173 @@
+# SEO launch checklist
+
+What is done, what is waiting on you, and what to do in the first month.
+
+Everything in **Done** is in the repository and covered by a test. Everything
+in **Yours** needs something only you can supply — a login, a decision, or a
+fact about the business. None of it is faked in the meantime.
+
+---
+
+## Done
+
+### Foundations
+- [x] One canonical host. `www.lanas.in` → `lanas.in` with a 308, in
+      `next.config.ts` rather than the Vercel dashboard, so it lives in the
+      repo and cannot be changed by a click.
+- [x] `robots.txt` — everything public crawlable, `/admin` and `/api` not.
+- [x] `sitemap.xml`, generated from real content. Unpublished items never
+      appear: the provider filters them before the sitemap sees them.
+- [x] Canonical URL on every page, absolute, from `NEXT_PUBLIC_SITE_URL`.
+- [x] Retired `/portfolio/<image>` URLs 301 to their collection with the
+      lightbox pre-opened. Nothing that was ever indexed 404s.
+- [x] Open Graph and Twitter cards, with a generated image per route.
+- [x] No horizontal scroll at 390px; every tap target ≥44px; text ≥4.5:1.
+      All three are Core Web Vitals / page-experience inputs and all three
+      are held by tests.
+
+### Structured data
+- [x] `BeautySalon` once, in the root layout, with `areaServed` for the four
+      cities and Tamil Nadu, and now `telephone` from the configured WhatsApp
+      number.
+- [x] `Person` for Lana on `/about`, `worksFor` the business.
+- [x] `Service` per service page and per city page — no `offers` block on any
+      of them, because no price exists.
+- [x] `FAQPage` on `/faq` and on each city page, built from the same items the
+      page renders.
+- [x] `BreadcrumbList` on every non-home route.
+- [x] `CollectionPage` + `ImageObject` on portfolio collections.
+- [x] `Article` on journal posts.
+
+### Content surfaces
+- [x] Three discipline pages: `/bridal`, `/hair`, `/makeup`.
+- [x] Six service pages.
+- [x] Seven portfolio collections.
+- [x] Six journal posts, and twelve briefed in `docs/journal-briefs.md`.
+- [x] **Four city pages** — `/locations/<city>` — plus the index. Written from
+      what is genuinely different about a wedding in each city; a test fails
+      the build if any two drift above 25% similarity.
+
+### Internal linking
+- [x] Every city named on the site links to its page — the footer on every
+      page, and `/about`.
+- [x] City pages link laterally to each other, so none is an orphan.
+- [x] Service pages link to the archive and to each other.
+- [x] Journal posts link to services and collections.
+
+---
+
+## Yours
+
+These are ordered by how much difference they make.
+
+### 1. Google Business Profile — the single biggest win
+Nothing on this site can compete with a verified Business Profile for
+"bridal makeup artist near me". It is free and it takes an afternoon.
+
+- [ ] Create or claim the profile at business.google.com.
+- [ ] Category: **Makeup Artist**. Secondary: **Bridal Shop** or **Beauty
+      Salon** as fits.
+- [ ] Service area: Trichy, Chennai, Pudukkottai, Madurai — the same four the
+      site says, or the site and the profile will contradict each other.
+- [ ] **Hide the street address** unless you want brides arriving at it. A
+      service-area business may show the area without the address.
+- [ ] Website: `https://lanas.in`.
+- [ ] Phone: the same number the site publishes.
+- [ ] Photographs: 15–20 of the real work. The profile ranks partly on this.
+- [ ] Verification arrives by postcard or video. Until it completes, the
+      profile does not rank.
+
+⚠ **The name, address and phone must match the site exactly.** Inconsistent
+NAP across the web is the most common reason a local business under-ranks.
+
+### 2. Google Search Console
+- [ ] Add `lanas.in` as a **domain property** (DNS verification), not a URL
+      prefix — a domain property covers both http/https and www.
+- [ ] Submit `https://lanas.in/sitemap.xml`.
+- [ ] Request indexing for the four city pages and the homepage.
+- [ ] Check Coverage after a week. Anything "Discovered — not indexed" for
+      more than a fortnight needs an internal link, not a resubmission.
+
+### 3. Analytics
+- [ ] The site already pushes to `dataLayer` and calls `gtag` — every event is
+      defined in `src/lib/analytics.ts`. **Nothing is loaded yet**: add a
+      GA4 or GTM container and the events start arriving with no code change.
+- [ ] Mark `booking_complete` and `whatsapp_click` as conversions.
+- [ ] The events worth watching first: `booking_start` → `booking_complete`
+      (where brides drop out of the enquiry) and `whatsapp_click` by
+      `placement` (which of the six places actually gets used).
+
+### 4. Facts the site is currently silent about
+Each of these is gated behind a flag or a variable and renders **nothing**
+until supplied. Every one of them is also a ranking and conversion input.
+
+- [ ] **A credential line for `/about`** — years working, brides, training,
+      with the awarding body. One factual sentence. `src/content/trust.ts`
+      has five more signals switched off waiting for real answers: experience,
+      brides, hygiene practice, products, training.
+- [ ] **The `⟨confirm⟩` FAQ answers** in `src/content/faq.ts` — travel radius
+      and charges, typical durations, whether draping is included, trial
+      availability and where, the advance amount, the rescheduling policy.
+      These render as nothing today. They are also, word for word, what
+      brides search for.
+- [x] ~~**Reply time.**~~ "within 24 hours" is live on the contact page and on
+      the last screen of the enquiry, from `siteSettings.replyTime`. **It has
+      to be true** — set it to `""` and both places stop saying it rather than
+      softening it. A missed soft promise is worse than no promise.
+- [ ] **Testimonials.** `src/content/testimonials.ts` renders only what is
+      published. Real, attributed, with permission — never invented. Review
+      schema is deliberately not emitted until there are real reviews.
+
+### 5. Off-site
+- [ ] Instagram bio → `lanas.in`. Most of this site's traffic will come from
+      there, and the link is the only thing connecting the two entities.
+- [ ] Consistent NAP on any wedding directory listings (WedMeGood, ShaadiSaga
+      and similar). Same name, same number, same site.
+- [ ] Ask photographers you have worked with for a credit link. A link from a
+      Tamil Nadu wedding photographer is worth more than fifty directory
+      listings.
+
+---
+
+## First month
+
+| When | Do |
+|---|---|
+| Launch day | Search Console domain property, submit sitemap, request indexing for the five location URLs |
+| Day 1 | Google Business Profile created, verification requested |
+| Week 1 | GA4 or GTM installed; conversions marked |
+| Week 2 | Search Console Coverage — chase anything not indexed |
+| Week 2 | Answer the `⟨confirm⟩` FAQ items; they are the cheapest content win available |
+| Week 3 | First new journal post from `docs/journal-briefs.md`, Priority 1 |
+| Week 4 | Search Console **Queries** report — what people actually typed. That, not a keyword tool, decides what gets written next. |
+
+---
+
+## How to check nothing has regressed
+
+```
+npx playwright test        # 94 tests, desktop and mobile
+```
+
+The SEO-specific ones:
+
+- every city page names its city in the title, the `h1` and the schema
+- the four city pages are not one template four times (8-gram similarity < 25%)
+- every city the site claims has a page, linked from the footer of every page
+- the sitemap lists all five location URLs
+- no city page contains a price, a bride count, a years claim, a superlative,
+  or a stray `TODO`
+- no page 404s that used to exist
+- no page scrolls horizontally at 390px
+- every control is ≥44px; all text ≥4.5:1
+
+---
+
+## The one rule
+
+**Never invent a business fact to fill a page.** A bride who finds one
+invented number stops believing the other five, and a page that ranks on a
+false claim converts worse than a page that ranks lower on a true one.
+
+Everything on this site that could not be verified is switched off rather than
+guessed. Keep it that way.

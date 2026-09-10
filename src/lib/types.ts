@@ -257,6 +257,8 @@ export interface SiteSettings {
   philosophy: string;
   experience: string;
   bookingCta: string;
+  /** How long a bride waits for an answer. Empty means say nothing. */
+  replyTime: string;
   /** One word of Tamil, rendered once per page. See site.ts. */
   signatureTamil: string;
   hero: HeroMedia;
