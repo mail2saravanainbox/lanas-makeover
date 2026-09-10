@@ -437,6 +437,10 @@ test("no WebGL canvas exists, before or after scrolling", async ({ page }) => {
 });
 
 test("the ritual reaches stage eight and reports it", async ({ page }) => {
+  // The 300vh scrub is the DESKTOP rendering. Below lg the section is
+  // <StagesMobile />, a carousel with no track to scroll — covered separately.
+  test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop scrub only");
+
   await page.addInitScript(() => {
     (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
   });
@@ -672,6 +676,10 @@ test.describe("the brush cursor", () => {
 test("the ritual loads two frames up front and all eight by the end", async ({
   page,
 }) => {
+  // Scrolling reveals the stages on the desktop track; on a phone the reader
+  // flicks a rail instead. Same deferral, different gesture — see below.
+  test.skip((page.viewportSize()?.width ?? 0) < 1024, "desktop scrub only");
+
   /**
    * The slowest test here: it scrolls the entire homepage and waits on eight
    * separate image fetches. A 25s poll inside a 30s default was a test that
@@ -1128,5 +1136,101 @@ test.describe("the sticky action bar behaviour", () => {
      */
     await page.goto("/");
     expect(await page.locator('a[href*="wa.me"]').count()).toBe(0);
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE RITUAL ON A PHONE (Phase 4)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Linearised, the eight stages were eight full-bleed photographs with
+ *  captions — around six screens for a sequence whose whole point is that it
+ *  changes in one place. It is now a carousel, and the audit's number is the
+ *  thing to hold: the entire section under 1.3 screens.
+ */
+test.describe("the ritual, on a phone", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 1024, "mobile only");
+
+  test("is one frame, not eight, and fits in 1.3 screens", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+
+    const section = page.locator('section[aria-labelledby="ritual-title"]');
+
+    // The 300vh scrub must not be rendering underneath the carousel.
+    expect(
+      await section.locator("div[class*='300vh']").evaluateAll((els) =>
+        els.filter((e) => getComputedStyle(e).display !== "none").length,
+      ),
+      "the desktop track is still painting on a phone",
+    ).toBe(0);
+
+    /**
+     * THE ACCEPTANCE NUMBER.
+     *
+     * Measured from the section's own box, and against the visual viewport,
+     * because that is what a bride's thumb has to travel.
+     */
+    const screens = await section.evaluate(
+      (el) => el.getBoundingClientRect().height / window.innerHeight,
+    );
+    expect(screens, `the ritual is ${screens.toFixed(2)} screens tall`).toBeLessThanOrEqual(1.3);
+  });
+
+  test("tapping a stage changes the frame and announces it", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    const section = page.locator('section[aria-labelledby="ritual-title"]');
+    await section.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+
+    const thumbs = section.locator('button[aria-label^="Stage "]');
+    expect(await thumbs.count(), "one thumbnail per stage").toBe(8);
+
+    // Every one of them is a real tap target (§ Phase 6, checked early here
+    // because this rail is the densest set of controls on the homepage).
+    for (const box of await thumbs.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect()),
+    )) {
+      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    }
+
+    await thumbs.nth(5).click();
+    await page.waitForTimeout(700);
+
+    // The live region says where she is …
+    await expect(section.locator('[aria-live="polite"]')).toHaveText(/Stage 6 of 8/);
+    // … the caption agrees …
+    await expect(section.getByText("The Gold", { exact: false }).first()).toBeVisible();
+    // … and exactly one frame is opaque.
+    const opaque = await section.evaluate((el) => {
+      const frames = [...el.querySelectorAll<HTMLElement>("div[style*='opacity']")];
+      return frames.filter((f) => Number(f.style.opacity) === 1).length;
+    });
+    expect(opaque, "exactly one frame is showing").toBe(1);
+  });
+
+  test("defers the frames it has not shown", async ({ page }) => {
+    const fetched = new Set<string>();
+    page.on("response", (r) => {
+      const m = /url=([^&]+)/.exec(r.url());
+      if (!/_next\/image/.test(r.url()) || !m) return;
+      const name = decodeURIComponent(m[1]).split("/").pop() ?? "";
+      if (name.startsWith("ritual-")) fetched.add(name);
+    });
+
+    await skipVeil(page);
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(800);
+
+    /**
+     * All eight plates share one box, so all eight are technically in the
+     * viewport once the section is — `loading="lazy"` saves nothing. Only the
+     * active frame and its neighbours are mounted, so a phone on a wedding-hall
+     * connection fetches two photographs, not eight.
+     */
+    expect(fetched.size, `fetched ${[...fetched].join(", ")}`).toBeLessThanOrEqual(3);
   });
 });

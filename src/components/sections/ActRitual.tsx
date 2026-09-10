@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { clamp, cx, sectionEyebrow } from "@/lib/utils";
 import { useScrollProgress } from "@/lib/motion/scheduler";
-import type { ImageRef, MediaTone } from "@/lib/types";
+import { useIsWide } from "@/lib/motion/useBreakpoint";
+import type { ImageRef } from "@/lib/types";
 import EditorialImage from "@/components/ui/EditorialImage";
+import StagesMobile from "./StagesMobile";
+import { PLATES, STAGES } from "@/content/ritual-stages";
 import { track } from "@/lib/analytics";
 
 /**
@@ -24,75 +27,6 @@ import { track } from "@/lib/analytics";
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-interface Stage {
-  index: string;
-  name: string;
-  note: string;
-  tone: MediaTone;
-  seed: number;
-}
-
-const STAGES: Stage[] = [
-  {
-    index: "01",
-    name: "The Face",
-    note: "Before anything is added. This is where the look is actually decided — what is there, what is not, and what will be left alone.",
-    tone: "ink",
-    seed: 501,
-  },
-  {
-    index: "02",
-    name: "The Skin",
-    note: "Cleanse, correct, protect. The half hour nobody photographs, and the one every finish depends on.",
-    tone: "ivory",
-    seed: 502,
-  },
-  {
-    index: "03",
-    name: "The Eyes",
-    note: "Definition arrives. The brow, the lash line, the shape of the eye — drawn out rather than drawn on.",
-    tone: "bronze",
-    seed: 503,
-  },
-  {
-    index: "04",
-    name: "The Hair",
-    note: "The jadai is built. Braid, volume, anchor points.",
-    tone: "olive",
-    seed: 504,
-  },
-  {
-    index: "05",
-    name: "The Jasmine",
-    note: "Then the jasmine, measured in muzham, threaded down its length.",
-    tone: "olive",
-    seed: 505,
-  },
-  {
-    index: "06",
-    name: "The Gold",
-    note: "Vanki, oddiyanam, temple work — set last, because it changes the balance of everything set before it.",
-    tone: "champagne",
-    seed: 506,
-  },
-  {
-    index: "07",
-    name: "The Silk",
-    note: "Kanchipuram, draped to hold its own weight from the first ritual to the last photograph.",
-    tone: "bronze",
-    seed: 507,
-  },
-  {
-    index: "08",
-    name: "The Bride",
-    note: "And then she is ready. Still, unmistakably, herself.",
-    tone: "rose",
-    seed: 508,
-  },
-];
-
-const PLATES: ImageRef[] = STAGES.map((s) => ({ alt: s.name, tone: s.tone, seed: s.seed }));
-
 export default function ActRitual({
   index,
   images = PLATES,
@@ -100,6 +34,12 @@ export default function ActRitual({
   index: number;
   images?: ImageRef[];
 }) {
+  /**
+   * Which rendering is actually alive. `null` until hydration, and both halves
+   * render then — which is also what someone with JavaScript off keeps, with
+   * the `lg:` classes deciding what they see. See useIsWide.
+   */
+  const wide = useIsWide();
   const trackRef = useRef<HTMLDivElement>(null);
   const plateRefs = useRef<Array<HTMLDivElement | null>>([]);
   const barRef = useRef<HTMLDivElement>(null);
@@ -127,7 +67,10 @@ export default function ActRitual({
 
   useEffect(() => {
     const t = window.setTimeout(
-      () => setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches),
+      () =>
+        setReduced(
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        ),
       0,
     );
     return () => window.clearTimeout(t);
@@ -153,7 +96,9 @@ export default function ActRitual({
     const index = Math.round(exact);
     setActive((prev) => (prev === index ? prev : index));
     setSeen((prev) =>
-      [index - 1, index, index + 1].every((i) => i < 0 || i >= STAGES.length || prev.includes(i))
+      [index - 1, index, index + 1].every(
+        (i) => i < 0 || i >= STAGES.length || prev.includes(i),
+      )
         ? prev
         : [...new Set([...prev, index - 1, index, index + 1])].filter(
             (i) => i >= 0 && i < STAGES.length,
@@ -171,7 +116,9 @@ export default function ActRitual({
     const el = trackRef.current;
     if (!el) return;
     const i = Math.max(0, Math.min(STAGES.length - 1, next));
-    const top = el.offsetTop + ((el.offsetHeight - window.innerHeight) * i) / (STAGES.length - 1);
+    const top =
+      el.offsetTop +
+      ((el.offsetHeight - window.innerHeight) * i) / (STAGES.length - 1);
     // Lenis is off on touch, so native smooth scrolling is the right tool.
     window.scrollTo({ top, behavior: "smooth" });
   }
@@ -181,22 +128,32 @@ export default function ActRitual({
   return (
     <section aria-labelledby="ritual-title" className="section-dark relative">
       {/* Header travels past first, then the track pins */}
-      <div className="shell relative z-20 pb-20 pt-28 text-center sm:pt-40">
+      <div className="shell relative z-20 pb-12 pt-20 text-center sm:pb-20 sm:pt-40">
         <p className="eyebrow mb-8">{sectionEyebrow(index, "The ritual")}</p>
-        <h2 id="ritual-title" className="display-md mx-auto max-w-[16ch] text-balance text-ivory">
+        <h2
+          id="ritual-title"
+          className="display-md mx-auto max-w-[16ch] text-balance text-ivory"
+        >
           Face. Skin. Eyes. Hair.
           <br />
-          <span className="italic-serif text-champagne">Jasmine. Gold. Silk. Bride.</span>
+          <span className="italic-serif text-champagne">
+            Jasmine. Gold. Silk. Bride.
+          </span>
         </h2>
         <p className="body-lg mx-auto mt-8 max-w-xl">
           Eight stages, in the order a Tamil bridal morning actually runs.
         </p>
       </div>
 
+      {/* ── The phone ───────────────────────────────────────────────────
+             Eight stages in one frame you can flick, instead of eight
+             photographs stacked down six screens. See StagesMobile. */}
+      {wide !== true && <StagesMobile images={images} />}
+
       {/* ── Reduced motion: the eight frames, at once, with their captions.
              No track, no dissolve, nothing to scrub. ──────────────────────── */}
-      {reduced && (
-        <ol className="shell grid grid-cols-2 gap-6 pb-[var(--s-12)] sm:grid-cols-4">
+      {wide !== false && reduced && (
+        <ol className="shell hidden grid-cols-2 gap-6 pb-[var(--s-12)] sm:grid-cols-4 lg:grid">
           {STAGES.map((stage, i) => (
             <li key={stage.index}>
               <div className="relative aspect-[3/4] w-full overflow-hidden">
@@ -220,27 +177,31 @@ export default function ActRitual({
       )}
 
       {/* ── The track ─────────────────────────────────────────────────────── */}
-      <div ref={trackRef} className="relative h-[300vh] motion-reduce:hidden">
-        <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
-          {/* The stage plates. These ARE the section now — there is no
+      {wide !== false && (
+        <div
+          ref={trackRef}
+          className="relative hidden h-[300vh] motion-reduce:hidden lg:block"
+        >
+          <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
+            {/* The stage plates. These ARE the section now — there is no
               WebGL understudy, because there is no WebGL. */}
-          <div
-            className="absolute inset-0"
-            aria-hidden="true"
-            onPointerDown={(e) => {
-              swipeX.current = e.clientX;
-            }}
-            onPointerUp={(e) => {
-              const from = swipeX.current;
-              swipeX.current = null;
-              if (from === null) return;
-              const dx = e.clientX - from;
-              if (Math.abs(dx) >= 40) goToStage(active + (dx < 0 ? 1 : -1));
-            }}
-            onPointerCancel={() => {
-              swipeX.current = null;
-            }}
-          >
+            <div
+              className="absolute inset-0"
+              aria-hidden="true"
+              onPointerDown={(e) => {
+                swipeX.current = e.clientX;
+              }}
+              onPointerUp={(e) => {
+                const from = swipeX.current;
+                swipeX.current = null;
+                if (from === null) return;
+                const dx = e.clientX - from;
+                if (Math.abs(dx) >= 40) goToStage(active + (dx < 0 ? 1 : -1));
+              }}
+              onPointerCancel={() => {
+                swipeX.current = null;
+              }}
+            >
               {STAGES.map((s, i) => (
                 <div
                   key={s.index}
@@ -273,87 +234,89 @@ export default function ActRitual({
                   )}
                 </div>
               ))}
-            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
-          </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/80" />
+            </div>
 
-          {/* Readable content, always present */}
-          <div className="shell relative z-10 grid w-full items-end gap-10 pb-16 sm:pb-24 lg:grid-cols-[auto_1fr] lg:items-center">
-            {/* Phone: the numerals only. Eight full stage names stacked
+            {/* Readable content, always present */}
+            <div className="shell relative z-10 grid w-full items-end gap-10 pb-16 sm:pb-24 lg:grid-cols-[auto_1fr] lg:items-center">
+              {/* Phone: the numerals only. Eight full stage names stacked
                 horizontally on a 390px screen is a wall, not a list. */}
-            <ol
-              className="flex gap-4 sm:hidden"
-              aria-label="Ritual stages"
-            >
-              {STAGES.map((stage, i) => (
-                <li key={stage.index}>
-                  <button
-                    type="button"
-                    onClick={() => goToStage(i)}
-                    aria-current={i === active ? "step" : undefined}
-                    aria-label={`Stage ${stage.index}, ${stage.name}`}
-                    className={cx(
-                      "min-h-11 px-1 font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-[var(--d-base)]",
-                      i === active ? "text-champagne" : "text-inactive",
-                    )}
-                  >
-                    {stage.index}
-                  </button>
-                </li>
-              ))}
-            </ol>
-
-            <ol
-              className="hidden gap-6 sm:flex lg:flex-col lg:gap-5"
-              aria-label="Transformation stages"
-            >
-              {STAGES.map((s, i) => {
-                const on = i === active;
-                return (
-                  <li key={s.index} className="flex items-baseline gap-3">
-                    <span
+              <ol className="flex gap-4 sm:hidden" aria-label="Ritual stages">
+                {STAGES.map((stage, i) => (
+                  <li key={stage.index}>
+                    <button
+                      type="button"
+                      onClick={() => goToStage(i)}
+                      aria-current={i === active ? "step" : undefined}
+                      aria-label={`Stage ${stage.index}, ${stage.name}`}
                       className={cx(
-                        "font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-[var(--d-base)]",
-                        on ? "text-champagne" : "text-inactive",
+                        "min-h-11 px-1 font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-[var(--d-base)]",
+                        i === active ? "text-champagne" : "text-inactive",
                       )}
                     >
-                      {s.index}
-                    </span>
-                    <span
-                      className={cx(
-                        "font-display text-lg uppercase tracking-[0.22em] transition-all duration-[var(--d-base)] sm:text-xl",
-                        on ? "text-ivory opacity-100" : "text-inactive opacity-70",
-                      )}
-                    >
-                      {s.name}
-                    </span>
+                      {stage.index}
+                    </button>
                   </li>
-                );
-              })}
-            </ol>
+                ))}
+              </ol>
 
-            <div className="max-w-xl lg:justify-self-end lg:text-right">
-              <p
-                key={active}
-                className="display-sm text-balance text-ivory/90"
-                style={{ animation: "stage-in var(--d-slow) var(--ease-silk) both" }}
+              <ol
+                className="hidden gap-6 sm:flex lg:flex-col lg:gap-5"
+                aria-label="Transformation stages"
               >
-                {STAGES[active].note}
-              </p>
+                {STAGES.map((s, i) => {
+                  const on = i === active;
+                  return (
+                    <li key={s.index} className="flex items-baseline gap-3">
+                      <span
+                        className={cx(
+                          "font-mono text-[0.75rem] tracking-[0.2em] transition-colors duration-[var(--d-base)]",
+                          on ? "text-champagne" : "text-inactive",
+                        )}
+                      >
+                        {s.index}
+                      </span>
+                      <span
+                        className={cx(
+                          "font-display text-lg uppercase tracking-[0.22em] transition-all duration-[var(--d-base)] sm:text-xl",
+                          on
+                            ? "text-ivory opacity-100"
+                            : "text-inactive opacity-70",
+                        )}
+                      >
+                        {s.name}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
 
-              <div className="mt-10 h-px w-full bg-ivory/12 lg:ml-auto lg:w-56">
-                <div
-                  ref={barRef}
-                  className="h-px bg-champagne"
-                  style={{ width: 0, transition: "width 120ms linear" }}
-                />
+              <div className="max-w-xl lg:justify-self-end lg:text-right">
+                <p
+                  key={active}
+                  className="display-sm text-balance text-ivory/90"
+                  style={{
+                    animation: "stage-in var(--d-slow) var(--ease-silk) both",
+                  }}
+                >
+                  {STAGES[active].note}
+                </p>
+
+                <div className="mt-10 h-px w-full bg-ivory/12 lg:ml-auto lg:w-56">
+                  <div
+                    ref={barRef}
+                    className="h-px bg-champagne"
+                    style={{ width: 0, transition: "width 120ms linear" }}
+                  />
+                </div>
+                <p className="sr-only" aria-live="polite">
+                  Stage {STAGES[active].index}: {STAGES[active].name}
+                </p>
               </div>
-              <p className="sr-only" aria-live="polite">
-                Stage {STAGES[active].index}: {STAGES[active].name}
-              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         @keyframes stage-in {
