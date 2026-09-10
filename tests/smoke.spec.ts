@@ -689,9 +689,16 @@ test("the ritual loads two frames up front and all eight by the end", async ({
 
   // Every frame arrives by the time the reader has been through the section,
   // so no stage is ever blank.
-  // 25s: fourteen browsers against one server make image delivery the
-  // slow part here, not the page.
-  await expect.poll(() => fetched.size, { timeout: 25_000 }).toBe(8);
+  /**
+   * 40s, inside the 90s this test gets from `test.slow()`.
+   *
+   * It takes ~13s on its own and contends with thirteen other browsers for one
+   * server's image bandwidth, so the number here is headroom, not an
+   * expectation. What is being asserted is that all eight frames ARRIVE — not
+   * that they arrive quickly. Tightening it does not test the site harder, it
+   * just tests the machine.
+   */
+  await expect.poll(() => fetched.size, { timeout: 40_000 }).toBe(8);
 });
 
 

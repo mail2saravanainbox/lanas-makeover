@@ -7,9 +7,9 @@ import { siteSettings } from "@/content/site";
  * ─────────────────────────────────────────────────────────────────────────────
  *  IMAGE SLOTS
  * ─────────────────────────────────────────────────────────────────────────────
- *  Named positions in the story — the hero, the transformation stages, the hair
- *  sequence, the atelier — each resolved to one of Lana's actual photographs
- *  when one exists, and to the placeholder plate when it does not.
+ *  Named positions in the story — the hero, the transformation stages, the
+ *  atelier — each resolved to one of Lana's actual photographs when one
+ *  exists, and to the placeholder plate when it does not.
  *
  *  Sections receive an `images` prop and keep their own plates as defaults, so
  *  the layout is identical either way. Dropping photographs into
@@ -93,7 +93,6 @@ export interface ImageSlots {
   /** null → the About/Artist sections render a typography treatment (§21). */
   artistPortrait: ImageRef | null;
   transformation: ImageRef[];
-  hair: ImageRef[];
   atelier: ImageRef[];
   finalMirror: ImageRef;
 }
@@ -191,18 +190,6 @@ export function getImageSlots(): ImageSlots {
     transformation: ritualFrames(),
 
 
-    // The silhouette sequence
-    hair: pick(
-      "hair",
-      [
-        plate("Open hair", "ink", 801),
-        plate("Waved", "bronze", 802),
-        plate("Braided", "champagne", 803),
-        plate("Jadai", "bronze", 804),
-        plate("Flowered", "olive", 805),
-        plate("Bridal hair", "rose", 806),
-      ],
-    ),
 
 
     // The atelier

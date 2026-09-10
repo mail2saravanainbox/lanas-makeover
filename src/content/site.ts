@@ -211,6 +211,16 @@ export const siteSettings: SiteSettings = {
    *
    *   hair: { clip: { mp4: "/video/hair-jasmine.mp4", webm: "…", av1: "…" } }
    */
+  /**
+   * ⚠ CURRENTLY UNREFERENCED. The hair sequence that played this clip was
+   * removed from the homepage, so nothing reads it and the three encodes in
+   * /public/video (2.8 MB) are never requested by a visitor.
+   *
+   * Kept rather than deleted because encoded video is not trivially
+   * recoverable — re-adding the section is then a component away, not a
+   * re-encode. Delete both this and public/video/hair-jasmine.* if the
+   * sequence is not coming back.
+   */
   hair: {
     /**
      * Shown in place of the still for hair state 05, "Flowered" — a malligai

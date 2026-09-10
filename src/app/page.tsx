@@ -10,7 +10,6 @@ import ActRitual from "@/components/sections/ActRitual";
 import BrideStories from "@/components/sections/BrideStories";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import ActArtist from "@/components/sections/ActArtist";
-import HairSilhouette from "@/components/sections/HairSilhouette";
 import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
 import FinalMirror from "@/components/sections/FinalMirror";
@@ -92,7 +91,6 @@ export default async function HomePage() {
     transformation: transformation.length > 0,
     ceremonies: services.length > 0,
     artist: true,
-    silhouette: true,
     trust: true,
     investment: true,
     voices: testimonials.length > 0,
@@ -159,8 +157,6 @@ export default async function HomePage() {
         working={slots.atelier[2] ?? null}
         entries={timeline}
       />
-
-      <HairSilhouette index={n.silhouette!} images={slots.hair} clip={settings.hair?.clip} />
 
       <SectionMark />
 
