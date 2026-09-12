@@ -1,0 +1,10 @@
+PyMatting==1.1.16
+llvmlite==0.45.1
+numba==0.62.1
+numpy==2.3.5
+onnxruntime==1.23.2
+opencv-python==4.13.0
+pillow==12.3.0
+rembg==2.0.84
+scikit-image==0.26.0
+scipy==1.17.1

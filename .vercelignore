@@ -14,3 +14,11 @@ playwright-report/
 MOBILE_AUDIT_PLAN.md
 INTEGRATION_PLAN.md
 content-inventory.json
+
+# The jewellery pipeline. work/ alone is 266 MB (it contains a virtualenv) and
+# a direct `vercel --prod` would upload every byte of it. Nothing here is read
+# at build or at runtime — the site serves public/rental.
+work/
+output/
+enhance_jewelry.py
+requirements.txt

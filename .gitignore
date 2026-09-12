@@ -70,3 +70,13 @@ Protofolio image*
 # 452 MB of them were swept into a commit by `git add -A` and rejected by
 # GitHub's 100 MB file limit. They stay on disk; git simply ignores them.
 *.pdf
+
+# ── Jewellery photo pipeline (enhance_jewelry.py) ──────────────────────────
+# work/ holds a 257 MB Python virtualenv plus masks and contact sheets;
+# output/ holds generated derivatives of content/rental-incoming. Both are
+# reproducible from the source images and the script, and neither is read by
+# the site — public/rental is what ships.
+work/
+output/
+__pycache__/
+*.pyc
