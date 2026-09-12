@@ -1932,11 +1932,13 @@ test.describe("rental jewellery in Trichy", () => {
     await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
     await page.waitForTimeout(1200);
 
-    const inDom = await page.locator("main li img").count();
-    const visible = await page.locator("main li:not([hidden]) img").count();
+    await expect(page.locator("main li img"), "every set in the markup").toHaveCount(133);
+    await expect(
+      page.locator("main li:not([hidden]) img"),
+      "one page shown",
+    ).toHaveCount(24);
 
-    expect(inDom, "every set in the markup").toBe(133);
-    expect(visible, "one page shown").toBe(24);
+    const visible = 24;
     expect(
       rentalImageRequests,
       "a hidden frame must never be fetched",
@@ -1947,8 +1949,23 @@ test.describe("rental jewellery in Trichy", () => {
     await skipVeil(page);
     await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
 
-    await page.getByRole("button", { name: /Show more/ }).click();
-    await expect(page.locator("main li:not([hidden]) img")).toHaveCount(48);
+    /**
+     * Clicked under `toPass`, not once.
+     *
+     * The button is server-rendered and inert until React hydrates, and this
+     * page now ships 133 frames of markup — so under four parallel workers a
+     * single click can land on a button that is painted but not yet wired,
+     * and nothing happens. That is a property of the harness, not of the
+     * page: a real visitor who taps a dead button taps it again.
+     *
+     * What is being asserted is the BEHAVIOUR — reveal, not re-render — so
+     * the click retries and the assertion does not soften.
+     */
+    await expect(async () => {
+      await page.getByRole("button", { name: /Show more/ }).click();
+      await expect(page.locator("main li:not([hidden]) img")).toHaveCount(48, { timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
+
     // The markup did not grow — the same nodes were revealed.
     expect(await page.locator("main li img").count()).toBe(133);
   });
@@ -1964,15 +1981,66 @@ test.describe("rental jewellery in Trichy", () => {
  *  worn frames were also simply wrong: a flat-lay and a choker on cloth, both
  *  captioned "A bride wearing a South Indian bridal jewellery set".
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE PHOTOGRAPHS ARE NAMED FOR WHAT THEY SHOW
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  They used to be named for the supplier's filing system — /rental/ad-s2014
+ *  .webp, the `IMG_4928.jpg` case. A filename is a weak signal, but it is a
+ *  signal, and it was being spent on a stock book.
+ *
+ *  Both halves matter and both are held here: the new path serves, and the
+ *  OLD path still resolves, because these URLs were live and Google Images is
+ *  a real front door for a bridal catalogue.
+ */
+test.describe("rental image filenames", () => {
+  test("no stock code reaches a public URL", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+
+    await expect(page.locator("main li img")).toHaveCount(133);
+    const srcs = await page.$$eval("main li img", (n) =>
+      n.map((i) => decodeURIComponent(i.getAttribute("src") ?? "")),
+    );
+
+    for (const src of srcs) {
+      expect(src, "a supplier stock code in a public URL").not.toMatch(
+        /\/rental\/(temple|ad|choker|worn)-s\d+/,
+      );
+      expect(src, "a filename that says nothing").toMatch(
+        /\/rental\/[a-z][a-z0-9-]{12,}\.webp/,
+      );
+      // Descriptive, not stuffed: no city and no brand on a studio frame.
+      expect(src, "a place or brand claim in a filename").not.toMatch(
+        /trichy|chennai|madurai|pudukkottai|lanas-makeover|best-/i,
+      );
+    }
+  });
+
+  test("the retired stock-code paths still resolve", async ({ request }) => {
+    for (const old of [
+      "/rental/temple-s1001.webp",
+      "/rental/ad-s2014-thumb.webp",
+      "/rental/choker-s4001.webp",
+      "/rental/worn-s5004.webp",
+    ]) {
+      const res = await request.get(old, { maxRedirects: 0 });
+      expect(res.status(), `${old} must not 404`).toBe(308);
+      expect(res.headers()["location"]).toMatch(/\/rental\/[a-z][a-z0-9-]+\.webp/);
+    }
+  });
+});
+
 test.describe("rental alt text", () => {
   test("alt text distinguishes the sets and never keyword-stuffs", async ({ page }) => {
     await skipVeil(page);
     await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
 
+    // Auto-retrying, then snapshot. A raw $$eval races the page under load.
+    await expect(page.locator("main li img")).toHaveCount(133);
     const alts = await page.$$eval("main li img", (n) =>
       n.map((i) => i.getAttribute("alt") ?? ""),
     );
-    expect(alts).toHaveLength(133);
     expect(alts.some((a) => a === ""), "an empty alt on a content image").toBe(false);
 
     // Four strings for 133 images was the bug. Anything near that fails.
@@ -2055,10 +2123,14 @@ test.describe("rental jewellery", () => {
       expect(n).toBeGreaterThan(0);
       expect(n, "sets visible before paging").toBeLessThanOrEqual(24);
 
-      // Opening one gives the full frame in a real modal.
-      await tiles.first().click();
+      // Opening one gives the full frame in a real modal. Clicked under
+      // `toPass` for the same reason as Show more above: the tile is inert
+      // until hydration, and these pages carry far more markup than they did.
       const box = page.locator("dialog.lm-lightbox");
-      await expect(box).toBeVisible();
+      await expect(async () => {
+        await tiles.first().click();
+        await expect(box).toBeVisible({ timeout: 2000 });
+      }).toPass({ timeout: 15_000 });
       await expect(box.locator("img")).toBeVisible();
       await expect(box.locator('[aria-live="polite"]')).toContainText(/1 of \d+/);
 

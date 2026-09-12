@@ -47,6 +47,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import sharp from "sharp";
+import { altFor, fileBaseFor } from "./rental-names.mjs";
 
 const ROOT = process.cwd();
 const INCOMING = path.join(ROOT, "content", "rental-incoming");
@@ -129,6 +130,9 @@ async function main() {
   const items = [];
   let skipped = 0;
 
+  /** stem → how many sets have already claimed it. See fileBaseFor. */
+  const ordinals = new Map();
+
   for (const [index, file] of files.entries()) {
     const key = keyFor(file);
     if (!key) {
@@ -140,9 +144,29 @@ async function main() {
     const slug = slugify(file);
     const id = `rental-${slug}`;
 
+    /**
+     * ── THE PUBLIC FILENAME IS NOT THE SUPPLIER'S CODE ────────────────────
+     * `slug` stays the stock code, because it is the stable key that ties a
+     * row to its source file in content/rental-incoming/. What gets written
+     * to /public/rental is the DESCRIPTIVE name from rental-names.mjs, which
+     * is the same table scripts/name-rental.mjs renames by.
+     *
+     * If these two ever disagreed, a re-import would silently restore 133
+     * stock-code URLs and 133 duplicate alt strings — which is exactly the
+     * state this was dug out of. They read one table so they cannot.
+     *
+     * The ordinal disambiguates sets that observe identically ("green
+     * stones" describes nine American diamond sets). It is allocated in the
+     * same order here as there: sorted source files, per category.
+     */
+    const stem = fileBaseFor(slug, key, 1).replace(/-01$/, "");
+    const n = (ordinals.get(stem) ?? 0) + 1;
+    ordinals.set(stem, n);
+    const base = key === "worn" ? fileBaseFor(slug, key, n) : `${stem}-${String(n).padStart(2, "0")}`;
+
     try {
       const input = sharp(path.join(INCOMING, file), { failOn: "none" }).rotate();
-      const fullName = `${slug}.webp`;
+      const fullName = `${base}.webp`;
       const full = await input
         .clone()
         .resize({
@@ -154,7 +178,7 @@ async function main() {
         .webp({ quality: QUALITY })
         .toFile(path.join(OUT_DIR, fullName));
 
-      const thumbName = `${slug}-thumb.webp`;
+      const thumbName = `${base}-thumb.webp`;
       await input
         .clone()
         .resize({ width: THUMB_WIDTH, height: 900, fit: "inside", withoutEnlargement: true })
@@ -169,7 +193,7 @@ async function main() {
         slug,
         category: was?.category ?? key,
         title: was?.title ?? TITLE[key],
-        alt: was?.alt ?? ALT[key],
+        alt: was?.alt ?? altFor(slug, key) ?? ALT[key],
         imageUrl: `/rental/${fullName}`,
         thumbnailUrl: `/rental/${thumbName}`,
         width: full.width,

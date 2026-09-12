@@ -16,6 +16,34 @@ import type { PortfolioCategory } from "./src/lib/types";
  * photographs that ever existed. With no imported photography yet this is
  * empty, and that is correct: nothing was ever published to redirect.
  */
+/**
+ * THE RENTAL PHOTOGRAPHS WERE RENAMED.
+ *
+ * /rental/temple-s1001.webp — the supplier's stock code — became
+ * /rental/temple-jewellery-bridal-set-green-stones-01.webp. Both paths have
+ * been live and served, and Google Images is a real front door for a bridal
+ * catalogue, so every old path keeps resolving.
+ *
+ * Read from rental.json rather than typed: scripts/name-rental.mjs records
+ * each rename as it makes it, and rewrites the destination if a file is ever
+ * renamed twice, so this list is one hop and never chains.
+ */
+function renamedRentalImageRedirects() {
+  try {
+    const raw = readFileSync("./src/content/rental/rental.json", "utf8");
+    const pairs = (JSON.parse(raw).legacyImageUrls ?? []) as Array<{
+      from?: string;
+      to?: string;
+    }>;
+
+    return pairs
+      .filter((p) => p.from && p.to && p.from !== p.to)
+      .map((p) => ({ source: p.from as string, destination: p.to as string, permanent: true }));
+  } catch {
+    return [];
+  }
+}
+
 function retiredImageRedirects() {
   try {
     const raw = readFileSync("./src/content/portfolio/portfolio.json", "utf8");
@@ -109,6 +137,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       })),
       ...retiredImageRedirects(),
+      ...renamedRentalImageRedirects(),
     ];
   },
 

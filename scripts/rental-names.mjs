@@ -1,40 +1,42 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  PER-SET ALT TEXT FOR THE RENTAL CATALOGUE
+ *  WHAT EACH RENTAL SET IS — THE ONE SOURCE FOR ITS NAME AND ITS ALT
  * ═══════════════════════════════════════════════════════════════════════════
- *  One hundred and thirty-three photographs shared four alt strings between
- *  them: every one of the fifty-six temple sets said "Antique gold-toned
- *  temple jewellery bridal set — long haram, short necklace and jhumka on a
- *  display stand". That is a failure twice over. A screen reader announced
- *  fifty-six identical images, and image search — which for a bridal business
- *  is a real front door — had nothing to tell one set from another.
+ *  The catalogue arrived as five supplier stock books. Every photograph was
+ *  named for the supplier's own code — `temple-s1001.png`, `ad-s2014.png` —
+ *  and both the file on disk and the alt text inherited it. That produced two
+ *  separate defects with one cause:
  *
- *  Two of them were also simply wrong: worn-s5002 is a flat-lay on white
- *  cloth and worn-s5004 is a choker and jhumka on green cloth, and both were
- *  captioned "A bride wearing a South Indian bridal jewellery set".
+ *    · 133 photographs shared FOUR alt strings. All fifty-six temple sets
+ *      said the same sentence, so a screen reader announced fifty-six
+ *      identical images and image search could not tell one from another.
+ *    · 133 public URLs said nothing. `/rental/ad-s2014.webp` is the
+ *      `IMG_4928.jpg` case: a filename is a weak ranking signal, but it is a
+ *      signal, and a stock code spends it on the supplier's filing system.
  *
- *  ── HOW THESE WERE WRITTEN ────────────────────────────────────────────────
- *  By looking at all 133 photographs, in labelled contact sheets, and
- *  recording only the two things that are unambiguously READABLE from the
- *  frame: what is in the set, and the dominant stone colour. Not the metal
- *  purity, not the weight, not the stone type — kemp against ruby against
- *  red CZ is not decidable from a photograph, and guessing it would put a
- *  wrong word in front of a bride choosing partly on the word.
+ *  ── HOW THE OBSERVATIONS WERE MADE ────────────────────────────────────────
+ *  By looking at all 133 photographs in labelled contact sheets and recording
+ *  only what is unambiguously READABLE from the frame: what is in the set,
+ *  and the dominant stone colour.
  *
- *  So `pieces` and `accent` below are observations. The sentence is built
- *  from them, which is why the phrasing is consistent and the content is not.
+ *  NOT the stone type. Kemp against ruby against red cubic zirconia is not
+ *  decidable from a photograph, and a bride chooses partly on that word — so
+ *  a wrong one is worse than a general one. NOT the metal, the weight or the
+ *  karat, for the same reason. NOT a city: these are studio frames on a
+ *  velvet bust, and "trichy" in the filename of a supplier's product shot is
+ *  a claim about where a photograph was taken that nobody can support.
  *
- *  ── RUN ───────────────────────────────────────────────────────────────────
- *    node scripts/describe-rental.mjs
+ *  ── WHY BOTH DERIVATIONS LIVE HERE ────────────────────────────────────────
+ *  `scripts/import-rental.mjs` writes the files and `scripts/name-rental.mjs`
+ *  renames them, and if they disagreed the next import would quietly restore
+ *  133 stock codes. They now read the same table, so a re-import is stable.
  *
- *  Writes alt + title back into src/content/rental/rental.json.
- *  scripts/import-rental.mjs preserves them (`was?.alt ?? ALT[key]`), so a
- *  re-import does not undo this.
+ *  `slug` stays the supplier code. It is the stable internal key that ties a
+ *  row to its source file in content/rental-incoming/ — it is simply no
+ *  longer what the public sees.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { readFileSync, writeFileSync } from "node:fs";
 
-/** slug → [pieces, accent]. accent "" means no stone colour reads clearly. */
 const SEEN = {
   // ── TEMPLE ───────────────────────────────────────────────────────────────
   "temple-s1001": ["short necklace, long haram, jhumka and oddiyanam", "green stones"],
@@ -166,11 +168,6 @@ const SEEN = {
   "choker-s4031": ["a wide choker on a blue stand", "white stones"],
   "choker-s4032": ["a necklace with matching earrings and maang tikka laid flat", "green stones"],
 };
-
-/**
- * The nine `worn` frames are not all brides, which is what the single shared
- * alt used to claim. Written individually.
- */
 const WORN = {
   "worn-s5001": "A bride in a pink silk saree wearing a temple jewellery set — short necklace, long haram, jhumka, maang tikka and oddiyanam",
   "worn-s5002": "A temple jewellery set laid flat on white cloth — short necklace, long haram and jhumka",
@@ -183,35 +180,106 @@ const WORN = {
   "worn-s5011": "A bride in a magenta silk saree wearing a temple jewellery set with maang tikka and bangles",
 };
 
+/* ── Derivations ─────────────────────────────────────────────────────────── */
+
 const OPENING = {
   temple: "Antique gold temple jewellery bridal set on a display stand",
   ad: "American diamond bridal jewellery set on a display stand",
   choker: "Stone-set bridal choker and earrings on a display stand",
 };
 
-const raw = JSON.parse(readFileSync("./src/content/rental/rental.json", "utf8"));
-let written = 0;
-const missing = [];
+/** The public filename stem, e.g. "temple-jewellery-bridal-set-green-stones". */
+const FILE_BASE = {
+  temple: "temple-jewellery-bridal-set",
+  ad: "american-diamond-bridal-set",
+  choker: "bridal-choker-necklace-set",
+};
 
-for (const item of raw.items) {
-  if (item.category === "worn") {
-    const alt = WORN[item.slug];
-    if (!alt) { missing.push(item.slug); continue; }
-    item.alt = alt;
-    written++;
-    continue;
+/** Worn frames are named individually — several are not brides at all. */
+const WORN_FILE = {
+  "worn-s5001": "bride-wearing-temple-jewellery-pink-silk-saree",
+  "worn-s5002": "temple-jewellery-necklace-haram-jhumka-flat-lay",
+  "worn-s5003": "bride-wearing-white-and-blue-stone-necklace-close-up",
+  "worn-s5004": "antique-gold-choker-and-jhumka-on-green-cloth",
+  "worn-s5005": "bride-wearing-white-stone-necklace-haram-and-waist-belt",
+  "worn-s5008": "bride-in-red-kanchipuram-silk-wearing-antique-gold-haram",
+  "worn-s5009": "bride-in-green-silk-saree-wearing-antique-gold-haram",
+  "worn-s5010": "bride-in-teal-silk-saree-wearing-layered-temple-jewellery",
+  "worn-s5011": "bride-in-magenta-silk-saree-wearing-temple-jewellery-set",
+};
+
+const kebab = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/**
+ * The short distinguishing phrase in a filename.
+ *
+ * Colour first, because that is what separates two otherwise identical
+ * catalogue frames and what a bride scans by. The accent phrases are written
+ * for prose — "white stones with a red centre" — and a filename is not prose,
+ * so the colours are pulled out and the rest is dropped rather than kebabed
+ * into `white-stones-with-a-red-centre`.
+ *
+ * Where no colour reads clearly, a hint from the composition: an ordinal
+ * alone is only half an improvement on a stock code, and "single-long-haram"
+ * is the half that carries meaning.
+ */
+const COLOURS = [
+  "multicoloured",
+  "turquoise",
+  "silver-toned",
+  "white",
+  "green",
+  "red",
+  "blue",
+  "pink",
+  "pale",
+];
+
+function distinguisher(pieces, accent) {
+  if (accent) {
+    const found = [];
+    for (const c of COLOURS) {
+      if (accent.toLowerCase().includes(c) && !found.includes(c)) found.push(c);
+    }
+    if (found.length) return `${found.slice(0, 2).join("-and-")}-stones`;
+    return kebab(accent.replace(/^(a|an|the) /, "")).split("-").slice(0, 3).join("-");
   }
-  const seen = SEEN[item.slug];
-  if (!seen) { missing.push(item.slug); continue; }
+  if (/single long haram/.test(pieces)) return "single-long-haram";
+  if (/kasu haram/.test(pieces)) return "kasu-haram";
+  if (/vanki/.test(pieces)) return "with-vanki";
+  if (/bangles/.test(pieces)) return "with-bangles";
+  if (/hair ornament/.test(pieces)) return "with-hair-ornament";
+  if (/^a single short necklace/.test(pieces)) return "short-necklace";
+  if (/wide oddiyanam/.test(pieces)) return "wide-oddiyanam";
+  if (/oddiyanam/.test(pieces)) return "necklace-haram-oddiyanam";
+  return "necklace-and-haram";
+}
+
+/** Alt text for one set. Never contains a city, a superlative or a price. */
+export function altFor(slug, category) {
+  if (category === "worn") return WORN[slug] ?? null;
+  const seen = SEEN[slug];
+  if (!seen) return null;
   const [pieces, accent] = seen;
-  item.alt = `${OPENING[item.category]} — ${pieces}${accent ? `, with ${accent}` : ""}`;
-  written++;
+  return `${OPENING[category]} — ${pieces}${accent ? `, with ${accent}` : ""}`;
 }
 
-if (missing.length) {
-  console.error(`\n  ${missing.length} set(s) have no observation and keep the generic alt:`);
-  console.error("  " + missing.join(", ") + "\n");
+/**
+ * The public filename stem for one set, WITHOUT extension and without the
+ * `-thumb` suffix. Falls back to the slug, so an unobserved set keeps a
+ * working URL rather than colliding with another.
+ */
+export function fileBaseFor(slug, category, ordinal) {
+  if (category === "worn") return WORN_FILE[slug] ?? slug;
+  const seen = SEEN[slug];
+  if (!seen) return slug;
+  const [pieces, accent] = seen;
+  const n = String(ordinal).padStart(2, "0");
+  return `${FILE_BASE[category]}-${distinguisher(pieces, accent)}-${n}`;
 }
 
-writeFileSync("./src/content/rental/rental.json", JSON.stringify(raw, null, 2) + "\n");
-console.log(`alt written for ${written} of ${raw.items.length} sets`);
+export { SEEN, WORN };
