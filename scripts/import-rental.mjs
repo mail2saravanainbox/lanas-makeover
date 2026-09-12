@@ -51,6 +51,21 @@ import { altFor, fileBaseFor } from "./rental-names.mjs";
 
 const ROOT = process.cwd();
 const INCOMING = path.join(ROOT, "content", "rental-incoming");
+/**
+ * ── WHERE THE EMERALD VERSIONS COME FROM ────────────────────────────────────
+ * enhance_jewelry.py reads content/rental-incoming/ and writes a 1440x1800
+ * emerald-backdrop render of the same photograph to output/<same stem>.png.
+ * It covers 109 of the 133: the nine brides, the fourteen landscape flat-lays,
+ * choker-s4031 and ad-s2011 are deliberately not treated, and are named in
+ * that script's Config with the reason for each.
+ *
+ * So this is an OVERLAY, not a second source. A set publishes from output/ if
+ * a render exists for it and from the original frame if one does not, which
+ * means the 24 untreated sets keep publishing exactly as before and a set that
+ * is later reshot and re-rendered needs no change here. Neither directory is
+ * written by this script; content/rental-incoming/ stays read-only.
+ */
+const ENHANCED = path.join(ROOT, "output");
 const OUT_DIR = path.join(ROOT, "public", "rental");
 const DATA_FILE = path.join(ROOT, "src", "content", "rental", "rental.json");
 
@@ -99,6 +114,8 @@ function keyFor(file) {
   return KEYS.has(key) ? key : null;
 }
 
+const exists = (p) => fs.access(p).then(() => true, () => false);
+
 const slugify = (file) =>
   path
     .basename(file, path.extname(file))
@@ -129,6 +146,7 @@ async function main() {
 
   const items = [];
   let skipped = 0;
+  let enhanced = 0;
 
   /** stem → how many sets have already claimed it. See fileBaseFor. */
   const ordinals = new Map();
@@ -165,7 +183,11 @@ async function main() {
     const base = key === "worn" ? fileBaseFor(slug, key, n) : `${stem}-${String(n).padStart(2, "0")}`;
 
     try {
-      const input = sharp(path.join(INCOMING, file), { failOn: "none" }).rotate();
+      const source = (await exists(path.join(ENHANCED, `${slug}.png`)))
+        ? { dir: ENHANCED, file: `${slug}.png`, enhanced: true }
+        : { dir: INCOMING, file, enhanced: false };
+      if (source.enhanced) enhanced++;
+      const input = sharp(path.join(source.dir, source.file), { failOn: "none" }).rotate();
       const fullName = `${base}.webp`;
       const full = await input
         .clone()
@@ -217,6 +239,7 @@ async function main() {
 
   const counts = items.reduce((a, i) => ({ ...a, [i.category]: (a[i.category] ?? 0) + 1 }), {});
   console.log(`\n  ${items.length} imported${skipped ? `, ${skipped} skipped` : ""}`);
+  console.log(`    ${enhanced} from output/ (emerald), ${items.length - enhanced} from the original frame`);
   for (const [k, n] of Object.entries(counts)) console.log(`    ${k.padEnd(8)} ${n}`);
   console.log(`\n  → ${path.relative(ROOT, DATA_FILE)}`);
 }

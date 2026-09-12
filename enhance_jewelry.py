@@ -56,8 +56,16 @@ class Config:
     #                 1.6x. Excluded; they need a reshoot, not a filter.
     #   choker-s4031  shot on a blue stand in a room, not on the black bust.
     # worn-s5004 is in two of those sets, so the union is 23 and not 24.
+    #   ad-s2011      shot on BLUE velvet, not black. Measured border chroma
+    #                 (LAB, which accounts for brightness — HSV saturation does
+    #                 not, and reported 84 false positives before it was
+    #                 corrected) is 25.5; the next highest of the 110 is under
+    #                 10, which reads as black. This one reads as a blue tile in
+    #                 a grid of dark ones. Reshoot rather than recolour: the
+    #                 velvet is not the product, but repainting it is a change
+    #                 nobody asked for.
     exclude_prefixes: tuple[str, ...] = ("worn-",)
-    exclude_names: tuple[str, ...] = ("choker-s4031.png",)
+    exclude_names: tuple[str, ...] = ("choker-s4031.png", "ad-s2011.png")
     exclude_landscape: bool = True
 
     # ── Canvas / framing ───────────────────────────────────────────────────
@@ -803,15 +811,29 @@ def contact_sheet_test(rows: list[Path], cfg: Config = CFG) -> Path:
 
 
 def contact_sheet_all(cfg: Config = CFG, cols: int = 10) -> Path:
-    files = sorted(cfg.output_dir.glob("*.jpg"))
+    # The sheet is written into output/, so an unfiltered glob tiles the
+    # previous sheet as if it were a product photograph — one green-and-black
+    # thumbnail of a grid sitting in the middle of the grid.
+    sheet_name = "contact_sheet_all.jpg"
+    files = [p for p in sorted(cfg.output_dir.glob("*.jpg")) if p.name != sheet_name]
     if not files:
         raise ValueError("nothing in output/")
     tw = 216
     th = int(tw * cfg.canvas_h / cfg.canvas_w)
     tiles = []
+    skipped = 0
     for f in files:
         im = cv2.imread(str(f), cv2.IMREAD_COLOR)
+        if im is None:
+            # A file the batch is still writing. Skip it rather than crash the
+            # sheet — this runs against a live output directory.
+            skipped += 1
+            continue
         tiles.append(cv2.resize(im, (tw, th), interpolation=cv2.INTER_AREA))
+    if skipped:
+        log(f"  {skipped} file(s) not yet readable, skipped")
+    if not tiles:
+        raise ValueError("nothing readable in output/")
     rows = []
     for i in range(0, len(tiles), cols):
         chunk = tiles[i : i + cols]
@@ -819,7 +841,7 @@ def contact_sheet_all(cfg: Config = CFG, cols: int = 10) -> Path:
             chunk.append(np.full((th, tw, 3), 18, np.uint8))
         rows.append(np.hstack(chunk))
     sheet = np.vstack(rows)
-    out = cfg.output_dir / "contact_sheet_all.jpg"
+    out = cfg.output_dir / sheet_name
     cv2.imwrite(str(out), sheet, [int(cv2.IMWRITE_JPEG_QUALITY), 88])
     return out
 
