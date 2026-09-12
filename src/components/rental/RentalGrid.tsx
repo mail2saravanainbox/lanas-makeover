@@ -14,9 +14,27 @@ import type { RentalItem } from "@/lib/types";
  *  grid is even, dense, and gets out of the way.
  *
  *  ── IT PAGES, BECAUSE FIFTY-SIX IS TOO MANY ───────────────────────────────
- *  Twenty-four at a time. The rest are not in the DOM at all, so the first
- *  paint of the largest category costs the same as the smallest — the lesson
- *  the ritual carousel taught, applied where it matters far more.
+ *  Twenty-four visible at a time, and the button reveals the next twenty-four.
+ *
+ *  ── BUT ALL OF THEM ARE IN THE HTML, AND THAT IS A DELIBERATE REVERSAL ────
+ *  They used not to be: the grid sliced the array and the remaining hundred
+ *  and nine sets did not exist until someone clicked. That is defensible as
+ *  performance and indefensible as everything else. Eighty-two per cent of a
+ *  rental catalogue was invisible to image search, to a crawler, and to a
+ *  browser's own find-in-page — on the pages whose entire purpose is the
+ *  collection.
+ *
+ *  So every set is server-rendered and the ones past the fold carry the
+ *  `hidden` attribute. What that costs is HTML bytes; what it does NOT cost
+ *  is a single extra image request, because `display:none` plus lazy loading
+ *  means the browser never fetches a hidden frame. First paint is unchanged:
+ *  nothing extra is decoded, laid out or painted.
+ *
+ *  The blur placeholders are the one thing that does not scale — 334 bytes of
+ *  base64 each, which is 35 KB for the hidden hundred and nine and gzips
+ *  badly. They are emitted for the first page only. A revealed set fades in
+ *  without one, which is the correct trade: a placeholder exists to hold a
+ *  space during first paint, and these are not in the first paint.
  *
  *  ── AND IT OPENS FULL SIZE ────────────────────────────────────────────────
  *  A thumbnail cannot show whether a haram is one strand or three. Tapping
@@ -43,8 +61,6 @@ export default function RentalGrid({ items }: { items: RentalItem[] }) {
   const [shown, setShown] = useState(PAGE);
   const [open, setOpen] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-
-  const visible = items.slice(0, shown);
 
   useEffect(() => {
     const el = dialogRef.current;
@@ -75,8 +91,15 @@ export default function RentalGrid({ items }: { items: RentalItem[] }) {
   return (
     <>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-        {visible.map((item, i) => (
-          <li key={item.id}>
+        {items.map((item, i) => (
+          /*
+            `hidden` rather than a sliced array: the markup is identical for a
+            crawler and for a visitor who has clicked Show more, which is the
+            only arrangement that is honest. It is progressive disclosure — the
+            content is one click away and the same content either way — not a
+            crawler being shown something a person cannot reach.
+          */
+          <li key={item.id} hidden={i >= shown}>
             <button
               type="button"
               onClick={() => setOpen(i)}
@@ -109,8 +132,8 @@ export default function RentalGrid({ items }: { items: RentalItem[] }) {
                   alt={item.alt}
                   fill
                   sizes="(max-width: 640px) 48vw, (max-width: 1024px) 31vw, 23vw"
-                  placeholder={item.blurDataURL ? "blur" : undefined}
-                  blurDataURL={item.blurDataURL}
+                  placeholder={i < PAGE && item.blurDataURL ? "blur" : undefined}
+                  blurDataURL={i < PAGE ? item.blurDataURL : undefined}
                   className="object-contain transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
                 />
               </div>

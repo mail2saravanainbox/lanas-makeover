@@ -1909,6 +1909,88 @@ test.describe("rental jewellery in Trichy", () => {
     const xml = await (await request.get("/sitemap.xml")).text();
     expect(xml).toContain("/rental-jewellery-trichy");
   });
+
+  /**
+   * ── THE WHOLE CATALOGUE IS IN THE HTML ────────────────────────────────
+   * It used not to be: the grid sliced to twenty-four and the other hundred
+   * and nine did not exist until someone clicked. Eighty-two per cent of a
+   * rental catalogue invisible to image search, on the page whose entire
+   * purpose is the collection.
+   *
+   * The second assertion is the one that keeps the first one affordable:
+   * hidden frames must not be FETCHED. If that ever regresses, this page
+   * starts pulling 133 images on load and the trade stops being a trade.
+   */
+  test("all 133 sets are server-rendered, and the hidden ones cost nothing", async ({ page }) => {
+    await skipVeil(page);
+
+    let rentalImageRequests = 0;
+    page.on("request", (r) => {
+      if (r.url().includes("/_next/image") && r.url().includes("rental")) rentalImageRequests++;
+    });
+
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+    await page.waitForTimeout(1200);
+
+    const inDom = await page.locator("main li img").count();
+    const visible = await page.locator("main li:not([hidden]) img").count();
+
+    expect(inDom, "every set in the markup").toBe(133);
+    expect(visible, "one page shown").toBe(24);
+    expect(
+      rentalImageRequests,
+      "a hidden frame must never be fetched",
+    ).toBeLessThanOrEqual(visible + 2);
+  });
+
+  test("Show more reveals rather than re-renders", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+
+    await page.getByRole("button", { name: /Show more/ }).click();
+    await expect(page.locator("main li:not([hidden]) img")).toHaveCount(48);
+    // The markup did not grow — the same nodes were revealed.
+    expect(await page.locator("main li img").count()).toBe(133);
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EVERY SET DESCRIBES ITSELF
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  133 photographs shared four alt strings. A screen reader announced
+ *  fifty-six identical images, and image search — a real front door for a
+ *  bridal business — could not tell one set from another. Two of the nine
+ *  worn frames were also simply wrong: a flat-lay and a choker on cloth, both
+ *  captioned "A bride wearing a South Indian bridal jewellery set".
+ */
+test.describe("rental alt text", () => {
+  test("alt text distinguishes the sets and never keyword-stuffs", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+
+    const alts = await page.$$eval("main li img", (n) =>
+      n.map((i) => i.getAttribute("alt") ?? ""),
+    );
+    expect(alts).toHaveLength(133);
+    expect(alts.some((a) => a === ""), "an empty alt on a content image").toBe(false);
+
+    // Four strings for 133 images was the bug. Anything near that fails.
+    const distinct = new Set(alts).size;
+    expect(distinct, "distinct alt strings").toBeGreaterThan(90);
+
+    // And no single string may blanket a whole category again.
+    const counts = new Map<string, number>();
+    for (const a of alts) counts.set(a, (counts.get(a) ?? 0) + 1);
+    expect(Math.max(...counts.values()), "one alt repeated across many sets").toBeLessThan(12);
+
+    for (const a of alts) {
+      expect(a, "a city name stuffed into a studio photograph").not.toMatch(
+        /Trichy|Chennai|Madurai|Pudukkottai/i,
+      );
+      expect(a, "a superlative in alt text").not.toMatch(/\bbest\b|\btop\b/i);
+    }
+  });
 });
 
 /**
@@ -1959,16 +2041,19 @@ test.describe("rental jewellery", () => {
       await expect(page.locator("h1")).toHaveCount(1);
 
       /**
-       * TWENTY-FOUR AT A TIME, NOT FIFTY-SIX.
+       * TWENTY-FOUR SHOWN AT A TIME — SHOWN, NOT RENDERED.
        *
-       * The largest room holds fifty-six sets. Putting all of them in the DOM
-       * would make the first paint of that page cost twice what the smallest
-       * one does, on a phone, for photographs nobody has scrolled to.
+       * This used to assert that no more than twenty-four sets were in the
+       * DOM at all, which is how the largest room kept its first paint cheap
+       * and also how a hundred and nine sets stayed invisible to a crawler.
+       * The markup now carries every set and hides the ones past the fold, so
+       * the thing worth holding is what a VISITOR sees and what the browser
+       * FETCHES — both still one page's worth. See RentalGrid for the trade.
        */
-      const tiles = page.locator("main ul li button[aria-label^='Open']");
+      const tiles = page.locator("main ul li:not([hidden]) button[aria-label^='Open']");
       const n = await tiles.count();
       expect(n).toBeGreaterThan(0);
-      expect(n, "sets rendered before paging").toBeLessThanOrEqual(24);
+      expect(n, "sets visible before paging").toBeLessThanOrEqual(24);
 
       // Opening one gives the full frame in a real modal.
       await tiles.first().click();

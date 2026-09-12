@@ -46,6 +46,22 @@ export interface LocationConfig {
   /** One sentence under the title. City-specific, never boilerplate. */
   intro: string;
   /**
+   * ── THE ORIENTING SENTENCE ────────────────────────────────────────────
+   * `intro` is editorial: "The home city. No travel, no night before." It is
+   * the right first line for a bride who already knows whose site she is on,
+   * and the wrong one for the far more common visitor — someone who typed
+   * "bridal makeup artist in trichy", has four tabs open, and needs to learn
+   * who this is, what they do and where in about two seconds.
+   *
+   * So this sentence does the plain work: who, what, where, for whom. It runs
+   * once, under the intro, and it is the meta description. Written flat on
+   * purpose — it is the only sentence on the site allowed to be.
+   *
+   * It is not keyword filler: every clause is a fact the rest of the page
+   * already stands behind, and the city is named once.
+   */
+  orientation: string;
+  /**
    * Approximate road distance from the base city, in kilometres. Public
    * geography, used to say something true about the morning rather than to
    * imply a travel charge. `null` on the base city itself.
@@ -69,6 +85,8 @@ export const locations: LocationConfig[] = [
     titleLines: ["Bridal makeup", "in Trichy."],
     intro:
       "The home city. No travel, no night before, and a morning that can start when the muhurtham says it should rather than when the road allows.",
+    orientation:
+      "Lana's Makeover is a bridal makeup and hair artist working in Trichy (Tiruchirappalli) — natural, HD and South Indian bridal looks for muhurtham, reception and engagement, with bridal hair and jewellery rental from the same morning.",
     distanceKm: null,
     sections: [
       {
@@ -109,6 +127,8 @@ export const locations: LocationConfig[] = [
     titleLines: ["Bridal makeup", "in Chennai."],
     intro:
       "Three hundred kilometres from the base city, and almost always a hotel. Both of those facts decide how a Chennai morning is built.",
+    orientation:
+      "Lana's Makeover is a bridal makeup and hair artist available for weddings in Chennai — natural, HD and South Indian bridal looks for muhurtham, reception and engagement. Based in Trichy and travelling to Chennai for the date.",
     distanceKm: 320,
     sections: [
       {
@@ -161,6 +181,8 @@ export const locations: LocationConfig[] = [
     titleLines: ["Bridal makeup", "in Madurai."],
     intro:
       "The most traditional register on this site, in the city that asks for it — temple weddings, heavy gold, and a face built to hold its own against both.",
+    orientation:
+      "Lana's Makeover is a bridal makeup and hair artist available for weddings in Madurai — traditional South Indian bridal looks, jadai and bridal hair for temple ceremonies, muhurtham and reception. Based in Trichy and travelling to Madurai.",
     distanceKm: 130,
     sections: [
       {
@@ -213,6 +235,8 @@ export const locations: LocationConfig[] = [
     titleLines: ["Bridal makeup", "in Pudukkottai."],
     intro:
       "Close enough to Trichy that the morning can start the same morning — which makes it the most flexible of the four, and the easiest to schedule around a difficult muhurtham.",
+    orientation:
+      "Lana's Makeover is a bridal makeup and hair artist available for weddings in Pudukkottai — natural, HD and South Indian bridal looks for muhurtham, reception and engagement, plus makeup for the family around the bride. Based in Trichy, an hour away.",
     distanceKm: 50,
     sections: [
       {

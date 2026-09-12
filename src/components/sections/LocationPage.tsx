@@ -53,6 +53,18 @@ export default function LocationPage({
         ]}
       />
 
+      {/* ── WHO, WHAT, WHERE — ONCE, PLAINLY ────────────────────────────────
+          A visitor from search has not read the header as editorial; she has
+          read it as a claim she is about to verify. This is the sentence that
+          lets her. It sits above the fold on desktop and one short scroll in
+          on a phone, and it is the same string the meta description uses, so
+          the result and the page agree word for word. */}
+      <div className="shell pb-14">
+        <Reveal>
+          <p className="measure body-lg text-ivory/90">{config.orientation}</p>
+        </Reveal>
+      </div>
+
       {/* ── The city itself ─────────────────────────────────────────────── */}
       <div className="shell pb-20">
         <div className="measure space-y-20">

@@ -37,7 +37,13 @@ export function cityMetadata(slug: string): Metadata {
      * useful part of a title is invisible in a result anyway.
      */
     title: `Bridal Makeup Artist in ${config.city}`,
-    description: config.intro,
+    /**
+     * The orienting sentence, not the editorial intro. `intro` reads as a
+     * non-sequitur in a result — "The home city. No travel, no night before"
+     * tells a stranger nothing about who this is or what they do. A snippet
+     * has one job and it is not atmosphere.
+     */
+    description: config.orientation,
     path: locationHref(config.slug),
   });
 }
@@ -73,7 +79,7 @@ export default async function CityRoute({ slug }: { slug: string }) {
           cityServiceSchema({
             city: config.city,
             slug: config.slug,
-            description: config.intro,
+            description: config.orientation,
           }),
           // The same items the page renders, so a rich result cannot show an
           // answer the page does not give.
