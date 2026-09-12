@@ -26,19 +26,19 @@ the muhurtham, not forwards from an alarm.
 photographer, the drive) · what stretches the middle (hair before makeup or
 after, how many other faces) · why a 5 a.m. ceremony is a different commission
 from an 11 a.m. one · the three things to send with an enquiry.
-**Links out:** `/locations/chennai` (the distance-changes-the-schedule case),
+**Links out:** `/bridal-makeup-chennai` (the distance-changes-the-schedule case),
 `/services/muhurtham`, `/contact`.
 **Must not claim:** a specific number of hours. ⟨how long does a full
 traditional bridal look actually take, hair included?⟩
 
 ### 2. Bridal makeup for a temple wedding
 **Query:** "temple wedding makeup", "madurai temple wedding bridal makeup"
-**Why now:** `/locations/madurai` opens this subject and cannot finish it.
+**Why now:** `/bridal-makeup-madurai` opens this subject and cannot finish it.
 **Outline:** three light sources in one room (lamp, doorway, flash) · why a
 heavy base fails under flash specifically · the neck-and-face line in
 photographs · humidity and an open venue · what "traditional register" actually
 means as a set of decisions.
-**Links out:** `/locations/madurai`, `/bridal`, `/portfolio/muhurtham`.
+**Links out:** `/bridal-makeup-madurai`, `/bridal`, `/portfolio/muhurtham`.
 **Must not claim:** any named temple, or that Lana has worked at one.
 
 ### 3. What to tell your makeup artist before the wedding
@@ -56,11 +56,11 @@ nothing.⟩
 ### 4. Makeup for the bride's mother and sisters
 **Query:** "family makeup for wedding", "guest makeup wedding tamil nadu"
 **Why now:** `party-transformation` is a real service with no editorial behind
-it, and `/locations/pudukkottai` raises it.
+it, and `/bridal-makeup-pudukkottai` raises it.
 **Outline:** why the number of faces changes the whole morning's order · a
 mother's look is not a younger version of the bride's · guest makeup in
 photographs that will be looked at for fifty years · what to ask for.
-**Links out:** `/services/party-transformation`, `/locations/pudukkottai`.
+**Links out:** `/services/party-transformation`, `/bridal-makeup-pudukkottai`.
 **Must not claim:** group pricing, or a maximum number. ⟨how many people can be
 accommodated in one morning, and does it need a second pair of hands?⟩
 
@@ -73,7 +73,7 @@ accommodated in one morning, and does it need a second pair of hands?⟩
 **Outline:** evening light versus lamp light · why the eye carries a reception
 look · continuity as a deliberate decision · when it is a fresh application and
 when it is a rebuild.
-**Links out:** `/services/reception`, `/locations/chennai`, `/portfolio/reception`.
+**Links out:** `/services/reception`, `/bridal-makeup-chennai`, `/portfolio/reception`.
 
 ### 6. Engagement makeup, and why it is really a rehearsal
 **Query:** "engagement makeup look", "engagement vs wedding makeup"
@@ -82,11 +82,18 @@ less finished · what it reveals about the wedding look · restraint as the poin
 **Links out:** `/services/engagement`, `/journal/the-bridal-makeup-trial`.
 
 ### 7. How to choose bridal jewellery your makeup can live with
+> ⚠ **Partly written.** `/journal/temple-jewellery-or-american-diamond` now
+> covers the register choice, the Kanchipuram match and what the makeup does
+> around a set. What is still unwritten is the *fitting* angle below — weight,
+> the maang tikka and the hairline — which needs Lana's own practice rather
+> than craft generalities. Keep it as a second, narrower article; do not
+> rewrite the first one.
+
 **Query:** "bridal jewellery and makeup", "heavy gold bridal makeup"
 **Outline:** weight and placement compete with a face · structure not more
 product · the maang tikka and the hairline · when to see the jewellery before
 the trial.
-**Links out:** `/locations/madurai`, `/bridal`, `/services/bridal-hair`.
+**Links out:** `/bridal-makeup-madurai`, `/bridal`, `/services/bridal-hair`.
 
 ### 8. Saree draping and the bridal silhouette
 **Query:** "bridal saree draping", "who drapes the bridal saree"
@@ -126,6 +133,39 @@ base, what changed when video became standard at Indian weddings.
 **Outline:** blotting, not powder · the lip that has to survive lunch · pins ·
 what to hand to whoever is holding your bag.
 **Links out:** `/faq`, `/services/muhurtham`.
+
+---
+
+## The jewellery cluster
+
+`/rental-jewellery-trichy` is the site's second commercial landing page and it
+has exactly one article behind it. Six target queries point at it. These are
+the supporting pieces, in the order they are worth writing — and every one of
+them must be written to the catalogue that exists (temple gold, American
+diamond, chokers, haram) rather than to the keyword list, which also asks for
+kundan and polki. Lana rents neither.
+
+### J1. Bridal jewellery on rent: what to check before you commit
+**Query:** "bridal jewellery on rent in Trichy", "jewellery rental what to look for"
+**Outline:** what a rental actually covers · fit and adjustability on a choker
+and an oddiyanam · what to photograph before and after · the questions worth
+asking about a hold.
+**Links out:** `/rental-jewellery-trichy`, `/rental-jewellery`.
+**Must not claim:** ⟨deposit, hold period, damage terms, insurance — none of
+these has been supplied, and this article cannot be published without them.⟩
+
+### J2. What a full South Indian bridal set actually contains
+**Query:** "south indian bridal jewellery set names", "oddiyanam meaning"
+**Outline:** short necklace, haram, jhumka, oddiyanam, maang tikka, vanki ·
+what each does to the silhouette · which are optional and which are not · the
+Tamil names, used properly.
+**Links out:** `/rental-jewellery/temple-jewellery`, `/rental-jewellery-trichy`.
+
+### J3. Reception jewellery: the second set
+**Query:** "reception jewellery", "second look bridal jewellery"
+**Outline:** why the reception set is lighter · white stone under video light ·
+changing the set without redoing the whole face · what can be reused.
+**Links out:** `/rental-jewellery/american-diamond-sets`, `/services/reception`.
 
 ---
 

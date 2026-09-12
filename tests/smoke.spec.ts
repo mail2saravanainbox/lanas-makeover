@@ -1605,7 +1605,7 @@ test.describe("the city pages", () => {
   for (const { slug, city } of CITIES) {
     test(`${city} names itself in the title, the h1 and the schema`, async ({ page }) => {
       await skipVeil(page);
-      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+      await page.goto(`/bridal-makeup-${slug}`, { waitUntil: "networkidle" });
 
       await expect(page).toHaveTitle(new RegExp(`Bridal Makeup Artist in ${city}`));
 
@@ -1664,7 +1664,7 @@ test.describe("the city pages", () => {
      */
     const texts: Record<string, string> = {};
     for (const { slug } of CITIES) {
-      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+      await page.goto(`/bridal-makeup-${slug}`, { waitUntil: "networkidle" });
       texts[slug] = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
     }
 
@@ -1704,7 +1704,7 @@ test.describe("the city pages", () => {
     for (const { slug, city } of CITIES) {
       const link = page.locator("footer").getByRole("link", { name: city, exact: true });
       await expect(link, `${city} is linked in the footer`).toHaveCount(1);
-      await expect(link).toHaveAttribute("href", `/locations/${slug}`);
+      await expect(link).toHaveAttribute("href", `/bridal-makeup-${slug}`);
     }
     await expect(page.locator("footer").getByRole("link", { name: "Locations" })).toHaveCount(1);
   });
@@ -1712,12 +1712,12 @@ test.describe("the city pages", () => {
   test("the index reaches all four and the sitemap lists them", async ({ page, request }) => {
     await page.goto("/locations", { waitUntil: "networkidle" });
     for (const { slug } of CITIES) {
-      await expect(page.locator(`a[href="/locations/${slug}"]`).first()).toBeVisible();
+      await expect(page.locator(`a[href="/bridal-makeup-${slug}"]`).first()).toBeVisible();
     }
 
     const xml = await (await request.get("/sitemap.xml")).text();
     for (const { slug } of CITIES) {
-      expect(xml, `${slug} in the sitemap`).toContain(`/locations/${slug}`);
+      expect(xml, `${slug} in the sitemap`).toContain(`/bridal-makeup-${slug}`);
     }
     expect(xml).toContain("/locations<");
   });
@@ -1729,7 +1729,7 @@ test.describe("the city pages", () => {
      * None of that is knowable from anything the client has supplied.
      */
     for (const { slug } of CITIES) {
-      await page.goto(`/locations/${slug}`, { waitUntil: "networkidle" });
+      await page.goto(`/bridal-makeup-${slug}`, { waitUntil: "networkidle" });
       const text = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
 
       expect(text, "a price").not.toMatch(/₹|\bRs\.?\s?\d|\bINR\b/i);
@@ -1739,6 +1739,175 @@ test.describe("the city pages", () => {
       // Leftover editorial markers must never reach a visitor.
       expect(text, "an unresolved marker").not.toMatch(/TODO|⟨|⟩|Lorem/);
     }
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE JOURNAL LINKS OUT FROM INSIDE THE PROSE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Every post used to reach the rest of the site only through the template —
+ *  a breadcrumb, three related articles and one Contact button. A cluster
+ *  needs links a reader actually follows, inside sentences, with anchor text
+ *  that says where it goes.
+ *
+ *  The second test is the one that matters more: the body renderer's whole
+ *  promise is that a compromised CMS cannot inject markup, and a link is the
+ *  construct that could break it.
+ */
+test.describe("journal internal links", () => {
+  const POSTS = [
+    "natural-vs-hd-bridal-makeup",
+    "skin-preparation-before-the-wedding",
+    "south-indian-bridal-hair-jadai",
+    "bridal-makeup-when-the-wedding-is-in-another-city",
+    "the-bridal-makeup-trial",
+    "muhurtham-morning-timeline",
+    "temple-jewellery-or-american-diamond",
+  ];
+
+  for (const slug of POSTS) {
+    test(`${slug} links out of its own prose`, async ({ page }) => {
+      await skipVeil(page);
+      await page.goto(`/journal/${slug}`, { waitUntil: "networkidle" });
+
+      // Inside the article body, not the breadcrumb and not the related rail.
+      const inBody = page.locator("article a[href^='/']");
+      expect(await inBody.count(), "a link inside the article").toBeGreaterThan(0);
+
+      // Unrendered markdown is the failure mode a renderer this small has.
+      const text = await page.evaluate(() => document.querySelector("article")?.innerText ?? "");
+      expect(text, "literal markdown").not.toMatch(/\]\(/);
+    });
+  }
+
+  test("the renderer refuses an href that is not a path or https", async ({ page }) => {
+    await skipVeil(page);
+    for (const slug of POSTS) {
+      await page.goto(`/journal/${slug}`, { waitUntil: "domcontentloaded" });
+      const hrefs = await page.evaluate(() =>
+        [...(document.querySelectorAll("article a") ?? [])].map((a) => a.getAttribute("href") ?? ""),
+      );
+      for (const h of hrefs) {
+        expect(h, `${slug} produced an unsafe href`).toMatch(/^(\/|https:\/\/|#)/);
+      }
+    }
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE CITY PAGES MOVED, AND NOTHING MAY 404
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  /locations/<city> → /bridal-makeup-<city>. A rename is only safe if the
+ *  old URL keeps resolving: anything already linked, indexed or bookmarked
+ *  has to land on the page rather than on a 404, and a 302 would leave the
+ *  index entry on the dead URL.
+ */
+test.describe("the retired city URLs", () => {
+  for (const slug of ["trichy", "chennai", "pudukkottai", "madurai"]) {
+    test(`/locations/${slug} permanently redirects`, async ({ request }) => {
+      const res = await request.get(`/locations/${slug}`, { maxRedirects: 0 });
+      expect(res.status(), "a permanent redirect, not a temporary one").toBe(308);
+      expect(res.headers()["location"]).toContain(`/bridal-makeup-${slug}`);
+    });
+  }
+
+  test("the hub itself did not move", async ({ request }) => {
+    // The redirect is four explicit rules, not /locations/:path* — a wildcard
+    // would also swallow the index and send it to /bridal-makeup-undefined.
+    const res = await request.get("/locations", { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  RENTAL JEWELLERY IN TRICHY
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Six of the site's target queries are Trichy-qualified jewellery searches
+ *  and this is the only page written to answer them. The two risks are the
+ *  two this file exists to catch: that it quietly becomes the hub with a city
+ *  name on it, and that it starts quoting a rental price nobody supplied.
+ */
+test.describe("rental jewellery in Trichy", () => {
+  test("names the city in the title, the h1 and the schema", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+
+    await expect(page).toHaveTitle(/Rental Jewellery in Trichy/);
+
+    const h1 = page.locator("h1");
+    await expect(h1).toHaveCount(1);
+    await expect(h1).toContainText("Trichy");
+
+    const types = await page.evaluate(() =>
+      [...document.querySelectorAll('script[type="application/ld+json"]')]
+        .flatMap((s) => {
+          try {
+            const j = JSON.parse(s.textContent ?? "{}");
+            return Array.isArray(j) ? j : [j];
+          } catch {
+            return [];
+          }
+        })
+        .map((j) => (j as { "@type"?: string })["@type"]),
+    );
+    expect(types).toContain("Service");
+    expect(types).toContain("FAQPage");
+    expect(types).toContain("BreadcrumbList");
+
+    /**
+     * One business, several areas served. The root layout emits exactly one
+     * BeautySalon for the whole site and this page references it by @id —
+     * what must never appear is a SECOND business record claiming premises in
+     * a city where there are none.
+     */
+    expect(types.filter((t) => t === "BeautySalon" || t === "LocalBusiness")).toHaveLength(1);
+  });
+
+  test("it is the showroom, not the hub with a city name on it", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+
+    // The whole catalogue, not four covers: the grid holds a page of sets.
+    const figures = page.locator("main img");
+    expect(await figures.count()).toBeGreaterThan(12);
+
+    /**
+     * And it links back to both halves of the business from the page body —
+     * `main`, not the document, because the header nav carries a jewellery
+     * link that is behind the menu button at 390px and would pass this
+     * assertion without a single link existing in the content.
+     */
+    const main = page.locator("main");
+    await expect(main.locator('a[href="/bridal-makeup-trichy"]').first()).toBeVisible();
+    await expect(main.locator('a[href="/rental-jewellery"]').first()).toBeVisible();
+  });
+
+  test("invent nothing: no price, no deposit figure, no stock claim", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery-trichy", { waitUntil: "networkidle" });
+    const text = await page.evaluate(() => document.querySelector("main")?.innerText ?? "");
+
+    expect(text, "a price").not.toMatch(/₹|\bRs\.?\s?\d|\bINR\b/i);
+    expect(text, "a superlative claim").not.toMatch(/\bbest\b|\bno\.?\s?1\b|\btop\s+rated\b/i);
+    expect(text, "years of experience").not.toMatch(/\b\d+\+?\s+years?\b/i);
+    expect(text, "an unresolved marker").not.toMatch(/TODO|⟨|⟩|Lorem/);
+  });
+
+  test("the hub and the Trichy makeup page both point at it", async ({ page }) => {
+    await skipVeil(page);
+    await page.goto("/rental-jewellery", { waitUntil: "networkidle" });
+    await expect(page.locator('a[href="/rental-jewellery-trichy"]').first()).toBeVisible();
+
+    await page.goto("/bridal-makeup-trichy", { waitUntil: "networkidle" });
+    await expect(page.locator('a[href="/rental-jewellery-trichy"]').first()).toBeVisible();
+  });
+
+  test("the sitemap lists it", async ({ request }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    expect(xml).toContain("/rental-jewellery-trichy");
   });
 });
 
@@ -1992,7 +2161,8 @@ test("no control is rendered twice in the same place", async ({ page }) => {
     "/bridal",
     "/hair",
     "/makeup",
-    "/locations/chennai",
+    "/bridal-makeup-chennai",
+    "/rental-jewellery-trichy",
     "/rental-jewellery",
     "/rental-jewellery/temple-jewellery",
     "/journal",

@@ -81,7 +81,9 @@ For most South Indian bridal commissions the honest answer is a graded one:
 - Look at it after four hours, not after four minutes.
 - Ask specifically what happens to the finish in heat, because Tamil Nadu will test it.
 
-The right register is the one that survives your particular day — not the one that photographed well on somebody else's.`,
+The right register is the one that survives your particular day — not the one that photographed well on somebody else's.
+
+Both registers sit inside the same commission — see [what a bridal booking includes](/services/muhurtham), or look at the [Tamil bridal archive](/portfolio/tamil-bridal) for how each one reads in a real hall.`,
   },
   {
     slug: "skin-preparation-before-the-wedding",
@@ -126,7 +128,9 @@ The right register is the one that survives your particular day — not the one 
 
 Arrive with clean, bare, moisturised skin and no makeup on from the night before. That is the whole request.
 
-If you have a known allergy or a sensitivity — to a fragrance, a latex sponge, a specific brand — say so before the day, not while the base is going on.`,
+If you have a known allergy or a sensitivity — to a fragrance, a latex sponge, a specific brand — say so before the day, not while the base is going on.
+
+Thirty days of preparation is worth very little if the register is still undecided on the morning. [The bridal trial](/journal/the-bridal-makeup-trial) is where that gets settled, and [the muhurtham commission](/services/muhurtham) is what it is settled for.`,
   },
   {
     slug: "south-indian-bridal-hair-jadai",
@@ -171,7 +175,9 @@ This is extremely common and entirely workable, but it needs to be said out loud
 
 Jasmine is measured in *muzham*, not in stems, and it wilts. It should be bought as close to the morning as possible, kept cool, and never sealed in plastic overnight.
 
-If your ceremony runs long, plan a second string. It is a small cost and it is visible in every photograph taken after midday.`,
+If your ceremony runs long, plan a second string. It is a small cost and it is visible in every photograph taken after midday.
+
+The jadai is its own commission rather than something added to the makeup — see [bridal hair styling](/services/bridal-hair), and [the hair archive](/portfolio/hair) for how a finished braid actually sits.`,
   },
   {
     slug: "bridal-makeup-when-the-wedding-is-in-another-city",
@@ -225,7 +231,9 @@ This is the part that catches people out. If you live in one city and the weddin
 
 The kit, the hands and the approach are the same in ${citiesProse()}. The register is chosen with you either way. What changes is the timetable — and a timetable is much easier to fix in advance than on the morning.
 
-If your wedding is in one of the four, send the date and the venue and you will be told plainly whether it is open.`,
+If your wedding is in one of the four, send the date and the venue and you will be told plainly whether it is open.
+
+Each city has its own page, written from what is genuinely different about a wedding there: [bridal makeup in Trichy](/bridal-makeup-trichy), [in Chennai](/bridal-makeup-chennai), [in Madurai](/bridal-makeup-madurai) and [in Pudukkottai](/bridal-makeup-pudukkottai).`,
   },
   {
     slug: "the-bridal-makeup-trial",
@@ -276,7 +284,9 @@ It cannot rehearse the day. On the morning there will be more heat, more people,
 
 ## Say what you did not like
 
-This is the whole point of the trial and the part brides skip out of politeness. A look you are quietly unsure about at a trial becomes a look you are quietly unsure about in your wedding photographs for the rest of your life. Say it plainly. It is much easier to change now.`,
+This is the whole point of the trial and the part brides skip out of politeness. A look you are quietly unsure about at a trial becomes a look you are quietly unsure about in your wedding photographs for the rest of your life. Say it plainly. It is much easier to change now.
+
+If the register itself is still open, [natural or HD](/journal/natural-vs-hd-bridal-makeup) is the decision the trial exists to make. When you are ready to hold a date, [check your date](/contact).`,
   },
   {
     slug: "muhurtham-morning-timeline",
@@ -321,6 +331,106 @@ The number you arrive at is almost always earlier than anyone wants it to be. Th
 
 Photographers will also want getting-ready coverage, which means the room needs to be presentable and the schedule needs to absorb a person moving around it.
 
-Plan for that, and the morning stops being a rush and becomes what it should be — the last quiet hours before everything else.`,
+Plan for that, and the morning stops being a rush and becomes what it should be — the last quiet hours before everything else.
+
+The jewellery is the step most likely to be late, and the one worth settling earliest — [bridal jewellery on rent in Trichy](/rental-jewellery-trichy). For the hours themselves, [the muhurtham commission](/services/muhurtham) is what is being scheduled.`,
+  },
+  /**
+   * ── THE JEWELLERY CLUSTER (§20) ─────────────────────────────────────────
+   * `/rental-jewellery-trichy` had no article behind it. This is that
+   * article, and it is written to the catalogue that actually exists —
+   * temple gold and American diamond — rather than to the keyword list,
+   * which also asks for kundan and polki. Lana rents neither, and an article
+   * recommending a register she cannot supply sends a bride somewhere else.
+   *
+   * Nothing here claims a price, a stock level, or anything about Lana's
+   * record. It is craft knowledge about metal, stone and light, which is
+   * true of any artist and checkable by any bride.
+   */
+  {
+    slug: "temple-jewellery-or-american-diamond",
+    title: "Temple gold or American diamond: choosing a bridal set",
+    excerpt:
+      "The two registers are not traditional and modern. They are answers to two different lights — and most South Indian weddings contain both.",
+    cover: {
+      alt: "Temple gold and American diamond bridal sets — placeholder plate",
+      tone: "bronze",
+      seed: 407,
+    },
+    category: "Wedding Guides",
+    tags: [
+      "bridal jewellery",
+      "temple jewellery",
+      "american diamond",
+      "jewellery rental",
+      "wedding guides",
+    ],
+    author: "Lana's Makeover",
+    publishedAt: "2026-01-20",
+    readingMinutes: 6,
+    published: true,
+    seo: {
+      title: "Temple Jewellery or American Diamond for a Bridal Set",
+      description:
+        "How to choose between temple gold and American diamond for a South Indian bridal jewellery set — what each does under lamp light and flash, how it sits with a Kanchipuram silk, and what the makeup has to do around it.",
+    },
+    body: `Almost every bride choosing a bridal set is given the same unhelpful frame: temple jewellery is the traditional choice, American diamond is the modern one. It is not a useful distinction, and it leads to the wrong set roughly half the time.
+
+The honest frame is duller and much more use. **They behave differently in light**, and a South Indian wedding is two or three different lights in one day.
+
+## What each does under a light
+
+**Antique gold** — temple jewellery, kemp stones, deity motifs — is warm. Under a lamp, under the fire, under the tungsten in an older hall, it glows: the surface is uneven on purpose, so it catches light in a hundred small places rather than one big one. Under a direct camera flash it flattens somewhat, but it never disappears, because its presence comes from weight and outline rather than from sparkle.
+
+**American diamond** — white stone, usually with ruby-red and emerald-green alongside it — is the reverse. In warm lamp light it reads slightly grey and does less than you expect. Under flash, and under a videographer's LED panel, it does exactly what the stones are engineered to do.
+
+> The ceremony is lit by fire, lamps and a photographer. The reception is lit by a video light. That is the whole reason most brides end up wearing both.
+
+This is also why a set that looked extraordinary in a showroom can look ordinary in a hall. A showroom is lit to sell jewellery. A wedding is not.
+
+## The temple wedding case
+
+The older temples are dark stone with very little ambient light, and almost everything you will see of the jewellery in the photographs will have been lit by a flash from six feet away.
+
+In that light, **shape survives and detail does not**. A haram with a strong silhouette reads from across the mandapam. A finely worked piece whose beauty is in its surface reads as a bright blur.
+
+If the ceremony is in a temple, choose the piece that has an outline from ten feet away, and save the fine work for somewhere it can be seen.
+
+## Matching a Kanchipuram silk
+
+The silk decides more than most brides expect, and it decides it before the jewellery does.
+
+- **A heavy zari border** already carries gold. Antique gold on top of it is a single, coherent statement; white stone against it reads as two decisions that were made separately.
+- **A darker silk** — deep maroon, bottle green, aubergine — gives antique gold something to sit against, which is exactly what it needs, because gold on gold at close range disappears.
+- **A lighter or pastel silk** is where American diamond starts to win. It is the case where white stone has a background to be seen against rather than to compete with.
+- **The blouse neckline is the constraint nobody checks.** A high neck and a close-fitting choker are fighting for the same two inches. Take the blouse measurement to the jewellery decision, not after it.
+
+## What the makeup has to do around it
+
+A bridal set is not an accessory to a face. It is roughly a third of what anyone actually looks at.
+
+A heavy gold set at the throat and a long haram down the front pull the eye downward and add a great deal of warmth under the chin. The face has to be built to survive that — usually with a stronger, cleaner lip and a quieter eye, so that there is one focal point rather than three competing ones.
+
+White stone does the opposite. It is cool, it sits flatter, and it leaves the eye with more room to do something. It is the register where a defined eye stops competing and starts balancing.
+
+> Chosen separately, the set and the face are two good decisions that do not agree. Chosen together, they are one.
+
+## A practical order of decisions
+
+- **The silk**, because it is usually already chosen and it constrains everything after it.
+- **The blouse neckline**, because it decides whether a choker is even possible.
+- **The light in the room**, which decides the register.
+- **The set.**
+- **The face**, built against the set rather than before it.
+
+Most brides do this in exactly the reverse order, and then spend the morning trying to reconcile four decisions that were each made on their own.
+
+## Seeing it on a bride, not on a stand
+
+A necklace photographed on a velvet stand tells you what it is. It does not tell you where it falls, what it does against a neckline, or what it looks like next to a face — and proportion is the one thing a catalogue photograph flattens.
+
+Look at the worn sets before the product frames. It changes which set you choose more often than not.
+
+Lana rents bridal jewellery as well as doing the makeup and the hair, which means the two decisions above can be made in one conversation rather than in two shops. The collection — temple gold, American diamond, chokers and haram — is at [bridal jewellery on rent in Trichy](/rental-jewellery-trichy), and it travels alongside the makeup for a wedding elsewhere.`,
   },
 ];

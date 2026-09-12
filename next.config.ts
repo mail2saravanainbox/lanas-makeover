@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { readFileSync } from "node:fs";
 import { collectionForCategory } from "./src/content/collections";
+import { locationHref, locationSlugs, retiredLocationHref } from "./src/content/location-slugs";
 import type { PortfolioCategory } from "./src/lib/types";
 
 /**
@@ -85,6 +86,28 @@ const nextConfig: NextConfig = {
         destination: "https://lanas.in/:path*",
         permanent: true,
       },
+      /**
+       * THE CITY PAGES MOVED.
+       *
+       * /locations/trichy → /bridal-makeup-trichy, and the same for the other
+       * three. The hub at /locations stays exactly where it is; only the four
+       * leaves moved, so this is four redirects and not a wildcard — a
+       * wildcard would also catch /locations itself and send the hub to
+       * /bridal-makeup-undefined.
+       *
+       * Built from the same slug list the pages are built from, and
+       * `locations.ts` throws if the two ever disagree — so a fifth city
+       * cannot be added with a live URL and a dead old one.
+       *
+       * 308 (`permanent: true`), which is the modern 301: it tells a search
+       * engine to move the index entry rather than follow the hop every time,
+       * and it preserves the method.
+       */
+      ...locationSlugs.map((slug) => ({
+        source: retiredLocationHref(slug),
+        destination: locationHref(slug),
+        permanent: true,
+      })),
       ...retiredImageRedirects(),
     ];
   },

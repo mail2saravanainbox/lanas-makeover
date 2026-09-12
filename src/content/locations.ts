@@ -1,5 +1,6 @@
 import type { PortfolioCategory } from "@/lib/types";
 import { siteSettings } from "@/content/site";
+import { locationSlugs } from "@/content/location-slugs";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -283,3 +284,39 @@ export const locationBySlug = (slug: string): LocationConfig | undefined =>
 /** The city page for a city name, for linking from the places that list cities. */
 export const locationForCity = (city: string): LocationConfig | undefined =>
   locations.find((l) => l.city === city);
+
+
+/**
+ * The URL shape lives in `location-slugs.ts` — see the note there for why it
+ * is a separate, import-free module. Re-exported so callers have one import.
+ */
+export { locationHref, retiredLocationHref } from "@/content/location-slugs";
+
+/**
+ * ⚠ THE SLUG LIST AND THE PAGE LIST MUST NOT DRIFT EITHER.
+ *
+ * `next.config.ts` builds the redirect table from `locationSlugs`, and the
+ * four `src/app/bridal-makeup-<slug>/` folders are written by hand. If a slug
+ * here is not in that list, its old URL keeps 404ing; if a slug in that list
+ * has no entry here, the config redirects to a page that does not exist.
+ *
+ * Throwing at module load fails the build rather than a visitor.
+ */
+{
+  const slugs = new Set<string>(locationSlugs);
+  for (const l of locations) {
+    if (!slugs.has(l.slug)) {
+      throw new Error(
+        `locations.ts: "${l.slug}" has no entry in location-slugs.ts, so /locations/${l.slug} will not redirect to it. ` +
+          `Add it there, and add the src/app/bridal-makeup-${l.slug}/ folder.`,
+      );
+    }
+  }
+  for (const slug of slugs) {
+    if (!locations.some((l) => l.slug === slug)) {
+      throw new Error(
+        `location-slugs.ts lists "${slug}" but locations.ts has no page for it — the redirect would point at a 404.`,
+      );
+    }
+  }
+}

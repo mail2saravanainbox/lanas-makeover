@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { content } from "@/lib/content/provider";
-import { locations } from "@/content/locations";
+import { locationHref, locations } from "@/content/locations";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { citiesProse, siteSettings } from "@/content/site";
 import PageHeader from "@/components/ui/PageHeader";
@@ -53,7 +53,7 @@ export default async function Page() {
             <li key={l.slug}>
               <Reveal delay={(i % 4) * 90}>
                 <Link
-                  href={`/locations/${l.slug}`}
+                  href={locationHref(l.slug)}
                   className="group grid gap-3 py-9 lg:grid-cols-[14rem_1fr] lg:gap-10"
                 >
                   <div className="flex items-baseline gap-4">

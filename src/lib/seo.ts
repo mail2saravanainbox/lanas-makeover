@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { citiesAmp, citiesProse, siteSettings } from "@/content/site";
+import { locationHref } from "@/content/locations";
 import { waLink, waNumber } from "@/lib/whatsapp";
 
 /**
@@ -368,7 +369,7 @@ export function cityServiceSchema(input: {
     "@type": "Service",
     name: `Bridal makeup and hair in ${input.city}`,
     description: input.description,
-    url: absoluteUrl(`/locations/${input.slug}`),
+    url: absoluteUrl(locationHref(input.slug)),
     serviceType: "Bridal makeup and hair styling",
     category: "Bridal makeup and hair styling",
     provider: { "@id": absoluteUrl("/#business") },
@@ -413,6 +414,45 @@ export function rentalServiceSchema(): Json {
       ...siteSettings.serviceAreas.map((name) => ({ "@type": "City", name })),
       { "@type": "AdministrativeArea", name: "Tamil Nadu" },
     ],
+  };
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  THE JEWELLERY RENTAL SERVICE, SCOPED TO ONE CITY
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Same rule as `cityServiceSchema`: one Service, one city in `areaServed`,
+ *  provided by the single business record referenced by @id. Not a second
+ *  LocalBusiness, and not a Product — see the note on `rentalServiceSchema`
+ *  for why a catalogue without prices must not pretend to be a shop.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export function rentalCityServiceSchema(input: {
+  city: string;
+  path: string;
+  description: string;
+  /** Counted from the catalogue, never typed. */
+  count: number;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `Bridal jewellery rental in ${input.city}`,
+    description: input.description,
+    url: absoluteUrl(input.path),
+    serviceType: "Bridal jewellery rental",
+    category: "Jewellery rental",
+    provider: { "@id": absoluteUrl("/#business") },
+    areaServed: {
+      "@type": "City",
+      name: input.city,
+      containedInPlace: { "@type": "AdministrativeArea", name: "Tamil Nadu" },
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: `Bridal jewellery sets for rent in ${input.city}`,
+      numberOfItems: input.count,
+    },
   };
 }
 

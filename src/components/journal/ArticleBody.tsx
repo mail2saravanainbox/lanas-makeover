@@ -1,11 +1,24 @@
+import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 
 /**
  * A deliberately small markdown renderer.
  *
  * Supported: `##` headings, `>` pull quotes, `-` lists, `**bold**`, `*italic*`,
- * and blank-line-separated paragraphs. That is the entire vocabulary the
- * journal needs.
+ * `[text](/path)` links, and blank-line-separated paragraphs. That is the
+ * entire vocabulary the journal needs.
+ *
+ * ── WHY LINKS WERE ADDED ────────────────────────────────────────────────────
+ * Without them an article could not point at anything. Every journal post on
+ * this site reached the rest of it through the template — a breadcrumb, three
+ * related articles and one Contact button — and never from inside a sentence,
+ * where a link is actually read and actually followed.
+ *
+ * That is a content problem before it is an SEO one: an article about choosing
+ * a jewellery set that cannot link to the jewellery is a worse article. It is
+ * also the thing that turns six unrelated posts into a topical cluster, which
+ * only works if the anchor text says where it goes — "bridal jewellery on rent
+ * in Trichy", never "click here".
  *
  * Why not MDX? Because the journal is destined for a CMS, and a CMS returns a
  * string — not a compiled component. Keeping the renderer string-first means
@@ -16,9 +29,26 @@ import { Fragment, type ReactNode } from "react";
  * so a compromised CMS cannot inject markup.
  */
 
+/**
+ * Which hrefs a body is allowed to produce.
+ *
+ * The journal is destined for a CMS, and the guarantee this file has always
+ * made is that a compromised CMS cannot inject markup. A link is the one
+ * construct that could quietly break that — `javascript:` and `data:` URLs are
+ * script delivery, not navigation — so the href is whitelisted rather than
+ * sanitised: a site-relative path, or an absolute https URL. Anything else
+ * renders as plain text, which is visibly wrong to an editor and harmless to
+ * a reader.
+ */
+function safeHref(href: string): { href: string; external: boolean } | null {
+  if (/^\/(?!\/)/.test(href)) return { href, external: false };
+  if (/^https:\/\/[^\s]+$/i.test(href)) return { href, external: true };
+  return null;
+}
+
 function inline(text: string): ReactNode {
   const nodes: ReactNode[] = [];
-  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)\s]+\))/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let key = 0;
@@ -26,7 +56,35 @@ function inline(text: string): ReactNode {
   while ((match = pattern.exec(text)) !== null) {
     if (match.index > last) nodes.push(text.slice(last, match.index));
     const token = match[0];
-    if (token.startsWith("**")) {
+    if (token.startsWith("[")) {
+      const split = token.indexOf("](");
+      const label = token.slice(1, split);
+      const target = safeHref(token.slice(split + 2, -1));
+
+      if (!target) {
+        nodes.push(token);
+      } else if (target.external) {
+        nodes.push(
+          <a
+            key={key++}
+            href={target.href}
+            rel="noopener noreferrer"
+            target="_blank"
+            className="link-wipe text-champagne"
+          >
+            {label}
+          </a>,
+        );
+      } else {
+        // next/link, so an internal hop is a client navigation like every
+        // other link on the site rather than a full document load.
+        nodes.push(
+          <Link key={key++} href={target.href} className="link-wipe text-champagne">
+            {label}
+          </Link>,
+        );
+      }
+    } else if (token.startsWith("**")) {
       nodes.push(
         <strong key={key++} className="font-medium text-ivory">
           {token.slice(2, -2)}

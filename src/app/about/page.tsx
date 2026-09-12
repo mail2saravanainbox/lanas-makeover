@@ -14,7 +14,7 @@ import TrustSignals from "@/components/sections/TrustSignals";
 import HerMorning from "@/components/sections/HerMorning";
 import Link from "next/link";
 import { citiesProse } from "@/content/site";
-import { locationForCity } from "@/content/locations";
+import { locationForCity, locationHref } from "@/content/locations";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Lana",
@@ -195,7 +195,7 @@ export default async function AboutPage() {
                         opportunity going spare. */}
                     {l ? (
                       <Link
-                        href={`/locations/${l.slug}`}
+                        href={locationHref(l.slug)}
                         className="group block border-t border-champagne/30 pt-5 font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne sm:text-3xl"
                       >
                         {city}

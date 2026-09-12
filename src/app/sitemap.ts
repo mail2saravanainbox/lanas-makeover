@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { content } from "@/lib/content/provider";
 import { absoluteUrl } from "@/lib/seo";
 import { collections } from "@/content/collections";
-import { locations } from "@/content/locations";
+import { locationHref, locations } from "@/content/locations";
 import { rentalCategories } from "@/content/rental-categories";
 
 /**
@@ -30,6 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/services"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/locations"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/rental-jewellery"), priority: 0.9, changeFrequency: "monthly" },
+    /**
+     * The jewellery city page. Same priority as the makeup city pages, for
+     * the same reason: "bridal jewellery on rent in Trichy" is a query with a
+     * business behind it, and this is the only URL written to answer it.
+     */
+    { url: absoluteUrl("/rental-jewellery-trichy"), priority: 0.85, changeFrequency: "monthly" },
     { url: absoluteUrl("/brides"), priority: 0.8, changeFrequency: "monthly" },
     { url: absoluteUrl("/journal"), priority: 0.8, changeFrequency: "weekly" },
     { url: absoluteUrl("/about"), priority: 0.7, changeFrequency: "yearly" },
@@ -47,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      * written to answer it.
      */
     ...locations.map((l) => ({
-      url: absoluteUrl(`/locations/${l.slug}`),
+      url: absoluteUrl(locationHref(l.slug)),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.85,

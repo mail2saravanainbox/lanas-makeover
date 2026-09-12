@@ -108,6 +108,13 @@ export default async function Page() {
               Availability, rental terms and the deposit are confirmed directly, per date and
               per city — send your date with the sets you are drawn to.
             </p>
+            <p className="body-lg mt-5">
+              Renting in the home city has its own page —{" "}
+              <Link href="/rental-jewellery-trichy" className="link-wipe text-champagne">
+                bridal jewellery on rent in Trichy
+              </Link>{" "}
+              — with the whole collection on one screen and what a Trichy muhurtham asks of a set.
+            </p>
             <p className="body-base mt-4">
               {settings.travelNote} Based in {siteSettings.location}.
             </p>

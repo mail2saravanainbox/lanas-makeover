@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { SiteSettings } from "@/lib/types";
 import InstagramLink from "./InstagramLink";
 import SocialCtas from "./SocialCtas";
-import { locationForCity } from "@/content/locations";
+import { locationForCity, locationHref } from "@/content/locations";
 import JasmineMark from "./JasmineMark";
 
 /**
@@ -83,7 +83,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                     <li key={city} className="text-sm text-ivory/65">
                       {l ? (
                         <Link
-                          href={`/locations/${l.slug}`}
+                          href={locationHref(l.slug)}
                           className="tap link-wipe transition-colors duration-[var(--d-base)] hover:text-ivory"
                         >
                           {city}

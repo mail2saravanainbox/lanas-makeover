@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LocationConfig } from "@/content/locations";
-import { locations } from "@/content/locations";
+import { locationHref, locations } from "@/content/locations";
 import type { PortfolioItem, Service, SiteSettings } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
@@ -32,6 +32,13 @@ export default function LocationPage({
   settings: SiteSettings;
 }) {
   const others = locations.filter((l) => l.slug !== config.slug);
+  /**
+   * The base city is the one with no journey in it — `distanceKm: null` is
+   * already how locations.ts says so, and reading it here means the jewellery
+   * link below cannot point at a Trichy page from a Madurai bride if the base
+   * ever moves.
+   */
+  const isBase = config.distanceKm === null;
 
   return (
     <>
@@ -42,7 +49,7 @@ export default function LocationPage({
         breadcrumb={[
           { name: "Home", href: "/" },
           { name: "Locations", href: "/locations" },
-          { name: config.city, href: `/locations/${config.slug}` },
+          { name: config.city, href: locationHref(config.slug) },
         ]}
       />
 
@@ -169,6 +176,41 @@ export default function LocationPage({
         </section>
       )}
 
+      {/* ── The jewellery, which is the other half of the morning ───────────
+          Four city pages linked to no jewellery page at all, which left the
+          second line of business with nothing pointing at it from the pages
+          brides actually land on. The Trichy page gets its own city URL; the
+          other three get the catalogue, because a Chennai-specific jewellery
+          page does not exist and inventing one would be a doorway. */}
+      <section className="shell pt-4">
+        <Reveal>
+          <div className="measure border-l border-champagne/30 pl-5">
+            <p className="body-lg">
+              {isBase ? (
+                <>
+                  Lana also rents bridal jewellery. If the wedding is here, the sets and the face
+                  are settled in one conversation —{" "}
+                  <Link href="/rental-jewellery-trichy" className="link-wipe text-champagne">
+                    bridal jewellery on rent in {config.city}
+                  </Link>
+                  .
+                </>
+              ) : (
+                <>
+                  Lana also rents bridal jewellery — temple gold, American diamond, chokers and
+                  haram. Browse the{" "}
+                  <Link href="/rental-jewellery" className="link-wipe text-champagne">
+                    jewellery available to rent
+                  </Link>{" "}
+                  and send it with your date; how a set reaches {config.city} is confirmed
+                  directly.
+                </>
+              )}
+            </p>
+          </div>
+        </Reveal>
+      </section>
+
       {/* ── The other cities ────────────────────────────────────────────────
           Four pages that never link to each other are four orphans. This is
           the lateral path — for a bride whose venue turns out to be somewhere
@@ -181,7 +223,7 @@ export default function LocationPage({
           {others.map((l) => (
             <li key={l.slug}>
               <Link
-                href={`/locations/${l.slug}`}
+                href={locationHref(l.slug)}
                 className="tap link-wipe font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] hover:text-champagne"
               >
                 {l.city}

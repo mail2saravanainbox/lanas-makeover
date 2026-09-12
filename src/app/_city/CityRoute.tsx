@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { content } from "@/lib/content/provider";
-import { locationBySlug, locations } from "@/content/locations";
+import { locationBySlug, locationHref } from "@/content/locations";
 import { breadcrumbSchema, cityServiceSchema, faqSchema, pageMetadata } from "@/lib/seo";
 import LocationPage from "@/components/sections/LocationPage";
 import JsonLd from "@/components/ui/JsonLd";
 
-/** Four cities, known at build time. Static, like the service pages. */
-export function generateStaticParams() {
-  return locations.map((l) => ({ city: l.slug }));
-}
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ONE CITY PAGE, RENDERED FOUR TIMES
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  These used to be a single `/locations/[city]` dynamic route. The URLs are
+ *  now `/bridal-makeup-<city>` — one path segment each, which a dynamic
+ *  segment cannot express without putting a catch-all at the root of the app
+ *  and letting it shadow every future route in the project.
+ *
+ *  So there are four literal folders, and everything that is actually shared
+ *  lives here. A city page's CONTENT is not shared and never was: it comes
+ *  from `locations.ts`, where each city is written from what is genuinely
+ *  different about a wedding there. What is shared is the wiring — metadata,
+ *  schema, which four photographs lead — and that is all this file is.
+ *
+ *  `_city` is a private folder: the underscore keeps it out of the router.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 
-export const dynamicParams = false;
-export const revalidate = 3600;
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ city: string }>;
-}): Promise<Metadata> {
-  const { city } = await params;
-  const config = locationBySlug(city);
+/** The <title>, the description and the canonical for one city. */
+export function cityMetadata(slug: string): Metadata {
+  const config = locationBySlug(slug);
   if (!config) return {};
 
   return pageMetadata({
@@ -31,13 +38,12 @@ export async function generateMetadata({
      */
     title: `Bridal Makeup Artist in ${config.city}`,
     description: config.intro,
-    path: `/locations/${config.slug}`,
+    path: locationHref(config.slug),
   });
 }
 
-export default async function Page({ params }: { params: Promise<{ city: string }> }) {
-  const { city } = await params;
-  const config = locationBySlug(city);
+export default async function CityRoute({ slug }: { slug: string }) {
+  const config = locationBySlug(slug);
   if (!config) notFound();
 
   const provider = content();
@@ -75,7 +81,7 @@ export default async function Page({ params }: { params: Promise<{ city: string 
           breadcrumbSchema([
             { name: "Home", path: "/" },
             { name: "Locations", path: "/locations" },
-            { name: config.city, path: `/locations/${config.slug}` },
+            { name: config.city, path: locationHref(config.slug) },
           ]),
         ]}
       />
