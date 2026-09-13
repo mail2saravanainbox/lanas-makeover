@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 import { readFileSync } from "node:fs";
 import { collectionForCategory } from "./src/content/collections";
-import { locationHref, locationSlugs, retiredLocationHref } from "./src/content/location-slugs";
+import {
+  locationHref,
+  locationSlugs,
+  retiredLocationHref,
+} from "./src/content/location-slugs";
 import type { PortfolioCategory } from "./src/lib/types";
 
 /**
@@ -31,14 +35,54 @@ import type { PortfolioCategory } from "./src/lib/types";
 function renamedRentalImageRedirects() {
   try {
     const raw = readFileSync("./src/content/rental/rental.json", "utf8");
-    const pairs = (JSON.parse(raw).legacyImageUrls ?? []) as Array<{
-      from?: string;
-      to?: string;
-    }>;
+    const data = JSON.parse(raw) as {
+      legacyImageUrls?: Array<{ from?: string; to?: string }>;
+      items?: Array<{
+        slug?: string;
+        imageUrl?: string;
+        thumbnailUrl?: string;
+      }>;
+    };
 
-    return pairs
-      .filter((p) => p.from && p.to && p.from !== p.to)
-      .map((p) => ({ source: p.from as string, destination: p.to as string, permanent: true }));
+    const explicit = (data.legacyImageUrls ?? []).filter(
+      (p) => p.from && p.to && p.from !== p.to,
+    );
+    if (explicit.length > 0) {
+      return explicit.map((p) => ({
+        source: p.from as string,
+        destination: p.to as string,
+        permanent: true,
+      }));
+    }
+
+    /**
+     * ── THE RENAME NEVER WROTE ITS OWN MAP ───────────────────────────────
+     * `legacyImageUrls` is absent from rental.json — the naming script
+     * records the rename in principle and has not in fact, so all 266 old
+     * paths (133 sets, full size and thumbnail) were answering 404 rather
+     * than redirecting. For a rental catalogue whose front door is Google
+     * Images that is the whole of the indexed surface, gone.
+     *
+     * It is recoverable without the script, because the rename only touched
+     * the FILENAME: the supplier's stock code is still the item's `slug`, so
+     * /rental/<slug>.webp is exactly what the old path was. Derived here
+     * rather than written into the generated JSON, so re-running the import
+     * cannot silently drop it again — and the explicit map still wins the
+     * moment the script starts emitting one.
+     */
+    return (data.items ?? [])
+      .flatMap((i) =>
+        i.slug
+          ? [
+              { from: `/rental/${i.slug}.webp`, to: i.imageUrl },
+              { from: `/rental/${i.slug}-thumb.webp`, to: i.thumbnailUrl },
+            ]
+          : [],
+      )
+      .filter((p): p is { from: string; to: string } =>
+        Boolean(p.from && p.to && p.from !== p.to),
+      )
+      .map((p) => ({ source: p.from, destination: p.to, permanent: true }));
   } catch {
     return [];
   }
@@ -151,7 +195,8 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
         ],
       },
