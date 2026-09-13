@@ -1,3 +1,17 @@
+# ── ENVIRONMENT AND BUILD OUTPUT ──────────────────────────────────────────
+# This file REPLACES .gitignore for the CLI upload; it does not add to it. So
+# everything .gitignore was quietly keeping out of a deploy has to be named
+# here too, and the first of those matters most: a local .env.local would
+# otherwise be uploaded into the deployment and read at build time, where it
+# would silently take precedence over the values set on the Vercel project.
+.env
+.env.*
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+__pycache__/
+
 # Vercel CLI deploys read THIS file, not .gitignore — a direct `vercel --prod`
 # uploads the working directory, so anything large sitting here is uploaded
 # even when git ignores it. 452 MB of PDFs in this folder failed the 100 MB
