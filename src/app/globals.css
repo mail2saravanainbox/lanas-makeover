@@ -36,8 +36,11 @@
   --color-silk-red: #8d2f2a;
   --color-jasmine: #f7f3e9;
 
-  --font-display: var(--font-cormorant), "Cormorant Garamond", "Times New Roman", serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display:
+    var(--font-cormorant), "Cormorant Garamond", "Times New Roman", serif;
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
   --font-tamil: var(--font-noto-tamil), "Noto Serif Tamil", serif;
 
   --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
@@ -278,12 +281,24 @@
 }
 
 @keyframes grain-drift {
-  0% { transform: translate(0, 0); }
-  20% { transform: translate(-3%, 2%); }
-  40% { transform: translate(2%, -3%); }
-  60% { transform: translate(-2%, -2%); }
-  80% { transform: translate(3%, 1%); }
-  100% { transform: translate(0, 0); }
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3%, 2%);
+  }
+  40% {
+    transform: translate(2%, -3%);
+  }
+  60% {
+    transform: translate(-2%, -2%);
+  }
+  80% {
+    transform: translate(3%, 1%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 /* ── Rules & layout helpers ─────────────────────────────────────────────── */
@@ -292,6 +307,41 @@
   height: 1px;
   background: var(--rule);
   border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE STACKING ORDER  (§55)
+   ═══════════════════════════════════════════════════════════════════════════
+   One list, in the order things sit on top of each other. Every z-index in the
+   codebase is one of these numbers, and a new layer goes in this table before
+   it goes in a component — the alternative is the 99999 arms race.
+
+     -3 … -1   decorative      grain, veil texture, parallax plates
+      0        base            page content, in flow
+      2 … 10   raised          sticky section furniture, image captions
+     50        header          the fixed wordmark + menu toggle
+     55        (free)          — was the floating WhatsApp bubble, retired
+     58        action bar      the sticky mobile CTA
+     60        page wipe       route transition curtain
+     65        drawer          the mobile menu
+     70        header, lifted  the toggle while the drawer is open, so the one
+                               control that closes it is never underneath it
+     75        brand veil      the opening animation, homepage first visit
+     80        lightbox        portfolio viewer, skip link
+     ——        <dialog>        the filter sheet and the jewellery viewer are
+                               native modals: they live in the browser's TOP
+                               LAYER, above every number in this table, and
+                               they are not given a z-index at all. That is the
+                               reason both are <dialog> and not a div.
+
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The smallest type on the site that carries information rather than
+   decoration — counters, chip counts, progress. 13px, never less: §64 puts
+   the floor at 13–14px and the ritual counter had drifted to 11.5. */
+.text-data-sm {
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .shell {
@@ -696,7 +746,6 @@ html.lm-veiled #lm-veil {
   will-change: clip-path;
 }
 
-
 /* The kaleidoscope. The parent owns the zoom; the quadrants own the pan, and
    they all run the SAME pan so the symmetry survives the movement. */
 html.lm-veiled .lm-veil__silk {
@@ -766,36 +815,48 @@ html.lm-veiled #lm-veil::after {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(125% 95% at 50% 42%, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.5));
+  background: radial-gradient(
+    125% 95% at 50% 42%,
+    rgba(0, 0, 0, 0.06),
+    rgba(0, 0, 0, 0.5)
+  );
 }
 
 @keyframes veil-sheen {
-  0% { transform: translate3d(-40%, 0, 0); }
-  100% { transform: translate3d(40%, 0, 0); }
+  0% {
+    transform: translate3d(-40%, 0, 0);
+  }
+  100% {
+    transform: translate3d(40%, 0, 0);
+  }
 }
 
 /* The movement. Stronger and faster than the first pass: in the reference the
    folds are travelling the whole time, and a drift you have to look for is a
    drift that is not doing its job. */
 @keyframes veil-flow {
-  from { transform: scale(1.04); }
-  to { transform: scale(1.16); }
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1.16);
+  }
 }
 
 /* Both halves pan identically, so the fabric morphs without the mirror seam
    ever drifting off the centre line. */
 @keyframes veil-pan {
-  from { background-position: center 18%; }
-  to { background-position: center 76%; }
+  from {
+    background-position: center 18%;
+  }
+  to {
+    background-position: center 76%;
+  }
 }
 
 html.lm-veiled #lm-veil[data-veil="out"] {
   clip-path: inset(0 0 100% 0);
 }
-
-
-
-
 
 /* Belt and braces: even if the guard somehow added the class, reduced motion
    still means no veil. */

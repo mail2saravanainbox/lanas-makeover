@@ -150,3 +150,71 @@ The ones that guard this work specifically:
 - **no text under the contrast minimum**
 - no page scrolls horizontally at 390 px
 - no `wa.me` link exists while no number is configured
+
+---
+
+# Phase 7 — the mobile reconstruction brief
+
+A second pass against a written brief (header, hamburger, menu, sticky CTA,
+ritual, filters, jewellery, services, FAQ, footer, type, motion, a11y,
+performance). Phases 0–6 above had already taken the length out; this phase was
+about the controls themselves.
+
+Measured at 320 / 360 / 375 / 390 / 414 / 430 unless stated.
+
+## What was actually wrong
+
+| | before | after |
+|---|---|---|
+| Hamburger bars in the markup | **2** | **3** |
+| Hamburger target | 44 × 44 | **48 × 48** |
+| `aria-controls` on the toggle | absent | present |
+| Controls in the mobile header | 4 | **2** |
+| WhatsApp controls on screen at once (phone) | 2 | **1** |
+| Ritual controls | 8 thumbnails | **2 arrows + counter + dots** |
+| Ritual autoplay | 3.5s | **none** |
+| /services | 9.5 screens | **4.7** |
+| Jewellery hub | 4 room cards | **the collection, 133 sets** |
+| Footer | 1.62 screens | **1.50** |
+| Menu links reachable in landscape | 7 of 10 | **10 of 10** |
+| Smallest informational type | 11.5px @ 2.81:1 | **13px, ≥ 4.5:1** |
+
+## The three that were real defects, not preferences
+
+- **The hamburger had two bars.** Not clipped, not transformed away, not an
+  opacity bug — the markup drew a top rule and a bottom rule at 1px each in an
+  18 × 9px box, and there was never a middle one.
+
+- **`hidden lg:flex` is not "not rendered".** Removing WhatsApp and Instagram
+  from the phone's header by hiding them left both anchors in the DOM and in
+  the accessibility tree, so a screen reader on a phone still met a WhatsApp
+  link in the header — the same control the sticky bar was already carrying.
+  `WideOnly` (new, `src/components/ui/WideOnly.tsx`) unmounts the half that is
+  not on screen. Same lesson as `useIsWide`, one component further on.
+
+- **266 rental image URLs were answering 404.** Pre-existing, found by the
+  suite, unrelated to this brief. `next.config.ts` builds its redirect map from
+  `rental.json.legacyImageUrls`, and the naming script never wrote that key —
+  so every path that existed before the photographs were renamed was dead. For
+  a catalogue whose front door is Google Images, that is the indexed surface.
+  Recovered by deriving the old path from the item's `slug`, which still *is*
+  the supplier's stock code; the explicit map wins the moment the script starts
+  emitting one.
+
+## What a test run is worth
+
+`npx playwright test` — the suite runs with **no env vars**, which is the state
+the repo ships in. Nine tests encoded Phase 0–6 behaviour that this brief
+deliberately supersedes (eight ritual thumbnails, four jewellery room cards,
+"Filters", the channels in the phone's header, a six-card services index).
+Those were rewritten to assert the new behaviour, not deleted — each one still
+guards the thing it was written to guard:
+
+- the ritual test still checks the live region, the caption and that exactly
+  one frame is opaque; it now also checks 48px targets and the disabled ends
+- the jewellery test still checks that no count is ever typed; it now reads the
+  total the hub opens with and asserts it is the sum of the four rooms
+- `no control is rendered twice` was keyed by scope **tag name**, so a site
+  header's "Locations" nav link and a page header's breadcrumb "Locations"
+  collided as one key. Keyed by element identity now — it was reporting two
+  different controls in two different places as a duplicate.

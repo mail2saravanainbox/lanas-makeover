@@ -69,6 +69,15 @@ export default function PortfolioFilter({
   resultCount: number;
 }) {
   const [sheet, setSheet] = useState(false);
+  /**
+   * Where she was when she pressed Filter.
+   *
+   * Read on the press, not in the effect that opens the sheet. Between the two
+   * the page moves — measured at 840px → 341px — and an effect that reads
+   * `window.scrollY` for itself pins the wrong place and restores the wrong
+   * place. The only position that is certainly hers is the one at the tap.
+   */
+  const restoreY = useRef(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const sheetId = useId();
 
@@ -80,9 +89,70 @@ export default function PortfolioFilter({
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
-    if (sheet && !el.open) el.showModal();
-    if (!sheet && el.open) el.close();
+
+    if (!sheet) {
+      if (el.open) el.close();
+      return;
+    }
+    if (el.open) return;
+
+    /**
+     * ── THE PAGE MUST NOT MOVE UNDER THE SHEET (§34) ──────────────────────
+     * `showModal()` pulls focus into the dialog, and the browser scrolls an
+     * element into view when it receives focus. A bride who had scrolled to
+     * the fortieth photograph and pressed Filter was returned to roughly the
+     * fourth — measured: 1400px → 341px — and closing the sheet left her
+     * there, because nothing ever scrolled back.
+     *
+     * Pinning the body holds her place while the sheet is up, and the exact
+     * pixel is restored when it comes down. The same technique as the menu
+     * drawer, and the same reason: `overflow: hidden` alone does not hold on
+     * iOS Safari.
+     */
+    const y = restoreY.current;
+    const { body } = document;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
+    // Lenis keeps its own scroll target and writes it every frame; left
+    // running it fights the pin and lands the page somewhere between the two.
+    window.__lenis?.stop();
+    el.showModal();
+
+    return () => {
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      window.scrollTo(0, y);
+      /**
+       * Lenis keeps its own idea of where the page is, and `start()` writes
+       * that value back on the next frame — which undid the line above and
+       * dropped the page to wherever Lenis last was. Telling it the position
+       * immediately, after the native scroll, is what makes the restore stick.
+       */
+      window.__lenis?.scrollTo(y, { immediate: true, force: true });
+      window.__lenis?.start();
+    };
   }, [sheet]);
+
+  /**
+   * `close()` fires whether it came from the X, the backdrop, Escape or the
+   * Apply button, so React's state is synced from the dialog rather than from
+   * each of the four call sites — otherwise Escape leaves `sheet` true and the
+   * body stays pinned with no sheet on screen.
+   */
+  useEffect(() => {
+    const el = dialogRef.current;
+    if (!el) return;
+    const onClose = () => setSheet(false);
+    el.addEventListener("close", onClose);
+    return () => el.removeEventListener("close", onClose);
+  }, []);
 
   if (axes.length === 0) return null;
 
@@ -134,7 +204,10 @@ export default function PortfolioFilter({
           {axes.length > 1 && (
             <button
               type="button"
-              onClick={() => setSheet(true)}
+              onClick={() => {
+                restoreY.current = window.scrollY;
+                setSheet(true);
+              }}
               aria-haspopup="dialog"
               className={cx(
                 "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[0.7rem] uppercase tracking-[0.2em] transition-colors duration-[var(--d-base)]",
@@ -143,7 +216,9 @@ export default function PortfolioFilter({
                   : "border-ivory/20 text-ivory/60",
               )}
             >
-              Filters
+              {/* §70 — "Filters" names a feature; "Filter the looks" names
+                  what pressing it does, to the thing she came here for. */}
+              Filter the looks
               {count > 0 && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-champagne px-1 font-mono text-[0.65rem] text-ink">
                   {count}

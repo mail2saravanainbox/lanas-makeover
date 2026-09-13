@@ -8,6 +8,7 @@ import { track } from "@/lib/analytics";
 import MobileNav from "./MobileNav";
 import BrandMark from "./BrandMark";
 import SocialCtas from "./SocialCtas";
+import WideOnly from "./WideOnly";
 import { onScrollY } from "@/lib/motion/scheduler";
 
 export interface NavLink {
@@ -32,14 +33,24 @@ const BASE_LINKS: NavLink[] = [
   // makeup work — a bride looking to rent a haram will not find it under
   // "Services", and most of them arrive looking for exactly that.
   { href: "/rental-jewellery", label: "Jewellery" },
+  // Four city pages exist and rank; the menu is where a bride looks for
+  // "do you come to Madurai" before she looks anywhere else (§7).
+  { href: "/locations", label: "Locations" },
   { href: "/about", label: "About" },
   { href: "/journal", label: "Journal" },
   { href: "/faq", label: "FAQ" },
 ];
 
+/** The drawer's id, shared so `aria-controls` cannot point at nothing. */
+export const MENU_ID = "mobile-menu";
+
 export function navLinks(hasBrides: boolean): NavLink[] {
   if (!hasBrides) return BASE_LINKS;
-  return [BASE_LINKS[0], { href: "/brides", label: "Brides" }, ...BASE_LINKS.slice(1)];
+  return [
+    BASE_LINKS[0],
+    { href: "/brides", label: "Brides" },
+    ...BASE_LINKS.slice(1),
+  ];
 }
 
 /**
@@ -87,8 +98,13 @@ export default function Nav({
 
       <header
         className={cx(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          condensed
+          "fixed inset-x-0 top-0 transition-[background-color,backdrop-filter,border-color] duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          // --z-header, and --z-header-over-drawer while the menu is open.
+          // The toggle is ONE control that morphs, so it has to stay above the
+          // curtain it opened; a second close button inside the drawer is a
+          // second thing to find in the same corner.
+          menuOpen ? "z-[70]" : "z-50",
+          condensed && !menuOpen
             ? "border-b border-ivory/10 bg-ink/70 backdrop-blur-xl"
             : "border-b border-transparent bg-transparent",
         )}
@@ -107,7 +123,8 @@ export default function Nav({
 
           <ul className="hidden items-center gap-5 lg:flex xl:gap-8">
             {links.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const active =
+                pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <li key={link.href}>
                   <Link
@@ -115,7 +132,9 @@ export default function Nav({
                     aria-current={active ? "page" : undefined}
                     className={cx(
                       "link-wipe block whitespace-nowrap py-3 text-[0.72rem] font-medium uppercase tracking-[0.18em] transition-colors duration-[var(--d-base)] xl:text-[0.8rem] xl:tracking-[0.24em]",
-                      active ? "text-champagne" : "text-ivory/70 hover:text-ivory",
+                      active
+                        ? "text-champagne"
+                        : "text-ivory/70 hover:text-ivory",
                     )}
                   >
                     {link.label}
@@ -126,16 +145,24 @@ export default function Nav({
           </ul>
 
           <div className="flex items-center gap-3">
-            {/* ── THE TWO CHANNELS ─────────────────────────────────────
-                Most of this site's traffic arrives from Instagram, on a
-                phone, and most of what follows an enquiry happens on
-                WhatsApp. Both are here at every width — a 44px icon each,
-                names carried by aria-label so they do not compete with the
-                booking CTA beside them.
+            {/* ── THE TWO CHANNELS — DESKTOP ONLY (§5) ─────────────────
+                They used to sit here at every width. At 390px that put four
+                controls in one row — wordmark, WhatsApp, Instagram, menu —
+                and at 320px the wordmark had 92px to live in. Worse, the
+                WhatsApp icon here and the WhatsApp button in the sticky bar
+                are the same control on screen at the same time.
 
-                Shared with the footer so the two cannot drift. WhatsApp
-                renders only when a real number is configured. */}
-            <SocialCtas placement="nav" />
+                Below `lg` the sticky bar carries WhatsApp and the menu
+                carries Instagram, each once. The mobile header is a wordmark
+                and a way in, and nothing else.
+
+                WideOnly rather than `hidden lg:flex`: hiding it leaves both
+                anchors in the DOM and in the accessibility tree, so a screen
+                reader on a phone still met a WhatsApp link in the header —
+                the same control the sticky bar is already carrying. */}
+            <WideOnly>
+              <SocialCtas placement="nav" className="hidden lg:flex" />
+            </WideOnly>
 
             {/* ── DESKTOP ONLY ─────────────────────────────────────────────
                 Below `lg` the sticky action bar carries this exact link, and
@@ -159,16 +186,51 @@ export default function Nav({
               {cta}
             </Link>
 
+            {/* ── THE MENU TOGGLE (§6) ──────────────────────────────────
+                It had two bars. Not clipped, not transformed away, not an
+                opacity bug — the markup drew a top rule and a bottom rule and
+                there was never a middle one, at 1px each inside an 18 × 9px
+                box. On a 390px phone in daylight that is not a hamburger;
+                it is two hairlines.
+
+                Now: three bars, 2px, in a 22 × 16px box inside a 48 × 48
+                target, and it morphs to a cross in 220ms rather than handing
+                the closing to a second button in the same corner of the
+                drawer. One control, one place, one accessible name that says
+                which way it goes. */}
             <button
               type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Open menu"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
-              className="group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ivory/20 transition-colors duration-[var(--d-base)] hover:border-champagne/60 lg:hidden"
+              aria-controls={MENU_ID}
+              className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-ivory/20 transition-colors duration-[var(--d-base)] hover:border-champagne/60 lg:hidden"
             >
-              <span className="relative block h-[9px] w-[18px]">
-                <span className="absolute left-0 top-0 h-px w-full bg-ivory transition-transform duration-[var(--d-base)] group-hover:translate-y-[1px]" />
-                <span className="absolute bottom-0 left-0 h-px w-full bg-ivory transition-transform duration-[var(--d-base)] group-hover:-translate-y-[1px]" />
+              <span aria-hidden="true" className="relative block h-4 w-[22px]">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className={cx(
+                      "absolute left-0 block h-[2px] w-full rounded-full bg-ivory",
+                      // 220ms, and the middle bar fades on its own curve so
+                      // the two outer bars are already rotating as it goes.
+                      "transition-[transform,opacity] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
+                    )}
+                    style={
+                      menuOpen
+                        ? [
+                            { top: "7px", transform: "rotate(45deg)" },
+                            {
+                              top: "7px",
+                              opacity: 0,
+                              transform: "scaleX(0.4)",
+                            },
+                            { top: "7px", transform: "rotate(-45deg)" },
+                          ][i]
+                        : [{ top: 0 }, { top: "7px" }, { top: "14px" }][i]
+                    }
+                  />
+                ))}
               </span>
             </button>
           </div>
@@ -178,7 +240,6 @@ export default function Nav({
       <MobileNav
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        brand={brand}
         cta={cta}
         links={links}
         whatsapp={whatsapp}

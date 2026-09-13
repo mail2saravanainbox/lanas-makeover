@@ -49,8 +49,13 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="relative border-t border-ivory/10 bg-ink text-ivory">
-      <div className="shell py-20 sm:py-28">
-        <div className="grid gap-16 lg:grid-cols-[1.4fr_2fr]">
+      {/* ── COMPACT BELOW lg (§47) ─────────────────────────────────────────
+          The footer ran to 1.6 screens on a phone — a desktop rhythm of 80px
+          bands and 64px gaps, at the end of a page a bride has already
+          finished reading. The columns and every link are unchanged; only the
+          air between them is a phone's rather than a desktop's. */}
+      <div className="shell py-12 sm:py-20 lg:py-28">
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_2fr] lg:gap-16">
           <div>
             {/* The positioning line, verbatim, in the same words as the hero. */}
             <p className="eyebrow mb-6">Bridal Makeup &amp; Hair Artist</p>
@@ -65,7 +70,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-3 lg:gap-10">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-7 lg:grid-cols-3 lg:gap-10">
             {/* §3 — the four service locations, stated on every page of the
                 site. One business, four areas served: the heading says so, so
                 the list cannot be read as four branches. */}

@@ -879,7 +879,9 @@ test.describe("the sticky action bar", () => {
  * Returns the surface to query chips in, and a way to put it away again.
  */
 async function filterSurface(page: Page) {
-  const open = page.getByRole("button", { name: /^Filters/ });
+  // §70 — the control is unchanged; the words are. "Filters" named a feature,
+  // "Filter the looks" names what pressing it does to what she came to see.
+  const open = page.getByRole("button", { name: /^Filter the looks/ });
   if (await open.isVisible().catch(() => false)) {
     await open.click();
     const sheet = page.locator("dialog.lm-sheet");
@@ -1195,14 +1197,23 @@ test.describe("the sticky action bar behaviour", () => {
     expect(new Set(links.map((h) => h.split("?")[0])).size).toBe(1);
   });
 
-  test("both channels are in the header and the footer", async ({ page }) => {
+  /**
+   * ── THE CHANNELS MOVED OFF THE PHONE'S HEADER (§5) ───────────────────────
+   * They used to sit in the header at every width. At 390px that put four
+   * controls in one row — wordmark, WhatsApp, Instagram, menu — and the
+   * WhatsApp icon there was the same control as the WhatsApp button in the
+   * sticky bar, on screen at the same time. Below lg the bar carries WhatsApp
+   * and the drawer carries Instagram, each exactly once.
+   */
+  test("the channels are reachable once each, and not in the phone's header", async ({
+    page,
+  }) => {
     await page.goto("/");
+    const wide = (page.viewportSize()?.width ?? 0) >= 1024;
 
-    // The header has room for exactly one of each — two 44px icons beside the
-    // wordmark and the menu button, which is what fits at 390px.
     const header = page.locator("header");
-    await expect(header.locator('a[href*="wa.me"]')).toHaveCount(1);
-    await expect(header.locator('a[href*="instagram.com"]')).toHaveCount(1);
+    await expect(header.locator('a[href*="wa.me"]')).toHaveCount(wide ? 1 : 0);
+    await expect(header.locator('a[href*="instagram.com"]')).toHaveCount(wide ? 1 : 0);
 
     // The footer carries the labelled pair, and the handle underneath it —
     // "Instagram" is the control, "@lanasmakeover" is how she finds the
@@ -1211,10 +1222,14 @@ test.describe("the sticky action bar behaviour", () => {
     await expect(footer.locator('a[href*="wa.me"]')).toHaveCount(1);
     expect(await footer.locator('a[href*="instagram.com"]').count()).toBeGreaterThanOrEqual(1);
 
-    // Both regions offer a pressable control, not just a line of text.
-    for (const region of [header, footer]) {
+    // Whichever regions carry it, it is a pressable control, not a line of text.
+    for (const region of wide ? [header, footer] : [footer]) {
       const box = await region.locator('a[href*="wa.me"]').boundingBox();
       expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(44);
+    }
+    // And on a phone it is in the bar instead — the one place it may be.
+    if (!wide) {
+      await expect(page.locator('[data-action-bar] a[href*="wa.me"]')).toHaveCount(1);
     }
   });
 });
@@ -1266,19 +1281,30 @@ test.describe("the ritual, on a phone", () => {
     await section.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
 
-    const thumbs = section.locator('button[aria-label^="Stage "]');
-    expect(await thumbs.count(), "one thumbnail per stage").toBe(8);
+    /**
+     * ── TWO CONTROLS, NOT EIGHT (§17) ──────────────────────────────────────
+     * This was a scroll-snap rail of eight numbered thumbnails. Eight buttons
+     * at once is eight decisions offered for a sequence that has an order,
+     * there were no previous/next controls at all, and it autoplayed over its
+     * own captions. Now: a counter, eight dots, and two arrows.
+     */
+    const controls = section.locator("button");
+    expect(await controls.count(), "previous and next, and nothing else").toBe(2);
 
-    // Every one of them is a real tap target (§ Phase 6, checked early here
-    // because this rail is the densest set of controls on the homepage).
-    for (const box of await thumbs.evaluateAll((els) =>
-      els.map((e) => e.getBoundingClientRect()),
-    )) {
-      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    const next = section.getByRole("button", { name: "Next stage" });
+    const prev = section.getByRole("button", { name: "Previous stage" });
+
+    // 48px per §6/§57, and stage one cannot go backwards.
+    for (const b of [next, prev]) {
+      const box = await b.boundingBox();
+      expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(48);
     }
+    await expect(prev).toBeDisabled();
 
-    await thumbs.nth(5).click();
-    await page.waitForTimeout(700);
+    for (let i = 0; i < 5; i++) {
+      await next.click();
+      await page.waitForTimeout(450);
+    }
 
     // The live region says where she is …
     await expect(section.locator('[aria-live="polite"]')).toHaveText(/Stage 6 of 8/);
@@ -1327,8 +1353,21 @@ test.describe("the inner pages, on a phone", () => {
     await skipVeil(page);
     await page.goto("/services", { waitUntil: "networkidle" });
 
-    // Every service still names itself and links to its own page …
-    await expect(page.getByRole("link", { name: "View service" })).toHaveCount(6);
+    /**
+     * ── SIX ROWS, ALL CLOSED (§25–§27) ────────────────────────────────────
+     * The index used to give each service a 4:5 photograph, a name, a summary
+     * and a link — nine and a half screens to choose between six things. Now
+     * it is six rows she can see at once, and the photograph moves inside
+     * whichever she opens.
+     */
+    const rows = page.locator('button[aria-controls^="svc-panel-"]');
+    await expect(rows).toHaveCount(6);
+    expect(
+      await rows.evaluateAll((els) =>
+        els.filter((e) => e.getAttribute("aria-expanded") === "true").length,
+      ),
+      "every row starts closed",
+    ).toBe(0);
 
     // … but its prose and its Includes list are not rendered here as well.
     // They are on /services/<slug>, which is one tap away and is where a
@@ -1339,6 +1378,20 @@ test.describe("the inner pages, on a phone", () => {
       ),
       "Includes lists painting on the index",
     ).toBe(0);
+
+    // Opening one shows its own page's link, and only its own; opening a
+    // second closes the first (§26).
+    await rows.first().click();
+    await page.waitForTimeout(300);
+    await expect(page.getByRole("link", { name: "View service" })).toHaveCount(1);
+    await rows.nth(2).click();
+    await page.waitForTimeout(300);
+    expect(
+      await rows.evaluateAll((els) =>
+        els.filter((e) => e.getAttribute("aria-expanded") === "true").length,
+      ),
+      "one panel open at a time",
+    ).toBe(1);
 
     /**
      * ONE BOOKING CONTROL, NOT SIX.
@@ -1386,7 +1439,9 @@ test.describe("the inner pages, on a phone", () => {
     await skipVeil(page);
     await page.goto("/portfolio", { waitUntil: "networkidle" });
 
-    const open = page.getByRole("button", { name: /^Filters/ });
+    // §70 — the control is unchanged; the words are. "Filters" named a feature,
+  // "Filter the looks" names what pressing it does to what she came to see.
+  const open = page.getByRole("button", { name: /^Filter the looks/ });
     await expect(open).toBeVisible();
 
     // Closed, the sheet's chips are display:none and so are not a second copy
@@ -2099,6 +2154,17 @@ test.describe("rental jewellery", () => {
       .allTextContents();
     expect(counts).toHaveLength(ROOMS.length);
     for (const c of counts) expect(Number(c.split(" ")[0])).toBeGreaterThan(0);
+
+    // §28 — the collection is ON the hub now, not one tap behind a room card.
+    expect(await page.locator("main li img").count()).toBeGreaterThan(12);
+
+    // And the total it opens with is the sum of the rooms, so the headline
+    // number cannot drift from the catalogue either.
+    const totalText =
+      (await page.locator("main").getByText(/^\d+ bridal sets?$/).first().textContent()) ?? "";
+    expect(Number(totalText.replace(/\D/g, ""))).toBe(
+      counts.reduce((a, c) => a + Number(c.split(" ")[0]), 0),
+    );
   });
 
   for (const { slug, name } of ROOMS) {
@@ -2281,11 +2347,12 @@ test.describe("the jewellery on the homepage", () => {
     const label = await strip.getByRole("link", { name: /All \d+ sets/ }).textContent();
     const claimed = Number((label ?? "").replace(/\D/g, ""));
     await page.goto("/rental-jewellery", { waitUntil: "networkidle" });
-    const counts = await page
-      .locator("main")
-      .getByText(/^\d+ sets$/)
-      .allTextContents();
-    const actual = counts.reduce((a, c) => a + Number(c.split(" ")[0]), 0);
+    // The hub opens with the total rather than printing four room counts for
+    // the test to add up (§28). Same guarantee, different line to read it off.
+    const totalText =
+      (await page.locator("main").getByText(/^\d+ bridal sets?$/).first().textContent()) ?? "";
+    const actual = Number(totalText.replace(/\D/g, ""));
+    expect(actual, "the hub states no total").toBeGreaterThan(0);
     expect(claimed, "the homepage claims a different number from the catalogue").toBe(actual);
   });
 });
@@ -2333,6 +2400,7 @@ test("no control is rendered twice in the same place", async ({ page }) => {
 
     const dupes = await page.evaluate(() => {
       const seen = new Map<string, number>();
+      const scopeIds = new Map<Element, number>();
       for (const a of document.querySelectorAll("main a, header a")) {
         const r = a.getBoundingClientRect();
         if (r.width < 4 || r.height < 4) continue;
@@ -2345,8 +2413,19 @@ test("no control is rendered twice in the same place", async ({ page }) => {
         const label = (a.textContent ?? "").trim().toLowerCase().replace(/[→\s]+/g, " ").trim();
         const href = a.getAttribute("href");
         if (!label || !href) continue;
+        /**
+         * Keyed by the scope ELEMENT, not its tag name. Keyed by tag, the site
+         * header's "Locations" nav link and a page header's breadcrumb
+         * "Locations" collided as one key — two different controls in two
+         * different places, reported as a duplicate.
+         */
         const scope = a.closest("section,header") ?? document.body;
-        const key = `${scope.tagName}${scope.getAttribute("aria-labelledby") ?? ""}|${href}|${label}`;
+        let sid = scopeIds.get(scope);
+        if (sid === undefined) {
+          sid = scopeIds.size;
+          scopeIds.set(scope, sid);
+        }
+        const key = `${sid}|${href}|${label}`;
         seen.set(key, (seen.get(key) ?? 0) + 1);
       }
       return [...seen.entries()]

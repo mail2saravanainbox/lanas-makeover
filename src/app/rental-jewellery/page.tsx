@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { content } from "@/lib/content/provider";
 import { rentalCategories } from "@/content/rental-categories";
-import { rentalItems, rentalItemsFor } from "@/content/rental";
+import { rentalItems } from "@/content/rental";
 import { citiesProse, siteSettings } from "@/content/site";
 import { breadcrumbSchema, pageMetadata, rentalServiceSchema } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
 import Reveal from "@/components/ui/Reveal";
 import JsonLd from "@/components/ui/JsonLd";
 import ClosingCTA from "@/components/sections/ClosingCTA";
+import RentalCollection from "@/components/rental/RentalCollection";
 
 export const metadata: Metadata = pageMetadata({
   title: "Bridal Jewellery Rental",
@@ -30,7 +30,6 @@ export const revalidate = 3600;
  */
 export default async function Page() {
   const settings = await content().getSiteSettings();
-  const total = rentalItems().length;
 
   return (
     <>
@@ -47,56 +46,21 @@ export default async function Page() {
       <PageHeader
         eyebrow="Jewellery rental"
         titleLines={["The jewellery,", "on rent."]}
-        intro={`${total} bridal sets to rent across ${citiesProse()} — temple jewellery, American diamond, chokers and haram. The makeup and the jewellery from the same morning, planned together.`}
+        intro={`Temple jewellery, American diamond, chokers and haram — to rent across ${citiesProse()}. The makeup and the jewellery from the same morning, planned together.`}
         breadcrumb={[
           { name: "Home", href: "/" },
           { name: "Jewellery Rental", href: "/rental-jewellery" },
         ]}
       />
 
+      {/* ── THE COLLECTION, NOT A MENU OF ROOMS (§28) ────────────────────
+          Four category cards meant a bride had to choose a room before she
+          saw a single necklace. The chips do the same job in one row, and the
+          jewellery is the first thing on the page. The four category pages
+          are untouched and still linked — see RentalCollection. */}
+      <RentalCollection categories={rentalCategories} items={rentalItems()} />
+
       <div className="shell pb-20">
-        <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2">
-          {rentalCategories.map((c, i) => {
-            const items = rentalItemsFor(c.key);
-            const cover = items[0];
-            return (
-              <li key={c.slug}>
-                <Reveal delay={(i % 2) * 110} blur>
-                  <Link href={`/rental-jewellery/${c.slug}`} data-cursor="view" className="group block">
-                    {/* 5:8 and contain, for the same reason as the grid:
-                        a 1:2 frame in a 4:5 box loses a third of the necklace. */}
-                    <div className="relative aspect-[5/8] w-full overflow-hidden bg-ink-2">
-                      {cover && (
-                        <Image
-                          src={cover.thumbnailUrl}
-                          alt={cover.alt}
-                          fill
-                          sizes="(max-width: 640px) 92vw, 46vw"
-                          placeholder={cover.blurDataURL ? "blur" : undefined}
-                          blurDataURL={cover.blurDataURL}
-                          className="object-contain transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none"
-                        />
-                      )}
-                    </div>
-
-                    <div className="mt-5 flex items-baseline justify-between gap-4">
-                      <h2 className="font-display text-2xl text-ivory transition-colors duration-[var(--d-base)] group-hover:text-champagne">
-                        {c.name}
-                      </h2>
-                      {/* Counted from the catalogue, never typed — the number
-                          cannot outlive the photographs behind it. */}
-                      <span className="shrink-0 text-[0.75rem] uppercase tracking-[0.2em] text-champagne/70">
-                        {items.length} sets
-                      </span>
-                    </div>
-                    <p className="body-base mt-3 max-w-md">{c.intro}</p>
-                  </Link>
-                </Reveal>
-              </li>
-            );
-          })}
-        </ul>
-
         {/* ── WHAT THIS PAGE CANNOT TELL HER ──────────────────────────────
             Rental terms, deposit, how long a set is held, whether it travels
             with the artist. Every one of those is a commercial fact only Lana
@@ -105,15 +69,20 @@ export default async function Page() {
         <Reveal delay={280}>
           <div className="measure mt-16 border-l border-champagne/30 pl-5">
             <p className="body-lg">
-              Availability, rental terms and the deposit are confirmed directly, per date and
-              per city — send your date with the sets you are drawn to.
+              Availability, rental terms and the deposit are confirmed directly,
+              per date and per city — send your date with the sets you are drawn
+              to.
             </p>
             <p className="body-lg mt-5">
               Renting in the home city has its own page —{" "}
-              <Link href="/rental-jewellery-trichy" className="link-wipe text-champagne">
+              <Link
+                href="/rental-jewellery-trichy"
+                className="link-wipe text-champagne"
+              >
                 bridal jewellery on rent in Trichy
               </Link>{" "}
-              — with the whole collection on one screen and what a Trichy muhurtham asks of a set.
+              — with the whole collection on one screen and what a Trichy
+              muhurtham asks of a set.
             </p>
             <p className="body-base mt-4">
               {settings.travelNote} Based in {siteSettings.location}.

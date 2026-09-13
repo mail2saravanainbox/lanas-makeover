@@ -73,7 +73,10 @@ export default function PortfolioGrid({
 
   const axes = useMemo(() => availableFacets(items), [items]);
 
-  const filtered = useMemo(() => filterByFacets(items, selection), [items, selection]);
+  const filtered = useMemo(
+    () => filterByFacets(items, selection),
+    [items, selection],
+  );
 
   /** AND across axes, OR within one — see `matches` in facets.ts. */
   const toggleFacet = useCallback((axis: FacetKey, value: string) => {
@@ -138,27 +141,39 @@ export default function PortfolioGrid({
    * The face is never distorted — this is light on a surface, not displacement.
    */
   function sweep(e: React.PointerEvent<HTMLUListElement>) {
-    const tile = (e.target as Element | null)?.closest<HTMLElement>("[data-tile]");
+    const tile = (e.target as Element | null)?.closest<HTMLElement>(
+      "[data-tile]",
+    );
     if (!tile) return;
     const r = tile.getBoundingClientRect();
-    tile.style.setProperty("--mx", `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
-    tile.style.setProperty("--my", `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+    tile.style.setProperty(
+      "--mx",
+      `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`,
+    );
+    tile.style.setProperty(
+      "--my",
+      `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`,
+    );
   }
 
   // ── Empty state (§43) ──────────────────────────────────────────────────
   if (items.length === 0) {
     return (
       <div className="shell py-24 text-center">
-        <p className="display-sm text-ivory/70">The gallery is being prepared.</p>
+        <p className="display-sm text-ivory/70">
+          The gallery is being prepared.
+        </p>
         <p className="body-base mx-auto mt-4 max-w-md">
-          New work is added as each wedding season closes. In the meantime, the most recent
-          looks are on Instagram.
+          New work is added as each wedding season closes. In the meantime, the
+          most recent looks are on Instagram.
         </p>
         <a
           href={siteSettings.instagram}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => track("instagram_click", { placement: "portfolio-empty" })}
+          onClick={() =>
+            track("instagram_click", { placement: "portfolio-empty" })
+          }
           className="btn mt-8"
         >
           {siteSettings.instagramHandle}
@@ -180,14 +195,21 @@ export default function PortfolioGrid({
       )}
 
       <div className="shell">
-        <ul onPointerMove={sweep} className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5">
+        <ul
+          onPointerMove={sweep}
+          className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5"
+        >
           {visible.map((item, i) => {
             const weight = item.weight ?? "standard";
             // Editorial rhythm: nudge every third item down a little.
-            const offset = i % 3 === 1 ? "md:mt-14" : i % 5 === 3 ? "md:mt-8" : "";
+            const offset =
+              i % 3 === 1 ? "md:mt-14" : i % 5 === 3 ? "md:mt-8" : "";
 
             return (
-              <li key={item.id} className={cx(SPAN[weight], offset, "relative")}>
+              <li
+                key={item.id}
+                className={cx(SPAN[weight], offset, "relative")}
+              >
                 {/* h-full all the way down. The <li> carries the aspect ratio,
                     but Reveal and ParallaxFrame are plain divs at height:auto —
                     without this the button's h-full resolves against nothing and
@@ -205,12 +227,19 @@ export default function PortfolioGrid({
                       data-cursor="view"
                       onClick={() => {
                         setOpen(filtered.indexOf(item));
-                        track("portfolio_view", { slug: item.slug, category: item.category });
+                        track("portfolio_view", {
+                          slug: item.slug,
+                          category: item.category,
+                        });
                       }}
                       aria-label={`View ${item.title}`}
-                      data-annotate={CATEGORY_ANNOTATION[item.category] ?? "View look"}
+                      data-annotate={
+                        CATEGORY_ANNOTATION[item.category] ?? "View look"
+                      }
                       className="annotate group relative block h-full w-full overflow-hidden"
-                      style={{ transform: "translate3d(0, calc(var(--sy) * 18px), 0)" }}
+                      style={{
+                        transform: "translate3d(0, calc(var(--sy) * 18px), 0)",
+                      }}
                     >
                       <div className="absolute inset-0 transition-transform duration-[var(--d-slow)] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.055]">
                         <EditorialImage
@@ -258,11 +287,32 @@ export default function PortfolioGrid({
           })}
         </ul>
 
-        {shown < filtered.length && (
-          <div className="mt-20 text-center">
-            <button type="button" onClick={() => setShown((s) => s + PAGE)} className="btn btn-ghost">
-              Load more — {filtered.length - shown} remaining
-            </button>
+        {/* ── §35, §70 — where she is, then the way on ─────────────────────
+            "Load more — 43 remaining" measures what is left to do. Forty-three
+            is a number that makes a bride stop. "Showing 12 of 55" measures
+            what she has seen, and it is the same fact told the other way
+            round.
+
+            The count is `aria-live` so it is announced after a press, which
+            is the only confirmation the button gives that anything happened
+            below the fold. */}
+        {filtered.length > 0 && (
+          <div className="mt-20 flex flex-col items-center gap-5">
+            <p
+              aria-live="polite"
+              className="font-mono text-[0.72rem] tracking-[0.18em] text-muted"
+            >
+              Showing {Math.min(shown, filtered.length)} of {filtered.length}
+            </p>
+            {shown < filtered.length && (
+              <button
+                type="button"
+                onClick={() => setShown((s) => s + PAGE)}
+                className="btn btn-ghost"
+              >
+                Load more looks
+              </button>
+            )}
           </div>
         )}
 
@@ -272,14 +322,20 @@ export default function PortfolioGrid({
             not an instruction to go and undo four chips by hand. */}
         {filtered.length === 0 && (
           <div className="py-20 text-center">
-            <p className="display-sm text-ivory/75">No looks found for this combination.</p>
+            <p className="display-sm text-ivory/75">
+              No looks found for this combination.
+            </p>
             <p className="body-base mx-auto mt-4 max-w-md">
               {hasSelection(selection)
                 ? "Try removing one of the filters — the archive is deeper on some combinations than others."
                 : "New work is added as each wedding season closes."}
             </p>
             {hasSelection(selection) && (
-              <button type="button" onClick={clearFacets} className="btn btn-ghost mt-8">
+              <button
+                type="button"
+                onClick={clearFacets}
+                className="btn btn-ghost mt-8"
+              >
                 Clear filters
               </button>
             )}

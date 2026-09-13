@@ -5,6 +5,8 @@ import { bridal, hair, makeup } from "@/content/disciplines";
 import { serviceImage } from "@/lib/content/slots";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import PageHeader from "@/components/ui/PageHeader";
+import ServicesAccordion from "@/components/sections/ServicesAccordion";
+import WideOnly from "@/components/ui/WideOnly";
 import EditorialImage from "@/components/ui/EditorialImage";
 import ParallaxFrame from "@/components/ui/ParallaxFrame";
 import Reveal from "@/components/ui/Reveal";
@@ -24,7 +26,10 @@ export default async function ServicesPage() {
     provider.getServices(),
     provider.getSiteSettings(),
   ]);
-  const services = allServices.map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
+  const services = allServices.map((s) => ({
+    ...s,
+    image: serviceImage(s.category, s.image),
+  }));
 
   return (
     <>
@@ -66,48 +71,65 @@ export default async function ServicesPage() {
         </Reveal>
       </div>
 
-      <div className="shell pb-[var(--s-12)] sm:pb-[var(--s-16)]">
-        <ul className="space-y-16 sm:space-y-28 lg:space-y-40">
-          {services.map((s, i) => (
-            <li key={s.slug} id={s.slug} className="scroll-mt-32">
-              <article
-                className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-20 ${
-                  i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-                }`}
-              >
-                <ParallaxFrame strength={0.5}>
-                  <Reveal blur>
-                    <div
-                      className="relative aspect-[4/5] w-full overflow-hidden"
-                      style={{ transform: "translate3d(0, calc(var(--sy) * 22px), 0)" }}
-                    >
-                      <EditorialImage
-                        image={s.image}
-                        className="h-full w-full"
-                        sizes="(max-width: 1024px) 92vw, 46vw"
-                        decorative
-                      />
-                    </div>
-                  </Reveal>
-                </ParallaxFrame>
+      {/* ── BELOW lg: an accordion, not six full-bleed cards (§25–§27) ────
+          Six photographs, six summaries and six links stacked is nine and a
+          half screens to choose between six things. The accordion is six rows
+          she can see at once, and the photograph moves inside whichever one
+          she opens. One rendering runs at a time — see useIsWide. */}
+      <ServicesAccordion services={services} />
 
-                <div>
-                  <Reveal>
-                    <p className="eyebrow mb-5">
-                      {String(i + 1).padStart(2, "0")} — {s.eyebrow}
-                    </p>
-                    <h2 className="display-md text-ivory">
-                      {/* An inline <a> in a display heading is only as tall
+      {/* WideOnly, not just `hidden lg:block`: a display:none container still
+          mounts, and still pulls its six lazy photographs down a phone
+          connection for a list nobody can see. See useIsWide. */}
+      <WideOnly>
+        <div className="shell hidden pb-[var(--s-12)] sm:pb-[var(--s-16)] lg:block">
+          <ul className="space-y-16 sm:space-y-28 lg:space-y-40">
+            {services.map((s, i) => (
+              <li key={s.slug} id={s.slug} className="scroll-mt-32">
+                <article
+                  className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-20 ${
+                    i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+                  }`}
+                >
+                  <ParallaxFrame strength={0.5}>
+                    <Reveal blur>
+                      <div
+                        className="relative aspect-[4/5] w-full overflow-hidden"
+                        style={{
+                          transform:
+                            "translate3d(0, calc(var(--sy) * 22px), 0)",
+                        }}
+                      >
+                        <EditorialImage
+                          image={s.image}
+                          className="h-full w-full"
+                          sizes="(max-width: 1024px) 92vw, 46vw"
+                          decorative
+                        />
+                      </div>
+                    </Reveal>
+                  </ParallaxFrame>
+
+                  <div>
+                    <Reveal>
+                      <p className="eyebrow mb-5">
+                        {String(i + 1).padStart(2, "0")} — {s.eyebrow}
+                      </p>
+                      <h2 className="display-md text-ivory">
+                        {/* An inline <a> in a display heading is only as tall
                           as the font's em box — 38px here, under the minimum,
                           even though the heading looks twice that. */}
-                      <Link href={`/services/${s.slug}`} className="tap link-wipe">
-                        {s.name}
-                      </Link>
-                    </h2>
-                    <p className="body-lg mt-7 max-w-lg">{s.summary}</p>
-                  </Reveal>
+                        <Link
+                          href={`/services/${s.slug}`}
+                          className="tap link-wipe"
+                        >
+                          {s.name}
+                        </Link>
+                      </h2>
+                      <p className="body-lg mt-7 max-w-lg">{s.summary}</p>
+                    </Reveal>
 
-                  {/* ── THE INDEX IS AN INDEX, BELOW lg ──────────────────
+                    {/* ── THE INDEX IS AN INDEX, BELOW lg ──────────────────
                       Every service's full prose and its Includes list are
                       rendered here AND on /services/<slug>, which is the
                       canonical page for them. On a desktop, side by side with
@@ -117,58 +139,69 @@ export default async function ServicesPage() {
 
                       Nothing is deleted: the copy below is on the service page
                       already, and the link to it is right there. */}
-                  <div className="mt-8 hidden space-y-5 lg:block">
-                    {s.description.map((p, j) => (
-                      <Reveal key={j} delay={100 + j * 90}>
-                        <p className="body-base max-w-lg">{p}</p>
-                      </Reveal>
-                    ))}
-                  </div>
-
-                  <Reveal delay={340} className="hidden lg:block">
-                    <h3 className="eyebrow mb-5 mt-12">Includes</h3>
-                    <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-                      {s.includes.map((inc) => (
-                        <li key={inc} className="relative pl-6 text-sm text-ivory/75">
-                          <span
-                            aria-hidden="true"
-                            className="absolute left-0 top-[0.7em] h-px w-3 bg-champagne/60"
-                          />
-                          {inc}
-                        </li>
+                    <div className="mt-8 hidden space-y-5 lg:block">
+                      {s.description.map((p, j) => (
+                        <Reveal key={j} delay={100 + j * 90}>
+                          <p className="body-base max-w-lg">{p}</p>
+                        </Reveal>
                       ))}
-                    </ul>
-                  </Reveal>
+                    </div>
 
-                  <Reveal delay={440}>
-                    <div className="mt-10 flex flex-wrap gap-4">
-                      {/* Six booking buttons down one scroll is the same
+                    <Reveal delay={340} className="hidden lg:block">
+                      <h3 className="eyebrow mb-5 mt-12">Includes</h3>
+                      <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                        {s.includes.map((inc) => (
+                          <li
+                            key={inc}
+                            className="relative pl-6 text-sm text-ivory/75"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="absolute left-0 top-[0.7em] h-px w-3 bg-champagne/60"
+                            />
+                            {inc}
+                          </li>
+                        ))}
+                      </ul>
+                    </Reveal>
+
+                    <Reveal delay={440}>
+                      <div className="mt-10 flex flex-wrap gap-4">
+                        {/* Six booking buttons down one scroll is the same
                           mistake the homepage made with eight. The sticky bar
                           carries this intent on mobile, and the page still ends
                           with ClosingCTA. Unlayered `.btn` beats an unprefixed
                           `hidden`, so both halves need the bang. */}
-                      <Link href="/contact" className="btn !hidden lg:!inline-flex">
-                        {settings.bookingCta}
-                      </Link>
-                      {/* §10, §44 — the same two words on every service. */}
-                      <Link href={`/services/${s.slug}`} className="btn btn-ghost">
-                        View service
-                      </Link>
-                    </div>
-                  </Reveal>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
+                        <Link
+                          href="/contact"
+                          className="btn !hidden lg:!inline-flex"
+                        >
+                          {settings.bookingCta}
+                        </Link>
+                        {/* §10, §44 — the same two words on every service. */}
+                        <Link
+                          href={`/services/${s.slug}`}
+                          className="btn btn-ghost"
+                        >
+                          View service
+                        </Link>
+                      </div>
+                    </Reveal>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
 
-        <Reveal>
-          <p className="body-base mt-24 max-w-2xl border-l border-champagne/30 pl-5">
-            Pricing, packages and travel terms are confirmed directly, per date and per city —
-            send your date to get a figure for your wedding.
-          </p>
-        </Reveal>
-      </div>
+          <Reveal>
+            <p className="body-base mt-24 max-w-2xl border-l border-champagne/30 pl-5">
+              Pricing, packages and travel terms are confirmed directly, per
+              date and per city — send your date to get a figure for your
+              wedding.
+            </p>
+          </Reveal>
+        </div>
+      </WideOnly>
 
       <ClosingCTA settings={settings} />
     </>

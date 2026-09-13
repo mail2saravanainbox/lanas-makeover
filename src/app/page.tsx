@@ -11,6 +11,7 @@ import BrideStories from "@/components/sections/BrideStories";
 import BridalWorlds from "@/components/sections/BridalWorlds";
 import RentalStrip from "@/components/sections/RentalStrip";
 import { rentalItems } from "@/content/rental";
+import ProofRail, { proofItems } from "@/components/sections/ProofRail";
 import ActArtist from "@/components/sections/ActArtist";
 import Testimonials from "@/components/sections/Testimonials";
 import InstagramStrip from "@/components/sections/InstagramStrip";
@@ -41,13 +42,14 @@ export default async function HomePage() {
   // Lana's photographs where they exist, plates where they don't (§31).
   const slots = getImageSlots();
 
-  const [settings, services, brides, testimonials, timeline] = await Promise.all([
-    provider.getSiteSettings(),
-    provider.getServices(),
-    provider.getBrides(),
-    provider.getTestimonials(),
-    provider.getTimeline(),
-  ]);
+  const [settings, services, brides, testimonials, timeline] =
+    await Promise.all([
+      provider.getSiteSettings(),
+      provider.getServices(),
+      provider.getBrides(),
+      provider.getTestimonials(),
+      provider.getTimeline(),
+    ]);
 
   // The strip reads the store through the provider — never a live Meta call at
   // render time. Renders nothing until there are six curated posts.
@@ -104,11 +106,17 @@ export default async function HomePage() {
 
   let counter = 0;
   const n = Object.fromEntries(
-    Object.entries(renders).map(([key, shown]) => [key, shown ? ++counter : undefined]),
+    Object.entries(renders).map(([key, shown]) => [
+      key,
+      shown ? ++counter : undefined,
+    ]),
   ) as Record<keyof typeof renders, number | undefined>;
 
   // Each world shows work from its own category.
-  const worlds = services.map((s) => ({ ...s, image: serviceImage(s.category, s.image) }));
+  const worlds = services.map((s) => ({
+    ...s,
+    image: serviceImage(s.category, s.image),
+  }));
 
   return (
     <>
@@ -119,9 +127,17 @@ export default async function HomePage() {
         brand={settings.brandName}
         cta={settings.bookingCta}
         poster={settings.hero.poster ?? slots.heroPoster}
-        posterPortrait={settings.hero.posterPortrait ?? slots.heroPosterPortrait}
+        posterPortrait={
+          settings.hero.posterPortrait ?? slots.heroPosterPortrait
+        }
         video={settings.hero.video}
       />
+
+      {/* ── PROOF, BEFORE THE PHILOSOPHY (§14) ─────────────────────────────
+          Real photographs within a thumb's reach of the hero, so a bride sees
+          the work before she reads what Lana believes about it. Mobile only,
+          and a sideways rail rather than a section — see ProofRail. */}
+      <ProofRail items={proofItems(allWork)} />
 
       {/* ── THE PROOF ──────────────────────────────────────────────────────
           Bride stories only. The featured-work teaser that used to stand in
@@ -137,7 +153,11 @@ export default async function HomePage() {
           there are none, so the section numbering closes over the gap. */}
       {brides.length > 0 && (
         <>
-          <BrideStories index={n.brides!} brides={brides.slice(0, 3)} settings={settings} />
+          <BrideStories
+            index={n.brides!}
+            brides={brides.slice(0, 3)}
+            settings={settings}
+          />
           <SectionMark />
         </>
       )}
@@ -145,6 +165,15 @@ export default async function HomePage() {
       <ActBefore index={n.before!} images={slots.beforeLayers} />
 
       <ActRitual index={n.ritual!} images={slots.transformation} />
+
+      {/* The mobile ritual's "Continue ↓" lands here (§24). An id rather than
+          a scroll handler: the browser's own anchor jump respects
+          prefers-reduced-motion and works before hydration. */}
+      <div
+        id="after-ritual"
+        aria-hidden="true"
+        className="scroll-mt-[var(--nav-h)]"
+      />
 
       <Transformation index={n.transformation} items={transformation} />
 

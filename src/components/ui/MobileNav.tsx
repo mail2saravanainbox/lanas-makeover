@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import type { NavLink } from "./Nav";
+import { MENU_ID, type NavLink } from "./Nav";
 import { citiesDotted, siteSettings } from "@/content/site";
 import { track } from "@/lib/analytics";
 
@@ -15,29 +15,46 @@ import { track } from "@/lib/analytics";
 export default function MobileNav({
   open,
   onClose,
-  brand,
   cta,
   links,
   whatsapp = null,
 }: {
   open: boolean;
   onClose: () => void;
-  brand: string;
+  /**
+   * No `brand`. The drawer used to draw its own wordmark and its own close
+   * button in a header row of its own; the real header now floats above the
+   * curtain and carries both, so this had two of everything in one frame.
+   */
   cta: string;
   links: NavLink[];
   /** Deep link, or null when no business number is configured. */
   whatsapp?: string | null;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    /**
+     * Scroll lock that survives iOS. `overflow: hidden` on <body> alone does
+     * not hold on iOS Safari — the page scrolls under the drawer anyway — so
+     * the position is pinned and restored to the exact pixel on close (§61).
+     */
+    const y = window.scrollY;
+    const { body } = document;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
     window.__lenis?.stop();
-    closeRef.current?.focus();
+    firstLinkRef.current?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -46,10 +63,21 @@ export default function MobileNav({
       }
       if (e.key !== "Tab") return;
 
-      const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled])',
+      /**
+       * The toggle sits in the header, outside this panel, and it is the
+       * control that closes the drawer — so it has to be inside the trap or
+       * a keyboard visitor is shut in with no way out but Escape.
+       */
+      const toggle = document.querySelector<HTMLElement>(
+        `[aria-controls="${MENU_ID}"]`,
       );
-      if (!focusables?.length) return;
+      const inPanel = [
+        ...(panelRef.current?.querySelectorAll<HTMLElement>(
+          "a[href], button:not([disabled])",
+        ) ?? []),
+      ];
+      const focusables = toggle ? [toggle, ...inPanel] : inPanel;
+      if (!focusables.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
       if (e.shiftKey && document.activeElement === first) {
@@ -64,8 +92,16 @@ export default function MobileNav({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      window.scrollTo(0, y);
+      // Lenis writes its own cached position back on start(); tell it where
+      // the page actually is first, or it undoes the line above.
+      window.__lenis?.scrollTo(y, { immediate: true, force: true });
       window.__lenis?.start();
+      // Back to the toggle that opened it, which is now the same control
+      // that closes it (§8).
       previouslyFocused?.focus?.();
     };
   }, [open, onClose]);
@@ -73,6 +109,7 @@ export default function MobileNav({
   return (
     <div
       ref={panelRef}
+      id={MENU_ID}
       role="dialog"
       aria-modal="true"
       aria-label="Menu"
@@ -88,27 +125,39 @@ export default function MobileNav({
 
       <div
         className="relative flex h-full flex-col transition-opacity duration-[var(--d-base)]"
-        style={{ opacity: open ? 1 : 0, transitionDelay: open ? "260ms" : "0ms" }}
+        style={{
+          opacity: open ? 1 : 0,
+          transitionDelay: open ? "260ms" : "0ms",
+        }}
       >
-        <div className="shell flex h-[var(--nav-h)] shrink-0 items-center justify-between">
-          <span className="font-display text-[0.95rem] uppercase tracking-[0.28em] text-ivory">
-            {brand}
-          </span>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close menu"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-ivory/20 text-ivory transition-colors duration-[var(--d-base)] hover:border-champagne/60"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-              <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-          </button>
-        </div>
+        {/* No header row of its own. The real header is above this curtain
+            and already carries the wordmark and the toggle — drawing a second
+            wordmark and a second close control in the same corner was two of
+            everything in one frame. */}
+        <div className="h-[var(--nav-h)] shrink-0" aria-hidden="true" />
 
-        <nav aria-label="Mobile" className="shell flex flex-1 flex-col justify-center">
-          <ul className="space-y-1">
+        {/* ── LANDSCAPE (§78) ─────────────────────────────────────────────
+            At 844 × 390 the seven links, the two buttons and the handle come
+            to 645px inside a 390px panel, and `justify-center` on a fixed-
+            height flex column clips equally at both ends — the first link and
+            the booking CTA were both off-screen with no way to reach either.
+
+            `min-h-0` is the part that actually does it: a flex child will not
+            shrink below its content without it, so `overflow-y-auto` on its
+            own scrolls nothing. Centred while it fits, scrolled when it does
+            not.
+
+            `justify-center` is NOT how the centring is done, and that is the
+            whole trick: on a scroll container it centres the overflow too, and
+            the part that goes off the START edge cannot be scrolled back to —
+            "Work" was unreachable at 390px tall. `margin-block: auto` on the
+            list centres it while it fits and collapses to zero when it does
+            not, which leaves every link reachable. */}
+        <nav
+          aria-label="Mobile"
+          className="shell flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+        >
+          <ul className="my-auto space-y-1 py-4">
             {links.map((link, i) => (
               <li key={link.href} className="line-mask">
                 <span
@@ -120,6 +169,7 @@ export default function MobileNav({
                 >
                   <Link
                     href={link.href}
+                    ref={i === 0 ? firstLinkRef : undefined}
                     onClick={onClose}
                     className="display-md block py-2 text-ivory"
                   >
@@ -131,7 +181,12 @@ export default function MobileNav({
           </ul>
         </nav>
 
-        <div className="shell shrink-0 space-y-6 pb-10">
+        <div
+          className="shell shrink-0 space-y-6 pb-10"
+          style={{
+            paddingBottom: "max(2.5rem, env(safe-area-inset-bottom, 0px))",
+          }}
+        >
           <Link
             href="/contact"
             onClick={() => {
@@ -160,17 +215,26 @@ export default function MobileNav({
             </a>
           )}
 
-          <div className="flex items-center justify-between text-[0.75rem] uppercase tracking-[0.24em] text-muted">
+          {/* Third tier (§7, §68). Instagram is not a conversion CTA and is
+              not dressed as one — a text link under the two buttons.
+
+              It was a `justify-between` row with the cities opposite. At 390px
+              the city list wrapped to two lines and ran straight through the
+              handle; at 320px it was unreadable. They are two separate facts
+              and they stack. */}
+          <div className="space-y-2 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
             <a
               href={siteSettings.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => track("instagram_click", { placement: "mobile-nav" })}
-              className="tap link-wipe"
+              onClick={() =>
+                track("instagram_click", { placement: "mobile-nav" })
+              }
+              className="tap link-wipe inline-block"
             >
               {siteSettings.instagramHandle}
             </a>
-            <span>{citiesDotted()}</span>
+            <p className="leading-relaxed">{citiesDotted()}</p>
           </div>
         </div>
       </div>
