@@ -79,6 +79,24 @@ export const siteSettings: SiteSettings = {
    */
   whatsapp: "9884740036",
 
+  /**
+   * ── THE GOOGLE BUSINESS PROFILE ─────────────────────────────────────────
+   * Her Maps listing — the panel that appears beside a search for "bridal
+   * makeup Trichy". Putting it in `sameAs` is how the site tells Google that
+   * this domain and that panel are the same business, which is what lets a
+   * review count, a photo set and an address on one side reinforce the other.
+   *
+   * It must be the CANONICAL place URL, not a shortened share link and not a
+   * search result: `https://www.google.com/maps/place/.../data=!...` or the
+   * `https://maps.app.goo.gl/...` short link resolved to its full form.
+   *
+   * ⚠ EMPTY UNTIL SUPPLIED, and deliberately so. A guessed or wrong Maps URL
+   *   in `sameAs` does not merely fail to help — it asserts that this site is
+   *   a different business than it is, which is worse than saying nothing.
+   *   Nothing renders while this is "".
+   */
+  googleBusiness: "",
+
   // TODO(client): a landline or a separate number to publish for calls, if
   // there is one. Left empty means no `tel:` link renders anywhere.
   phone: "",

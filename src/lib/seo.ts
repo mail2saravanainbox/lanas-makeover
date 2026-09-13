@@ -168,7 +168,20 @@ export function localBusinessSchema(): Json {
    * below; the wa.me links are unaffected.
    */
   const tel = waNumber();
-  const sameAs = [siteSettings.instagram, waLink()].filter(Boolean);
+  /**
+   * `sameAs` is the join between this domain and every other place the same
+   * business exists. The Google Business Profile is the one that matters most
+   * locally: it is what associates the site with her Maps panel rather than
+   * leaving Google to infer the connection from a matching name and city.
+   *
+   * Each entry is dropped when it is empty, so a half-configured site emits a
+   * shorter record rather than a broken URL.
+   */
+  const sameAs = [
+    siteSettings.instagram,
+    waLink(),
+    siteSettings.googleBusiness || null,
+  ].filter(Boolean);
   return {
     "@context": "https://schema.org",
     "@type": "BeautySalon",

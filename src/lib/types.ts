@@ -272,6 +272,12 @@ export interface SiteSettings {
   travelNote: string;
   instagram: string;
   instagramHandle: string;
+  /**
+   * The canonical Google Maps place URL for the Business Profile, or "" while
+   * none has been supplied. Emitted in the LocalBusiness `sameAs`; see the
+   * note in site.ts for why a guessed one is worse than none.
+   */
+  googleBusiness: string;
   phone: string;
   whatsapp: string;
   email: string;

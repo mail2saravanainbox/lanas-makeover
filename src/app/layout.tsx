@@ -58,9 +58,30 @@ const tamil = Noto_Serif_Tamil({
   variable: "--font-noto-tamil",
 });
 
+/**
+ * ── GOOGLE SEARCH CONSOLE ───────────────────────────────────────────────────
+ * The HTML-tag method: Search Console issues a token, the site returns it in a
+ * <meta name="google-site-verification"> on the root document, and ownership
+ * is proved. Next emits that tag from `verification.google`.
+ *
+ * Read from the environment rather than committed, for one reason that is not
+ * secrecy — the token is public by design and visible in the page source —
+ * but ownership. A token in the repo verifies whoever holds the repo, and it
+ * should verify whoever holds the Vercel project.
+ *
+ * Renders NOTHING until GOOGLE_SITE_VERIFICATION is set. An empty or partial
+ * tag is worse than none: Search Console reports it as a failed verification
+ * rather than an absent one, which is a harder thing to debug.
+ *
+ * The DNS TXT method is an equally good alternative and does not touch this
+ * file at all — if the domain is verified that way, leave this unset.
+ */
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: new URL(seoConfig.siteUrl),
   ...pageMetadata({ path: "/" }),
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   title: {
     default: seoConfig.defaultTitle,
     template: seoConfig.titleTemplate,
